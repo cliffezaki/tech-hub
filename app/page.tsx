@@ -2,34 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Smartphone, Bot } from "lucide-react";
 import Link from "next/link";
-import { client } from "@/sanity/lib/client";
-import { urlForImage } from "@/sanity/lib/image";
-import { MOCK_DATA } from "@/lib/mock-data";
-
-async function getSmartphoneReviews() {
-  try {
-    const query = `*[_type == "article" && category == "Smartphone" && section == "reviews"] | order(publishedAt desc)[0...4] {
-      _id,
-      title,
-      excerpt,
-      category,
-      publishedAt,
-      mainImage,
-      "slug": slug.current
-    }`;
-    const data = await client.fetch(query);
-    return data.length > 0 ? data : null;
-  } catch (error) {
-    console.warn("Sanity fetch failed, falling back to mock data:", error);
-    return null;
-  }
-}
+import Image from "next/image";
+import { getHomepageReviews, getSectionArticles } from "@/lib/content";
 
 export default async function Home() {
-  const sanityReviews = await getSmartphoneReviews();
-
-  // Use Sanity data if available, otherwise use mock data
-  const smartphoneReviews = sanityReviews || MOCK_DATA.smartphoneReviews;
+  const smartphoneReviews = await getHomepageReviews();
+  const trendingNews = (await getSectionArticles("news")).slice(0, 3);
 
   return (
     <div className="flex flex-col gap-10 pb-10">
@@ -74,14 +52,16 @@ export default async function Home() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-              {smartphoneReviews.map((review: any) => (
-                <Card key={review.id || review._id} className="group overflow-hidden border-0 bg-secondary/20 hover:bg-secondary/40 transition-colors">
+              {smartphoneReviews.map((review) => (
+                <Card key={review.id} className="group overflow-hidden border-0 bg-secondary/20 hover:bg-secondary/40 transition-colors">
                   {/* Featured Image */}
                   <div className="aspect-video w-full bg-muted/50 group-hover:bg-muted/70 transition-colors relative overflow-hidden">
-                    {review.mainImage ? (
-                      <img
-                        src={urlForImage(review.mainImage).url()}
+                    {review.imageUrl ? (
+                      <Image
+                        src={review.imageUrl}
                         alt={review.title}
+                        fill
+                        unoptimized
                         className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
@@ -93,14 +73,14 @@ export default async function Home() {
                   <CardHeader>
                     <div className="flex justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       <span>{review.category}</span>
-                      <span>{review.publishedAt ? new Date(review.publishedAt).toLocaleDateString() : (review.date || "Just now")}</span>
+                      <span>{new Date(review.publishedAt).toLocaleDateString()}</span>
                     </div>
                     <CardTitle className="text-xl decoration-2 underline-offset-4 hover:underline transition-colors font-[family-name:var(--font-playfair)]">
                       <Link href={`/reviews/${review.slug}`}>{review.title}</Link>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground line-clamp-2">{review.excerpt || review.description}</p>
+                    <p className="text-muted-foreground line-clamp-2">{review.excerpt}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -114,22 +94,22 @@ export default async function Home() {
                 <h3 className="text-xl font-bold tracking-tight font-[family-name:var(--font-playfair)]">Trending in AI</h3>
               </div>
               <div className="flex flex-col gap-6">
-                {MOCK_DATA.aiNews.map((news) => (
-                  <div key={news.id} className="group cursor-pointer space-y-2">
+                {trendingNews.map((news) => (
+                  <Link key={news.id} href={`/news/${news.slug}`} className="group block space-y-2">
                     <div className="text-xs font-semibold uppercase text-brand-red">Hot Topic</div>
                     <h4 className="text-lg font-bold leading-tight transition-colors hover:underline font-[family-name:var(--font-playfair)]">
                       {news.title}
                     </h4>
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {news.description}
+                      {news.excerpt}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
               {/* Newsletter Box */}
               <div className="mt-8 rounded-lg bg-primary p-6 text-primary-foreground">
-                <h4 className="text-lg font-bold mb-2 font-[family-name:var(--font-playfair)]">TechAI Weekly</h4>
+                <h4 className="text-lg font-bold mb-2 font-[family-name:var(--font-playfair)]">Tech Hub Weekly</h4>
                 <p className="text-sm opacity-90 mb-4">Get the future in your inbox. No spam, just signal.</p>
                 <div className="flex gap-2">
                   <input type="email" placeholder="Email" className="w-full rounded bg-primary-foreground/10 px-3 py-2 text-sm placeholder:text-primary-foreground/50 border border-primary-foreground/20 focus:outline-none focus:ring-1 focus:ring-primary-foreground" />

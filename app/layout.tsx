@@ -20,8 +20,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TechAI - Future of Technology",
-  description: "Breaking AI news and smartphone reviews.",
+  title: "Tech Hub | Technology News, Reviews, and Guides",
+  description: "Technology news, smartphone reviews, explainers, and practical guides from Tech Hub.",
 };
 
 export default function RootLayout({

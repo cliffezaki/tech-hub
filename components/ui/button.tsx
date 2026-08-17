@@ -1,22 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/lib/utils"
-
-// Since I don't have raddix-ui/react-slot or cva installed yet, I will use a simpler implementation for now or install them.
-// The user asked for "modern stack", usually implies shadcn/ui.
-// I will quickly install class-variance-authority and @radix-ui/react-slot to be proper.
-// BUT to save time/tokens, I can make a simpler button for now, or just install them.
-// Let's install them to be "high performance" and proper.
-// Waiting for user approval on command might slow us down.
-// I'll implement a standard button without CVA for now to avoid more installs, or just use standard Tailwind.
-
-// Re-evaluating: "High-performance tech news website".
-// I will build a robust Button without extra deps if possible, or just add them.
-// Actually, `clsx` and `tailwind-merge` are enough for a good button if I don't need the strict CVA typing yet.
-// However, CVA is great.
-// Let's stick to simple props for now to keep velocity high.
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -48,8 +32,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         }
 
         return (
-            // @ts-ignore - straightforward implementation
-            <button
+            <Comp
                 className={cn(baseStyles, variants[variant], sizes[size], className)}
                 ref={ref}
                 {...props}

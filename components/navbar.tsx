@@ -6,7 +6,6 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export function Navbar() {
     const { setTheme, theme } = useTheme();
@@ -36,10 +35,10 @@ export function Navbar() {
                             <Menu className="h-6 w-6" />
                         </Button>
 
-                        {/* Logo - TECH (plain text) + AI (white on black block) */}
+                        {/* Logo */}
                         <Link href="/" className="flex items-baseline gap-0.5 group">
                             <span className="text-xl md:text-2xl font-black uppercase text-black dark:text-white leading-none">TECH</span>
-                            <span className="text-xl md:text-2xl font-black uppercase bg-black text-white dark:bg-white dark:text-black px-1.5 py-1 leading-none">AI</span>
+                            <span className="text-xl md:text-2xl font-black uppercase bg-black text-white dark:bg-white dark:text-black px-1.5 py-1 leading-none">HUB</span>
                         </Link>
                     </div>
 
@@ -110,7 +109,7 @@ export function Navbar() {
                         <div className="flex items-center justify-between mb-8">
                             <Link href="/" className="flex items-baseline gap-0.5" onClick={() => setIsMenuOpen(false)}>
                                 <span className="text-base font-black uppercase text-black dark:text-white leading-none">TECH</span>
-                                <span className="text-base font-black uppercase bg-black text-white dark:bg-white dark:text-black px-1 py-0.5 leading-none">AI</span>
+                                <span className="text-base font-black uppercase bg-black text-white dark:bg-white dark:text-black px-1 py-0.5 leading-none">HUB</span>
                             </Link>
                             <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                                 <X className="h-5 w-5" />
