@@ -1,13 +1,18 @@
 {
   "id": "pixel-9a",
-  "title": "Pixel 9a: Still the Camera Champ",
-  "slug": "pixel-9a",
-  "excerpt": "Google proves you don't need to spend $1000 for flagship-quality photos.",
-  "content": "# Pixel 9a: Still the Camera Champ\n\nGoogle proves you don't need to spend $1000 for flagship-quality photos.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Budget",
+  "title": "Pixel 9a: still the camera champion at half the price",
   "section": "reviews",
-  "author": "Nena Farrell",
-  "publishedAt": "2026-05-14T17:00:00.000Z",
-  "readTime": "6 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80"
+  "category": "Budget",
+  "author": "Lena Fischer",
+  "imageUrl": "https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Two smartphones photographed from behind showing their camera modules",
+  "imageCredit": "Unsplash",
+  "excerpt": "Google proves again that flagship photography does not require a flagship price.",
+  "content": "The a-series has a simple proposition: the same photographic results as the expensive Pixel, with compromises somewhere you are less likely to notice.\n\n## Camera\n\nThe sensor is smaller than the Pro's and the processing pipeline is identical, which matters far more. Daylight results are essentially indistinguishable. Night shots take longer and show more noise, but remain better than anything else at this price.\n\n## Where the money was saved\n\n- Plastic rather than glass and metal\n- Slower charging\n- Dimmer display, though still readable outdoors\n\nNone of these are felt daily. The processor is a generation behind and comfortably fast enough for everything short of sustained gaming.\n\n## Verdict\n\n**Buy it if** you want the best photos per shilling on the market.\n\n**Skip it if** you play demanding games or need the brightest screen available.",
+  "slug": "pixel-9a",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-13T16:00:00.000Z",
+  "updatedAt": "2026-08-13T16:00:00.000Z"
 }

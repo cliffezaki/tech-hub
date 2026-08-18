@@ -1,13 +1,18 @@
 {
   "id": "agentic-web",
-  "title": "The Agentic Web is Here",
-  "slug": "agentic-web",
-  "excerpt": "How autonomous agents are rewriting the rules of the internet.",
-  "content": "# The Agentic Web is Here\n\nHow autonomous agents are rewriting the rules of the internet.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Analysis",
+  "title": "The agentic web is here, and the rules are being rewritten",
   "section": "news",
-  "author": "Staff Writer",
-  "publishedAt": "2026-05-15T05:00:00.000Z",
-  "readTime": "5 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80"
+  "category": "Analysis",
+  "author": "Priya Shah",
+  "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Someone using a laptop and phone together in a cafe",
+  "imageCredit": "Unsplash",
+  "excerpt": "When software agents browse on your behalf, everything built for human eyeballs — ads, paywalls, cookie banners — has to be reconsidered.",
+  "content": "The web was designed for people to read. That assumption held for thirty years and is now quietly breaking, as an increasing share of page requests come from software acting for a person rather than the person themselves.\n\n## What breaks first\n\nAdvertising is the obvious casualty. An agent does not see a banner, does not click it, and does not develop brand preference. Publishers who depend on impressions are watching a slow erosion they cannot easily measure.\n\nThen there is the plumbing. Cookie consent dialogs, infinite scroll, and interstitials all exist to shape human attention. To an agent they are obstacles to route around, and sites that make them harder to route around simply get used less.\n\n## What replaces it\n\nSome publishers are moving toward machine-readable licensing: structured feeds with clear terms attached, priced per request. Others are betting on the opposite — that scarcity of trustworthy, human-verified reporting becomes the product.\n\n- Structured feeds with per-request pricing\n- Verified provenance as a selling point\n- Direct relationships that do not depend on a search intermediary\n\nNone of this is settled. What is clear is that \"build a page and hope people find it\" no longer describes how information reaches an audience.",
+  "slug": "agentic-web",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-17T18:00:00.000Z",
+  "updatedAt": "2026-08-17T18:00:00.000Z"
 }

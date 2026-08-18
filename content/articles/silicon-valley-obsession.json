@@ -1,13 +1,18 @@
 {
   "id": "silicon-valley-obsession",
-  "title": "Silicon Valley's New Obsession",
-  "slug": "silicon-valley-obsession",
-  "excerpt": "Why VCs are pouring billions into agentic workflows.",
-  "content": "# Silicon Valley's New Obsession\n\nWhy VCs are pouring billions into agentic workflows.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Startups",
+  "title": "Silicon Valley's new obsession is workflow, not chat",
   "section": "news",
-  "author": "Lauren Goode",
-  "publishedAt": "2026-05-15T03:00:00.000Z",
-  "readTime": "4 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80"
+  "category": "Startups",
+  "author": "Grace Wanjiru",
+  "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Two people reviewing documents and laptops at a desk",
+  "imageCredit": "Unsplash",
+  "excerpt": "Investors have cooled on general-purpose assistants and are writing cheques for narrow software that finishes a specific job.",
+  "content": "The pitch that raised money two years ago — a general assistant that does everything — is a hard sell today. What is being funded instead is unglamorous and specific: software that completes one workflow end to end and can prove it.\n\n## What changed in the pitch\n\nBuyers stopped asking what a product could do and started asking what it would replace. That single question reshaped the market. A tool that drafts anything competes with a free chat window; a tool that reconciles invoices competes with a salary line.\n\n- Narrow scope with a measurable before-and-after\n- Pricing tied to work completed rather than seats\n- Evaluation built in, because buyers now ask for accuracy numbers\n\n## The risk everyone acknowledges\n\nNarrow products are easier to sell and easier to copy. Several founders described the same defensive plan: get close to the systems of record, accumulate the messy edge cases, and make switching a migration rather than a signup.\n\nWhether that is durable is the open question of this funding cycle.",
+  "slug": "silicon-valley-obsession",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-16T14:00:00.000Z",
+  "updatedAt": "2026-08-16T14:00:00.000Z"
 }

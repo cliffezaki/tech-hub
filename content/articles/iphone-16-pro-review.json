@@ -1,13 +1,18 @@
 {
   "id": "iphone-16-pro-review",
-  "title": "iPhone 16 Pro Review",
-  "slug": "iphone-16-pro-review",
-  "excerpt": "The refinement king. Better cameras, new button, same soul.",
-  "content": "# iPhone 16 Pro Review\n\nThe refinement king. Better cameras, new button, same soul.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Smartphone",
+  "title": "iPhone 16 Pro review: the refinement king",
   "section": "reviews",
-  "author": "Julian Chokkattu",
-  "publishedAt": "2026-05-14T23:00:00.000Z",
-  "readTime": "9 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1400&q=80"
+  "category": "Smartphone",
+  "author": "Priya Shah",
+  "featured": true,
+  "imageUrl": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "An iPhone lying next to a laptop keyboard",
+  "imageCredit": "Unsplash",
+  "excerpt": "Better cameras, a genuinely useful new button, and the same reliable character. An upgrade for people two generations back.",
+  "content": "Apple has spent this generation sanding down edges rather than redrawing the shape. Nothing here will make an owner of last year's model feel left behind, and that is arguably the point.\n\n## Camera\n\nThe main sensor captures noticeably more detail in low light, and the processing is less eager to brighten night scenes into something that never existed. The ultrawide finally matches the main sensor's colour rendering, which removes the small jarring shift when switching lenses mid-shot.\n\n## The new button\n\nThe dedicated capture control is better than expected. Half-press to focus works exactly as muscle memory expects, and being able to start recording without hunting for an on-screen target is a real improvement when the phone is cold or wet.\n\n## Battery and performance\n\nTwo days of light use, a comfortable full day of heavy use. Performance is not the story on a phone this fast — thermal behaviour is, and sustained recording no longer throttles as aggressively.\n\n## Verdict\n\n**Buy it if** you are coming from a two or three year old phone, or you shoot a lot of video.\n\n**Skip it if** you bought last year's Pro. The differences are real and small.",
+  "slug": "iphone-16-pro-review",
+  "status": "published",
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-15T10:00:00.000Z",
+  "updatedAt": "2026-08-15T10:00:00.000Z"
 }

@@ -1,13 +1,18 @@
 {
   "id": "llama-4",
-  "title": "Open Source Llama 4",
-  "slug": "llama-4",
-  "excerpt": "Meta releases its most powerful model yet, beating proprietary systems.",
-  "content": "# Open Source Llama 4\n\nMeta releases its most powerful model yet, beating proprietary systems.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Open Source",
+  "title": "Open weights, closed questions: the new open-source frontier",
   "section": "news",
-  "author": "Staff Writer",
-  "publishedAt": "2026-05-15T04:00:00.000Z",
-  "readTime": "4 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80"
+  "category": "Open Source",
+  "author": "Daniel Kimani",
+  "imageUrl": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Source code displayed in a dark code editor",
+  "imageCredit": "Unsplash",
+  "excerpt": "The newest open-weight releases match proprietary systems on most benchmarks. The licences are where the real disagreement lives.",
+  "content": "The performance gap between open-weight models and the best proprietary systems has narrowed to the point where, for most everyday tasks, it is not the deciding factor. The argument has moved to licensing.\n\n## Open weights is not open source\n\nDownloading a set of weights is not the same as receiving the four freedoms that the term open source has meant for decades. Most current licences restrict commercial use above a revenue threshold, forbid certain applications, or withhold the training data entirely.\n\nThat matters practically, not just philosophically. A team that cannot audit training data cannot fully explain a model's behaviour to a regulator or a customer.\n\n## Why teams still choose them\n\n- Data never leaves infrastructure the team controls\n- Costs are predictable — hardware, not per-token billing\n- Models can be fine-tuned and frozen, so behaviour does not change underneath a product\n\nThe practical advice has not changed: pick based on whether you can live with the licence, and assume the capability ranking will be different in six months.",
+  "slug": "llama-4",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-17T11:00:00.000Z",
+  "updatedAt": "2026-08-17T11:00:00.000Z"
 }

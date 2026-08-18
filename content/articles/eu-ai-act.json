@@ -1,13 +1,18 @@
 {
   "id": "eu-ai-act",
-  "title": "EU AI Act: What You Need to Know",
-  "slug": "eu-ai-act",
-  "excerpt": "Comprehensive regulation is coming. Here's how it impacts open source.",
-  "content": "# EU AI Act: What You Need to Know\n\nComprehensive regulation is coming. Here's how it impacts open source.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Policy",
+  "title": "The EU AI Act: what it means for smaller teams",
   "section": "news",
-  "author": "Khari Johnson",
-  "publishedAt": "2026-05-15T02:00:00.000Z",
-  "readTime": "6 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1400&q=80"
+  "category": "Policy",
+  "author": "Elena Rossi",
+  "imageUrl": "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Two people shaking hands in an office",
+  "imageCredit": "Unsplash",
+  "excerpt": "Comprehensive AI regulation is arriving. Most of the burden lands on how a system is used, not on how clever it is.",
+  "content": "The headline framing of Europe's AI rules is that they regulate the technology. They mostly do not. They regulate applications, sorted by the risk a given use presents to people affected by it.\n\n## The tiers that matter\n\nA handful of uses are prohibited outright. A larger set is classed as high risk — employment screening, credit decisions, education, essential services — and carries documentation, human oversight, and testing obligations. Most consumer software falls outside both.\n\n## What a small team should actually do\n\n- Write down what your system does and what data trained it\n- Identify whether any use touches a high-risk category\n- Keep a human decision-maker in the loop where outcomes affect people\n- Tell users plainly when they are interacting with a machine\n\n## Open source is not exempt, but it is treated differently\n\nPublishing a model under a free licence carries lighter obligations than shipping it inside a product that makes decisions about people. The obligation attaches to deployment.\n\nFor most small teams the practical cost is documentation discipline rather than legal spend — worth starting now, because retrofitting records is far more expensive than keeping them.",
+  "slug": "eu-ai-act",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-16T07:00:00.000Z",
+  "updatedAt": "2026-08-16T07:00:00.000Z"
 }

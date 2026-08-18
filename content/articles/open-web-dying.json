@@ -1,13 +1,18 @@
 {
   "id": "open-web-dying",
-  "title": "Why The Open Web is Dying",
-  "slug": "open-web-dying",
-  "excerpt": "The centralized platforms are winning. Here's what we're losing.",
-  "content": "# Why The Open Web is Dying\n\nThe centralized platforms are winning. Here's what we're losing.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Analysis",
+  "title": "Why the open web is dying, and what replaces it",
   "section": "news",
-  "author": "GIUSEPPE STUTO",
-  "publishedAt": "2026-05-15T08:00:00.000Z",
-  "readTime": "8 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80"
+  "category": "Analysis",
+  "author": "Lena Fischer",
+  "featured": true,
+  "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "The curve of the Earth at night with city lights visible from orbit",
+  "imageCredit": "Unsplash",
+  "excerpt": "Centralised platforms won the traffic war. The interesting question is what an independent publisher does about it now.",
+  "content": "For most of the last decade, the arrangement was simple: publishers wrote, search engines and social platforms distributed, and everyone took a share. That arrangement has ended, and it did not end gradually.\n\n## The traffic did not move, it stopped\n\nReferral traffic to independent sites has fallen sharply as answers are increasingly assembled and displayed without a click. From the reader's point of view this is an improvement. From a publisher's, it removes the transaction the entire business depended on.\n\n## What still works\n\nThe publications weathering this share a few traits. They have a direct relationship with readers, they publish something that cannot be summarised away, and they do not treat search rankings as a strategy.\n\n- Newsletters and podcasts, where the audience is owned rather than rented\n- Original reporting and testing that cannot be paraphrased from elsewhere\n- Communities where the discussion is as valuable as the article\n\n> The open web is not disappearing. It is becoming smaller, more deliberate, and less lucrative — which is roughly what it looked like before the platforms arrived.\n\nThe lesson for anyone starting now is unglamorous: build the list, own the domain, and assume no intermediary will send you readers forever.",
+  "slug": "open-web-dying",
+  "status": "published",
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-17T04:00:00.000Z",
+  "updatedAt": "2026-08-17T04:00:00.000Z"
 }

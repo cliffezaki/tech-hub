@@ -1,13 +1,18 @@
 {
   "id": "grid-hack",
-  "title": "The Hack That Could Take Down The Grid",
-  "slug": "grid-hack",
-  "excerpt": "Security researchers discovered critical vulnerabilities in power infrastructure.",
-  "content": "# The Hack That Could Take Down The Grid\n\nSecurity researchers discovered critical vulnerabilities in power infrastructure.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Security",
+  "title": "The hack that could take down the grid",
   "section": "news",
-  "author": "ANDY GREENBERG",
-  "publishedAt": "2026-05-15T07:00:00.000Z",
-  "readTime": "12 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1400&q=80"
+  "category": "Security",
+  "author": "Marcus Adeyemi",
+  "imageUrl": "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Electricity transmission pylons silhouetted against a sunset",
+  "imageCredit": "Unsplash",
+  "excerpt": "Researchers found a chain of weaknesses in the equipment that keeps power flowing. The alarming part is how ordinary the flaws are.",
+  "content": "A team of security researchers has demonstrated an attack chain against the industrial controllers that regulate power distribution. No single flaw in the chain is exotic. That is precisely what makes it serious.\n\n## How the chain works\n\nThe starting point is remote maintenance access — the same connectivity that lets an engineer diagnose a substation without driving to it. From there, weak device authentication and unsigned firmware updates do the rest.\n\n- Default credentials that survive commissioning\n- Firmware accepted without a signature check\n- Flat networks where one compromised device reaches many\n\n## Why it has not been fixed\n\nGrid hardware is bought on twenty to forty year cycles. Equipment installed before secure firmware signing was standard is still doing its job correctly, and replacing it is a capital project rather than a patch.\n\nOperators are responding with segmentation and monitoring rather than replacement, which is the pragmatic choice. Researchers involved were clear that they found no evidence of the technique being used in the wild, and disclosure was coordinated with vendors months before publication.",
+  "slug": "grid-hack",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-16T21:00:00.000Z",
+  "updatedAt": "2026-08-16T21:00:00.000Z"
 }

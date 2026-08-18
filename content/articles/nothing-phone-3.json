@@ -1,13 +1,18 @@
 {
   "id": "nothing-phone-3",
-  "title": "Nothing Phone (3)",
-  "slug": "nothing-phone-3",
-  "excerpt": "Transparent design meets flagship specs. Is it enough?",
-  "content": "# Nothing Phone (3)\n\nTransparent design meets flagship specs. Is it enough?\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Smartphone",
+  "title": "Nothing Phone (3): transparent design meets flagship specs",
   "section": "reviews",
-  "author": "Julian Chokkattu",
-  "publishedAt": "2026-05-14T20:00:00.000Z",
-  "readTime": "6 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80"
+  "category": "First look",
+  "author": "Tom Whitfield",
+  "imageUrl": "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A phone displaying a dark themed home screen",
+  "imageCredit": "Unsplash",
+  "excerpt": "Distinctive hardware and a genuinely calm software philosophy. The cameras are the compromise.",
+  "content": "Nothing continues to make the most visually distinctive phones in the market, and this generation finally pairs that design with hardware that competes on specification.\n\n## Design\n\nThe transparent back is a gimmick that has aged into an identity. The rear light strip has become a legitimately useful notification system once configured — glanceable information without unlocking anything.\n\n## Software\n\nThe monochrome interface sounds like an affectation and works better than expected. Fewer coloured icons genuinely does reduce the pull to open apps aimlessly, which is the stated goal.\n\n## Cameras\n\nGood in daylight, average once the light drops. Processing is slower than rivals and occasionally produces inconsistent colour between consecutive shots.\n\n## Verdict\n\n**Buy it if** you want something that does not look like everything else and you value software restraint.\n\n**Skip it if** the camera is your primary consideration.",
+  "slug": "nothing-phone-3",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-14T13:00:00.000Z",
+  "updatedAt": "2026-08-14T13:00:00.000Z"
 }

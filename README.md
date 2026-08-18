@@ -1,112 +1,99 @@
 # Tech Hub
 
-Tech Hub is a Next.js technology/news site with section pages, article detail pages, a WordPress-style local dashboard for development, and Sanity Studio support for a durable deployed CMS.
+A technology news site built with Next.js — sections for News, Reviews, How To, How Stuff
+Works, and Tech Kenya, with a built-in content dashboard for managing everything without
+touching code.
 
-## Run Locally
+## Run it locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open:
+Open <http://localhost:3000>. No configuration is needed: content is read from the JSON
+files in `content/`, and the dashboard at <http://localhost:3000/admin> is unlocked in
+local development.
 
-```text
-http://localhost:3000
-```
+## The dashboard
 
-## Content Workflow
+<http://localhost:3000/admin>
 
-By default, the site reads content in this order:
+| Screen | What it does |
+| --- | --- |
+| **Overview** | Counts, recent articles, quick links |
+| **Articles** | Create, edit, delete, search, filter, and feature articles |
+| **Pages** | Standalone pages such as About or Advertise, served at `/your-slug` |
+| **Media** | Upload, copy, and delete images |
+| **Homepage** | Choose the lead story and which articles are promoted |
+| **Settings** | Site name, tagline, newsletter box, footer, social links |
 
-1. Local CMS articles saved from `/admin`
-2. Sanity articles, when Sanity is configured
-3. Built-in mock content, so the site still works before setup
+Articles support a headline, slug, excerpt, Markdown body, category, section, author,
+publish date, featured image with alt text and credit, read time, draft/published status,
+and a featured flag. Drafts never appear on the public site.
 
-For production deployments, set this environment variable so the live site reads Sanity first:
+## Going live
 
-```env
-CONTENT_SOURCE=sanity
-```
+**See [DEPLOYMENT.md](./DEPLOYMENT.md)** for a step-by-step guide written for a first
+deployment. The short version:
 
-## Local CMS
+- Host on **Vercel**, which builds directly from the GitHub repository.
+- Store content in **Sanity** (free tier). A deployed site cannot write to its own files,
+  so the dashboard needs a database behind it to work in production.
+- Set `ADMIN_PASSWORD` so the live dashboard is not open to the public.
 
-Open:
+## How content storage works
 
-```text
-http://localhost:3000/admin
-```
+One interface, two interchangeable drivers, chosen automatically:
 
-From there you can:
+| Condition | Driver | Used for |
+| --- | --- | --- |
+| Sanity credentials present | `lib/store/sanity-store.ts` | Production — content survives redeploys |
+| No credentials | `lib/store/file-store.ts` | Local development — JSON files in `content/` |
 
-- Create articles
-- Edit articles
-- Delete articles
-- Manage starter/demo posts that were seeded into `content/articles`
-- Manage draft/static pages at `/admin/pages`
-- View and copy image URLs from the media library at `/admin/media`
-- Assign each article to News, Reviews, How To, How Stuff Works, or Tech Kenya
-- Add an author, excerpt, read time, publish date, image URL, and article body
+Everything else in the app talks to `getStore()` in `lib/store/index.ts` and never knows
+which driver is active. Uploaded images follow the same split: Sanity's CDN in production,
+`public/uploads/` locally.
 
-Local CMS articles are saved as JSON files under:
+## Security
 
-```text
-content/articles
-```
+- `/admin` and every write API route require a signed session cookie, checked in `proxy.ts`
+  and again inside each route handler.
+- With no `ADMIN_PASSWORD` set, the dashboard is open on localhost and **locked** anywhere
+  that looks like a deployment, so an unconfigured live site can never be edited by a stranger.
+- The Sanity write token is server-side only and never reaches the browser.
 
-Local CMS pages are saved as JSON files under:
-
-```text
-content/pages
-```
-
-This is ideal for local editing and early development. For a deployed production CMS, use Sanity because serverless hosts do not persist runtime edits to local JSON files.
-
-## Seed Demo Content
-
-The current demo posts and starter pages can be reseeded with:
+## Commands
 
 ```bash
-npm run seed
+npm run dev          # development server
+npm run build        # production build
+npm start            # run the production build
+npm run lint         # eslint
+npm run typecheck    # tsc --noEmit
+npm run seed         # restore the demo content into content/ (local files)
+npm run seed:sanity  # copy the demo content into your live Sanity database
 ```
 
-This keeps the site full during development while making the starter content editable through the local dashboard.
+## Project layout
 
-## Sanity CMS
-
-Create a `.env.local` file with your Sanity project values:
-
-```env
-NEXT_PUBLIC_SANITY_PROJECT_ID=your_real_project_id
-NEXT_PUBLIC_SANITY_DATASET=production
-NEXT_PUBLIC_SANITY_API_VERSION=2024-12-27
+```
+app/
+  (site)/          public pages — homepage, sections, articles, search, contact, CMS pages
+  admin/           the dashboard (own layout, no public header or footer)
+  api/             articles, pages, media, settings, auth, status
+  studio/          optional Sanity Studio at /studio
+components/        UI, article cards, markdown renderer, admin components
+lib/
+  store/           storage drivers and normalisation
+  content.ts       read layer used by public pages
+  auth.ts          password sessions
+content/           local JSON content (development only)
+scripts/           demo content and seeding
 ```
 
-Then start the dev server and open:
+## Notes on the demo content
 
-```text
-http://localhost:3000/studio
-```
-
-The Sanity article schema supports title, slug, excerpt, author, main image, category, section, publish date, read time, and portable text body content.
-
-The Sanity page schema supports title, slug, status, excerpt, images, and portable text body content.
-
-For a live CMS-backed deployment, configure these environment variables on the host:
-
-```env
-CONTENT_SOURCE=sanity
-NEXT_PUBLIC_SANITY_PROJECT_ID=your_real_project_id
-NEXT_PUBLIC_SANITY_DATASET=production
-NEXT_PUBLIC_SANITY_API_VERSION=2024-12-27
-```
-
-## Useful Commands
-
-```bash
-npm run dev
-npm run seed
-npm run lint
-npm run build
-npx tsc --noEmit
-```
+The 23 starter articles exist so the site looks finished before real content is written.
+Each has its own image and its own body copy, and all bylines are fictional staff names.
+Delete them from the dashboard whenever you like — `npm run seed` puts them back.

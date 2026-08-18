@@ -1,33 +1,42 @@
 import { NextResponse } from "next/server"
-import { createPage, getPages } from "@/lib/pages"
+
+import { handleError, requireAdmin, requireWritableStore, revalidateSite } from "@/lib/api"
+import { getStore } from "@/lib/store"
 
 export async function GET() {
     try {
-        const pages = await getPages()
+        const pages = await getStore().listPages()
         return NextResponse.json(pages)
-    } catch {
-        return NextResponse.json({ error: "Failed to fetch pages" }, { status: 500 })
+    } catch (error) {
+        return handleError(error, "Failed to fetch pages")
     }
 }
 
 export async function POST(request: Request) {
+    const unauthorized = await requireAdmin()
+    if (unauthorized) return unauthorized
+
+    const readOnly = requireWritableStore()
+    if (readOnly) return readOnly
+
     try {
         const body = await request.json()
 
-        if (!body.title || !body.slug) {
-            return NextResponse.json({ error: "Title and slug are required" }, { status: 400 })
+        if (!body.title?.trim()) {
+            return NextResponse.json({ error: "A title is required." }, { status: 400 })
         }
 
-        const page = await createPage({
-            title: body.title,
-            slug: body.slug,
-            status: body.status || "draft",
+        const page = await getStore().createPage({
+            title: body.title.trim(),
+            slug: body.slug || body.title,
             excerpt: body.excerpt || "",
             content: body.content || "",
+            status: body.status === "published" ? "published" : "draft",
         })
 
+        revalidateSite()
         return NextResponse.json(page, { status: 201 })
-    } catch {
-        return NextResponse.json({ error: "Failed to create page" }, { status: 500 })
+    } catch (error) {
+        return handleError(error, "Failed to create page")
     }
 }

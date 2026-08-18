@@ -1,13 +1,18 @@
 {
   "id": "samsung-galaxy-s25-ultra",
-  "title": "Samsung Galaxy S25 Ultra",
-  "slug": "samsung-galaxy-s25-ultra",
-  "excerpt": "Titanium perfection? Testing the limits of Android performance.",
-  "content": "# Samsung Galaxy S25 Ultra\n\nTitanium perfection? Testing the limits of Android performance.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Smartphone",
+  "title": "Samsung Galaxy S25 Ultra: titanium perfection?",
   "section": "reviews",
-  "author": "Julian Chokkattu",
-  "publishedAt": "2026-05-14T21:00:00.000Z",
-  "readTime": "5 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1400&q=80"
+  "category": "Smartphone",
+  "author": "Grace Wanjiru",
+  "imageUrl": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A purple Samsung flagship phone photographed from the back",
+  "imageCredit": "Unsplash",
+  "excerpt": "The most capable Android phone you can buy, and the least comfortable one to actually hold.",
+  "content": "Samsung's Ultra line has always been about maximums, and this generation continues the tradition without much interest in restraint.\n\n## Hardware\n\nThe titanium frame drops weight without losing rigidity, though at this size no material makes one-handed use realistic. The display remains the best in the industry — bright enough to read in direct sun, with no visible shift off-axis.\n\n## Cameras\n\nFour sensors, and the periscope telephoto is the one worth having. Zoom holds together well past the point where most phones start inventing detail.\n\n- Main sensor: excellent in every condition\n- Periscope: usable range far beyond rivals\n- Ultrawide: the weakest of the set, noticeably softer at the edges\n\n## The stylus\n\nStill here, still niche, still the reason a small group of people will not switch. Latency is imperceptible and handwriting recognition handles bad penmanship gracefully.\n\n## Verdict\n\n**Buy it if** you want maximum capability and will use the zoom and the pen.\n\n**Skip it if** you value pocketability at all.",
+  "slug": "samsung-galaxy-s25-ultra",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-14T20:00:00.000Z",
+  "updatedAt": "2026-08-14T20:00:00.000Z"
 }

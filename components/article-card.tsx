@@ -1,72 +1,97 @@
-import Image from "next/image";
-import Link from "next/link";
+import Link from "next/link"
+
+import { SafeImage } from "@/components/safe-image"
+import { formatDate } from "@/lib/format"
+import type { ArticleSummary } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 interface ArticleCardProps {
-    title: string;
-    excerpt: string;
-    category?: string;
-    imageUrl?: string;
-    href?: string;
-    readTime?: string;
-    author?: string;
+    article: ArticleSummary
+    /** `feature` is the large lead treatment, `compact` drops the image for list rails. */
+    variant?: "default" | "feature" | "compact"
+    priority?: boolean
+    className?: string
 }
 
-export function ArticleCard({
-    title,
-    excerpt,
-    category,
-    imageUrl,
-    href = "#",
-    readTime,
-    author,
-}: ArticleCardProps) {
+function Placeholder({ className }: { className?: string }) {
     return (
-        <Link href={href} className="group block h-full">
-            <article className="h-full flex flex-col transition-opacity duration-200 hover:opacity-80">
-                {/* Image - Top */}
-                <div className="aspect-[4/3] w-full overflow-hidden rounded-md bg-muted mb-4">
-                    {imageUrl ? (
-                        <Image
-                            src={imageUrl}
-                            alt={title}
-                            width={400}
-                            height={300}
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-800">
-                            <span className="text-3xl opacity-20">📰</span>
-                        </div>
+        <div className={cn("flex h-full w-full items-center justify-center bg-muted", className)}>
+            <span className="font-[family-name:var(--font-playfair)] text-3xl font-bold text-muted-foreground/30">TH</span>
+        </div>
+    )
+}
+
+export function ArticleCard({ article, variant = "default", priority = false, className }: ArticleCardProps) {
+    const meta = (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground/80">{article.author}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+            <span aria-hidden="true">·</span>
+            <span>{article.readTime}</span>
+        </div>
+    )
+
+    if (variant === "compact") {
+        return (
+            <Link href={article.href} className={cn("group block", className)}>
+                <span className="kicker text-brand-red">{article.category}</span>
+                <h3 className="mt-1.5 text-base font-bold leading-snug">
+                    <span className="headline-link">{article.title}</span>
+                </h3>
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{article.excerpt}</p>
+                <div className="mt-2">{meta}</div>
+            </Link>
+        )
+    }
+
+    const isFeature = variant === "feature"
+
+    return (
+        <Link href={article.href} className={cn("group flex h-full flex-col", className)}>
+            <div
+                className={cn(
+                    "relative overflow-hidden rounded-lg bg-muted",
+                    isFeature ? "aspect-[16/9]" : "aspect-[3/2]"
+                )}
+            >
+                {article.imageUrl ? (
+                    <SafeImage
+                        src={article.imageUrl}
+                        alt={article.imageAlt || article.title}
+                        fill
+                        priority={priority}
+                        sizes={isFeature ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 768px) 100vw, 33vw"}
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                ) : (
+                    <Placeholder />
+                )}
+            </div>
+
+            <div className={cn("flex flex-1 flex-col", isFeature ? "mt-5" : "mt-4")}>
+                <span className="kicker text-brand-red">{article.category}</span>
+
+                <h3
+                    className={cn(
+                        "mt-2 font-bold leading-tight text-balance",
+                        isFeature ? "text-2xl md:text-4xl" : "text-lg md:text-xl"
                     )}
-                </div>
+                >
+                    <span className="headline-link">{article.title}</span>
+                </h3>
 
-                {/* Content - Bottom */}
-                <div className="flex flex-col flex-1">
-                    {/* Category */}
-                    {category && (
-                        <span className="text-xs font-bold uppercase tracking-wider text-brand-red mb-2">
-                            {category}
-                        </span>
+                <p
+                    className={cn(
+                        "mt-2.5 leading-relaxed text-muted-foreground",
+                        isFeature ? "line-clamp-3 text-base md:text-lg" : "line-clamp-2 text-sm"
                     )}
+                >
+                    {article.excerpt}
+                </p>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-bold leading-tight mb-2 group-hover:underline decoration-2 underline-offset-4 font-[family-name:var(--font-playfair)]">
-                        {title}
-                    </h3>
-
-                    {/* Summary */}
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-3 line-clamp-3">
-                        {excerpt}
-                    </p>
-
-                    {/* Meta */}
-                    <div className="mt-auto text-xs text-gray-500 font-medium">
-                        {author && <span>{author}</span>}
-                        {author && readTime && <span className="mx-1">·</span>}
-                        {readTime && <span>{readTime}</span>}
-                    </div>
-                </div>
-            </article>
+                <div className="mt-auto pt-3">{meta}</div>
+            </div>
         </Link>
-    );
+    )
 }

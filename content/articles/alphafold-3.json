@@ -1,13 +1,18 @@
 {
   "id": "alphafold-3",
-  "title": "AlphaFold 3 Predicts Life's Molecules",
-  "slug": "alphafold-3",
-  "excerpt": "DeepMind's latest model creates 3D models of DNA, RNA, and ligands.",
-  "content": "# AlphaFold 3 Predicts Life's Molecules\n\nDeepMind's latest model creates 3D models of DNA, RNA, and ligands.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Science",
+  "title": "Protein prediction moves from proteins to everything else",
   "section": "news",
-  "author": "Amit Katwala",
-  "publishedAt": "2026-05-15T00:00:00.000Z",
-  "readTime": "7 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1400&q=80"
+  "category": "Science",
+  "author": "James Mwangi",
+  "imageUrl": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A pipette dispensing liquid into a laboratory well plate",
+  "imageCredit": "Unsplash",
+  "excerpt": "Structure prediction now covers DNA, RNA, and the small molecules that drugs are made from. Wet labs are still required.",
+  "content": "Structure prediction changed biology once already by making protein folding a solved-enough problem for everyday research. The newer systems extend the same approach to nucleic acids and the interactions between molecules.\n\n## Why interactions are the hard part\n\nA protein on its own is a shape. A protein bound to a drug candidate is a negotiation between two shapes, and small errors in predicted binding translate into wasted months at the bench.\n\nAccuracy on these joint predictions is meaningfully better than a year ago while remaining well short of experimental certainty — which is why every research group treats output as a ranked list of hypotheses.\n\n- Screening candidates before synthesising them\n- Prioritising which experiments to run first\n- Explaining results that were already observed\n\n## What has not changed\n\nNothing here removes the wet lab. It reorders it. Groups report the same total number of experiments, run in a smarter sequence, with fewer dead ends explored at full cost.",
+  "slug": "alphafold-3",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-15T17:00:00.000Z",
+  "updatedAt": "2026-08-15T17:00:00.000Z"
 }

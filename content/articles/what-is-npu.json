@@ -1,13 +1,18 @@
 {
   "id": "what-is-npu",
-  "title": "What is a Neural Processing Unit (NPU)?",
-  "slug": "what-is-npu",
-  "excerpt": "Why your next laptop needs a dedicated AI chip and what it actually does.",
-  "content": "# What is a Neural Processing Unit (NPU)?\n\nWhy your next laptop needs a dedicated AI chip and what it actually does.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Computing",
+  "title": "What is an NPU, and does your next laptop need one?",
   "section": "how-stuff-works",
-  "author": "Will Knight",
-  "publishedAt": "2026-05-14T13:00:00.000Z",
-  "readTime": "6 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=1400&q=80"
+  "category": "Computing",
+  "author": "Samuel Otieno",
+  "imageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A close-up of a silicon chip with visible circuitry",
+  "imageCredit": "Unsplash",
+  "excerpt": "A dedicated AI chip sits beside your processor. What it is for is less obvious than the marketing suggests.",
+  "content": "A neural processing unit is a specialised accelerator built for one shape of maths: the large matrix multiplications that neural networks perform constantly. It is not faster than a GPU at that work. It is far more power-efficient.\n\n## Why efficiency is the point\n\nA GPU can run a small model quickly while consuming enough power to drain a laptop battery in an hour. An NPU runs the same model at a fraction of the wattage, which is what makes always-on features practical.\n\n- Background noise removal on calls\n- Live captioning and translation\n- Camera framing and blur\n- Local search over your own files\n\n## How to read the specifications\n\nManufacturers advertise TOPS — trillions of operations per second. Treat it the way you treat megapixels: related to capability, but not a ranking. Memory bandwidth and software support usually decide real-world performance.\n\n## Do you need one?\n\nIf you are buying a laptop today, you will get one whether you want it or not. It is worth caring about if you take a lot of calls, work offline often, or care about battery life during video work. It is not worth paying a premium for on a desktop that never leaves a desk.",
+  "slug": "what-is-npu",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-12T12:00:00.000Z",
+  "updatedAt": "2026-08-12T12:00:00.000Z"
 }

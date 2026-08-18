@@ -2,8 +2,8 @@
   "id": "about",
   "title": "About Tech Hub",
   "slug": "about",
-  "status": "draft",
-  "excerpt": "A short page for explaining your publication, mission, and editorial focus.",
-  "content": "# About Tech Hub\n\nUse this page to describe your publication, team, audience, and editorial mission.",
-  "updatedAt": "2026-05-15T14:11:20.462Z"
+  "status": "published",
+  "excerpt": "Independent technology journalism covering the industry from Nairobi and beyond.",
+  "content": "## Who we are\n\nTech Hub is an independent technology publication. We cover the products, companies, and policies shaping how technology is built and used — with particular attention to how those changes land in Kenya and across the region.\n\n## What we publish\n\n- **News** — what happened, why it matters, and what is still unknown\n- **Reviews** — hands-on testing with clear buy and skip guidance\n- **How To** — practical guides written to be followed, not skimmed\n- **How Stuff Works** — the engineering behind the headlines\n- **Tech Kenya** — the local industry, covered properly\n\n## How we work\n\nWe test what we review and say plainly when we have not. Review units are returned or disclosed. Anything published in partnership with a commercial partner is labelled as such, at the top, without ambiguity.\n\nCorrections are made openly. If we get something wrong, tell us and we will fix it and say that we did.\n\n## Get in touch\n\nStory tips, corrections, and review requests are all welcome through the contact page.",
+  "updatedAt": "2026-08-18T17:28:36.495Z"
 }

@@ -1,92 +1,113 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { useTheme } from "next-themes";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import * as React from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
+import { Menu, Moon, Search, Sun, X } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
+import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
-export function Navbar() {
-    const { setTheme, theme } = useTheme();
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-    const [mounted, setMounted] = React.useState(false);
+export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
+    const { setTheme, theme } = useTheme()
+    const pathname = usePathname()
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+    const [mounted, setMounted] = React.useState(false)
 
-    // Only render theme toggle after component mounts on client
     React.useEffect(() => {
-        setMounted(true);
-    }, []);
+        setMounted(true)
+    }, [])
+
+    // The drawer is a full-screen overlay on small screens, so the page behind it must not scroll.
+    React.useEffect(() => {
+        document.body.style.overflow = isMenuOpen ? "hidden" : ""
+        return () => {
+            document.body.style.overflow = ""
+        }
+    }, [isMenuOpen])
+
+    const [firstWord, ...restWords] = siteName.split(" ")
+    const secondWord = restWords.join(" ") || "Hub"
+
+    const logo = (size: "sm" | "md") => (
+        <span className="flex items-baseline gap-0.5">
+            <span
+                className={cn(
+                    "font-black uppercase leading-none tracking-tight",
+                    size === "md" ? "text-xl md:text-2xl" : "text-base"
+                )}
+            >
+                {firstWord}
+            </span>
+            <span
+                className={cn(
+                    "bg-foreground font-black uppercase leading-none tracking-tight text-background",
+                    size === "md" ? "px-1.5 py-1 text-xl md:text-2xl" : "px-1 py-0.5 text-base"
+                )}
+            >
+                {secondWord}
+            </span>
+        </span>
+    )
 
     return (
         <>
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container mx-auto flex h-16 items-center px-4">
+            <header className="sticky top-0 z-50 w-full border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+                <div className="site-container flex h-16 items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="-ml-2 lg:hidden"
+                        onClick={() => setIsMenuOpen(true)}
+                        aria-label="Open menu"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </Button>
 
-                    {/* Left: Hamburger + Logo */}
-                    <div className="flex items-center gap-4">
-                        {/* Hamburger Menu Trigger */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="-ml-2"
-                            onClick={() => setIsMenuOpen(true)}
-                            aria-label="Open menu"
-                        >
-                            <Menu className="h-6 w-6" />
-                        </Button>
+                    <Link href="/" aria-label={`${siteName} home`} className="shrink-0">
+                        {logo("md")}
+                    </Link>
 
-                        {/* Logo */}
-                        <Link href="/" className="flex items-baseline gap-0.5 group">
-                            <span className="text-xl md:text-2xl font-black uppercase text-black dark:text-white leading-none">TECH</span>
-                            <span className="text-xl md:text-2xl font-black uppercase bg-black text-white dark:bg-white dark:text-black px-1.5 py-1 leading-none">HUB</span>
-                        </Link>
-                    </div>
+                    <nav className="hidden flex-1 items-center justify-center gap-6 lg:flex">
+                        {ARTICLE_SECTIONS.map((section) => {
+                            const active = pathname.startsWith(`/${section}`)
 
-                    {/* Center: Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-5 flex-1 justify-center">
-                        <Link
-                            href="/news"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground tracking-wider"
-                        >
-                            News
-                        </Link>
-                        <Link
-                            href="/reviews"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground tracking-wider"
-                        >
-                            Smartphone Reviews
-                        </Link>
-                        <Link
-                            href="/how-to"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground tracking-wider"
-                        >
-                            How To
-                        </Link>
-                        <Link
-                            href="/how-stuff-works"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground tracking-wider"
-                        >
-                            How Stuff Works
-                        </Link>
-                        <Link
-                            href="/tech-kenya"
-                            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground tracking-wider"
-                        >
-                            Tech Kenya
-                        </Link>
+                            return (
+                                <Link
+                                    key={section}
+                                    href={`/${section}`}
+                                    className={cn(
+                                        "relative py-1 text-sm font-medium transition-colors",
+                                        active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    {SECTION_META[section].navLabel}
+                                    {active && (
+                                        <span className="absolute -bottom-[13px] left-0 h-0.5 w-full bg-brand-red" />
+                                    )}
+                                </Link>
+                            )
+                        })}
                     </nav>
 
-                    {/* Right: Theme Toggle - Only render after mount to prevent hydration mismatch */}
-                    <div className="flex items-center gap-2 ml-auto md:ml-0">
+                    <div className="ml-auto flex items-center gap-1 lg:ml-0">
+                        <Link href="/search" aria-label="Search articles">
+                            <Button variant="ghost" size="icon">
+                                <Search className="h-[1.15rem] w-[1.15rem]" />
+                            </Button>
+                        </Link>
+
                         {mounted ? (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                                 aria-label="Toggle theme"
                             >
-                                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                                <Sun className="h-[1.15rem] w-[1.15rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                                <Moon className="absolute h-[1.15rem] w-[1.15rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                             </Button>
                         ) : (
                             <div className="h-10 w-10" />
@@ -95,66 +116,45 @@ export function Navbar() {
                 </div>
             </header>
 
-            {/* Left Sidebar / Drawer */}
             {isMenuOpen && (
-                <div className="fixed inset-0 z-50 flex">
-                    {/* Backdrop */}
+                <div className="fixed inset-0 z-50 lg:hidden">
                     <div
-                        className="fixed inset-0 bg-black/35 dark:bg-black/50"
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         onClick={() => setIsMenuOpen(false)}
+                        aria-hidden="true"
                     />
 
-                    {/* Sidebar Content */}
-                    <div className="relative w-3/4 max-w-xs border-r bg-white dark:bg-gray-950 p-6 shadow-lg animate-in slide-in-from-left duration-300">
-                        <div className="flex items-center justify-between mb-8">
-                            <Link href="/" className="flex items-baseline gap-0.5" onClick={() => setIsMenuOpen(false)}>
-                                <span className="text-base font-black uppercase text-black dark:text-white leading-none">TECH</span>
-                                <span className="text-base font-black uppercase bg-black text-white dark:bg-white dark:text-black px-1 py-0.5 leading-none">HUB</span>
+                    <div className="absolute inset-y-0 left-0 w-[85%] max-w-xs overflow-y-auto border-r bg-background p-6 shadow-xl duration-300 animate-in slide-in-from-left">
+                        <div className="mb-8 flex items-center justify-between">
+                            <Link href="/" onClick={() => setIsMenuOpen(false)}>
+                                {logo("sm")}
                             </Link>
-                            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
                                 <X className="h-5 w-5" />
                             </Button>
                         </div>
 
                         <nav className="flex flex-col">
+                            {ARTICLE_SECTIONS.map((section) => (
+                                <Link
+                                    key={section}
+                                    href={`/${section}`}
+                                    className="border-b py-3 font-[family-name:var(--font-playfair)] text-lg font-semibold transition-colors hover:text-brand-red"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    {SECTION_META[section].navLabel}
+                                </Link>
+                            ))}
                             <Link
-                                href="/news"
-                                className="text-lg font-medium transition-colors hover:text-brand-red border-b py-3 font-[family-name:var(--font-playfair)]"
+                                href="/search"
+                                className="border-b py-3 font-[family-name:var(--font-playfair)] text-lg font-semibold transition-colors hover:text-brand-red"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                News
-                            </Link>
-                            <Link
-                                href="/reviews"
-                                className="text-lg font-medium transition-colors hover:text-brand-red border-b py-3 font-[family-name:var(--font-playfair)]"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Smartphone Reviews
-                            </Link>
-                            <Link
-                                href="/how-to"
-                                className="text-lg font-medium transition-colors hover:text-brand-red border-b py-3 font-[family-name:var(--font-playfair)]"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                How To
-                            </Link>
-                            <Link
-                                href="/how-stuff-works"
-                                className="text-lg font-medium transition-colors hover:text-brand-red border-b py-3 font-[family-name:var(--font-playfair)]"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                How Stuff Works
-                            </Link>
-                            <Link
-                                href="/tech-kenya"
-                                className="text-lg font-medium transition-colors hover:text-brand-red border-b py-3 font-[family-name:var(--font-playfair)]"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Tech Kenya
+                                Search
                             </Link>
                             <Link
                                 href="/contact"
-                                className="text-lg font-medium transition-colors hover:text-brand-red border-b py-3 font-[family-name:var(--font-playfair)]"
+                                className="border-b py-3 font-[family-name:var(--font-playfair)] text-lg font-semibold transition-colors hover:text-brand-red"
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 Contact
@@ -164,5 +164,5 @@ export function Navbar() {
                 </div>
             )}
         </>
-    );
+    )
 }

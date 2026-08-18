@@ -41,9 +41,17 @@ export default defineType({
             rows: 3,
         }),
         defineField({
+            name: 'content',
+            title: 'Page body (Markdown)',
+            type: 'text',
+            rows: 24,
+            description: 'The format the Tech Hub dashboard writes and reads.',
+        }),
+        defineField({
             name: 'body',
-            title: 'Body',
+            title: 'Rich text body (optional)',
             type: 'array',
+            description: 'Only used when the Markdown body above is empty.',
             of: [
                 { type: 'block' },
                 {

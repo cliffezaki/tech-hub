@@ -1,13 +1,18 @@
 {
   "id": "oneplus-open-2",
-  "title": "OnePlus Open 2: Perfection Folded",
-  "slug": "oneplus-open-2",
-  "excerpt": "The best foldable phone gets even better with refined software and lighter hardware.",
-  "content": "# OnePlus Open 2: Perfection Folded\n\nThe best foldable phone gets even better with refined software and lighter hardware.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Foldable",
+  "title": "OnePlus Open 2: perfection, folded",
   "section": "reviews",
-  "author": "Boone Ashworth",
-  "publishedAt": "2026-05-14T18:00:00.000Z",
-  "readTime": "7 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1400&q=80"
+  "category": "Foldable",
+  "author": "Marcus Adeyemi",
+  "imageUrl": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A phone home screen filled with app icons",
+  "imageCredit": "Unsplash",
+  "excerpt": "Lighter hardware and better software make the strongest case yet that a foldable can be an only phone.",
+  "content": "Foldables have spent several generations being interesting rather than sensible. This one is close to sensible.\n\n## Hardware\n\nWeight is down enough to matter and the closed profile is nearly indistinguishable from a conventional phone in a pocket. The crease is visible at an angle and invisible in use.\n\n## Software\n\nThe multitasking implementation is the best available. Dragging an app into a split view works the first time, and the phone remembers pairings, which turns a party trick into a habit.\n\n- Open-close transitions with no relaunch stutter\n- App pairs that persist across sessions\n- Sensible defaults for apps that do not support resizing\n\n## Durability\n\nThe hinge feels overbuilt in the best sense. Dust ingress remains the open question for every foldable, and no manufacturer has fully answered it.\n\n## Verdict\n\n**Buy it if** you genuinely multitask on a phone and want one device.\n\n**Skip it if** you need the best camera at this price — conventional flagships still win there.",
+  "slug": "oneplus-open-2",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-13T23:00:00.000Z",
+  "updatedAt": "2026-08-13T23:00:00.000Z"
 }

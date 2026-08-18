@@ -1,151 +1,124 @@
-import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Star } from "lucide-react"
-import { PortableText } from "next-sanity"
-import type { TypedObject } from "sanity"
+import { ArrowLeft } from "lucide-react"
 
-import { getArticleDetail } from "@/lib/content"
+import { ArticleCard } from "@/components/article-card"
+import { Markdown } from "@/components/markdown"
+import { SafeImage } from "@/components/safe-image"
+import { getArticleDetail, getRelatedArticles } from "@/lib/content"
+import { formatDate } from "@/lib/format"
+import { getSiteUrl } from "@/lib/site"
+import { SECTION_META } from "@/lib/types"
 import type { ArticleSection } from "@/lib/types"
 
 interface ArticleDetailPageProps {
     section: ArticleSection
     slug: string
-    backHref: string
-    backLabel: string
-    moreLabel: string
-    showRating?: boolean
 }
 
-function TextContent({ content }: { content: string }) {
-    const blocks = content
-        .split(/\n{2,}/)
-        .map((block) => block.trim())
-        .filter(Boolean)
-
-    return (
-        <>
-            {blocks.map((block, index) => {
-                if (block.startsWith("### ")) {
-                    return <h3 key={index}>{block.replace(/^### /, "")}</h3>
-                }
-
-                if (block.startsWith("## ")) {
-                    return <h2 key={index}>{block.replace(/^## /, "")}</h2>
-                }
-
-                if (block.startsWith("# ")) {
-                    return <h2 key={index}>{block.replace(/^# /, "")}</h2>
-                }
-
-                const listItems = block
-                    .split("\n")
-                    .map((line) => line.trim())
-                    .filter((line) => line.startsWith("- "))
-
-                if (listItems.length > 0) {
-                    return (
-                        <ul key={index}>
-                            {listItems.map((line) => (
-                                <li key={line}>{line.replace(/^- /, "")}</li>
-                            ))}
-                        </ul>
-                    )
-                }
-
-                return <p key={index}>{block}</p>
-            })}
-        </>
-    )
-}
-
-export async function ArticleDetailPage({
-    section,
-    slug,
-    backHref,
-    backLabel,
-    moreLabel,
-    showRating = false,
-}: ArticleDetailPageProps) {
+export async function ArticleDetailPage({ section, slug }: ArticleDetailPageProps) {
     const article = await getArticleDetail(section, slug)
 
     if (!article) {
-        return notFound()
+        notFound()
+    }
+
+    const related = await getRelatedArticles(article)
+    const meta = SECTION_META[section]
+
+    // Helps Google show the headline, author, and image in search results.
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.title,
+        description: article.excerpt,
+        image: article.imageUrl ? [article.imageUrl] : undefined,
+        datePublished: article.publishedAt,
+        author: [{ "@type": "Person", name: article.author }],
+        mainEntityOfPage: `${getSiteUrl()}${article.href}`,
     }
 
     return (
-        <div className="container mx-auto max-w-4xl px-4 py-12">
-            <Link
-                href={backHref}
-                className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-            >
-                <ArrowLeft className="h-4 w-4" />
-                {backLabel}
-            </Link>
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+            />
 
-            <article className="space-y-8">
-                <header className="space-y-4 border-b pb-8">
-                    <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-widest">
-                        <span className="text-brand-red">{article.category}</span>
-                        <span className="text-gray-400">/</span>
-                        <span className="text-gray-500">{article.readTime}</span>
-                    </div>
+            <article className="site-container py-8 md:py-12">
+                <Link
+                    href={`/${section}`}
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to {meta.label}
+                </Link>
 
-                    <h1 className="font-[family-name:var(--font-playfair)] text-4xl font-black leading-tight md:text-5xl">
-                        {article.title}
-                    </h1>
+                <header className="mx-auto mt-6 max-w-3xl">
+                    <span className="kicker text-brand-red">{article.category}</span>
 
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                        <span>By {article.author}</span>
-                        <span>/</span>
-                        <time>{new Date(article.publishedAt).toLocaleDateString()}</time>
-                    </div>
+                    <h1 className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">{article.title}</h1>
 
-                    {showRating && (
-                        <div className="flex items-center gap-2">
-                            <div className="flex">
-                                {[1, 2, 3, 4].map((star) => (
-                                    <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                                ))}
-                                <Star className="h-5 w-5 text-gray-300" />
-                            </div>
-                            <span className="text-sm font-semibold">4.0 / 5.0</span>
-                        </div>
+                    {article.excerpt && (
+                        <p className="mt-4 text-lg leading-relaxed text-muted-foreground md:text-xl">{article.excerpt}</p>
                     )}
+
+                    <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-4 text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">{article.author}</span>
+                        <span aria-hidden="true">·</span>
+                        <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+                        <span aria-hidden="true">·</span>
+                        <span>{article.readTime}</span>
+                    </div>
                 </header>
 
                 {article.imageUrl && (
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                        <Image
-                            src={article.imageUrl}
-                            alt={article.title}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                        />
-                    </div>
+                    <figure className="mx-auto mt-8 max-w-4xl">
+                        <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-muted">
+                            <SafeImage
+                                src={article.imageUrl}
+                                alt={article.imageAlt || article.title}
+                                fill
+                                priority
+                                sizes="(max-width: 1024px) 100vw, 900px"
+                                className="object-cover"
+                            />
+                        </div>
+                        {article.imageCredit && (
+                            <figcaption className="mt-2 text-xs text-muted-foreground">
+                                Photograph: {article.imageCredit}
+                            </figcaption>
+                        )}
+                    </figure>
                 )}
 
-                <div className="prose prose-lg max-w-none dark:prose-invert [&>p]:font-[family-name:var(--font-inter)]">
-                    {article.body ? (
-                        <PortableText value={article.body as TypedObject[]} />
-                    ) : article.content ? (
-                        <TextContent content={article.content} />
-                    ) : (
-                        <p className="italic text-muted-foreground">No content available.</p>
-                    )}
+                <div className="mx-auto mt-10 max-w-3xl">
+                    <Markdown content={article.content} />
                 </div>
 
-                <footer className="border-t pt-8">
+                <div className="mx-auto mt-12 max-w-3xl border-t pt-6">
                     <Link
-                        href={backHref}
-                        className="inline-flex items-center gap-2 text-sm font-medium hover:text-brand-red"
+                        href={`/${section}`}
+                        className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-brand-red"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        {moreLabel}
+                        More {meta.label} stories
                     </Link>
-                </footer>
+                </div>
             </article>
-        </div>
+
+            {related.length > 0 && (
+                <aside className="border-t bg-muted/20">
+                    <div className="site-container py-12">
+                        <h2 className="mb-6 border-b pb-4 text-2xl font-bold">Related reading</h2>
+                        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                            {related.map((item) => (
+                                <ArticleCard key={item.id} article={item} />
+                            ))}
+                        </div>
+                    </div>
+                </aside>
+            )}
+        </>
     )
 }

@@ -1,13 +1,18 @@
 {
   "id": "next-generation-generative-models",
-  "title": "The Next Generation of Generative Models is Here",
-  "slug": "next-generation-generative-models",
-  "excerpt": "Breakthroughs in reasoning capabilities are setting new benchmarks for AI performance, changing how we interact with machines forever.",
-  "content": "# The Next Generation of Generative Models is Here\n\nBreakthroughs in reasoning capabilities are setting new benchmarks for AI performance, changing how we interact with machines forever.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Artificial Intelligence",
+  "title": "The next generation of generative models is here",
   "section": "news",
-  "author": "Will Knight",
-  "publishedAt": "2026-05-15T09:00:00.000Z",
-  "readTime": "5 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80"
+  "category": "Artificial Intelligence",
+  "author": "Amara Njoroge",
+  "featured": true,
+  "imageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "The letters A and I rendered in blue on a textured surface",
+  "imageCredit": "Unsplash",
+  "excerpt": "A new class of reasoning models is clearing benchmarks that stood for years — and changing what people expect software to do for them.",
+  "content": "The latest wave of frontier models is not simply larger than what came before. The interesting change is architectural: they spend more compute at the moment a question is asked rather than only during training, and that shift is showing up plainly in the results.\n\n## What actually changed\n\nFor most of the last decade, progress came from scale. Bigger datasets, bigger clusters, bigger parameter counts. That approach has not stopped working, but it has stopped being the only lever. Models now plan, check their own intermediate steps, and revise an answer before returning it.\n\n- Multi-step maths and code problems have seen the sharpest gains\n- Long documents are summarised with far fewer invented details\n- Tool use — searching, running code, calling an API — is now reliable enough to build on\n\n## Why it matters outside the lab\n\nBenchmarks are a poor proxy for daily usefulness, and the industry knows it. The more meaningful signal is that teams are quietly replacing brittle rule-based automation with model-driven workflows, and the failure rate is low enough that nobody is being paged at 3am about it.\n\n> The gap between a demo that impresses and a system you can depend on is where most of this year's engineering effort has gone.\n\nThere are real limits. Costs rise with the amount of thinking a model does, latency is noticeable, and evaluation remains unsolved — teams still cannot reliably predict which prompts will fail. But the direction is set, and the next twelve months will be about making these systems cheap and boring rather than impressive.",
+  "slug": "next-generation-generative-models",
+  "status": "published",
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-18T08:00:00.000Z",
+  "updatedAt": "2026-08-18T08:00:00.000Z"
 }

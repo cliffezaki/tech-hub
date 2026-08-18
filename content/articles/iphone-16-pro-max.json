@@ -1,13 +1,18 @@
 {
   "id": "iphone-16-pro-max",
-  "title": "iPhone 16 Pro Max: The Battery King",
-  "slug": "iphone-16-pro-max",
-  "excerpt": "With a larger display and the longest battery life ever in an iPhone, this is the one to beat.",
-  "content": "# iPhone 16 Pro Max: The Battery King\n\nWith a larger display and the longest battery life ever in an iPhone, this is the one to beat.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Flagship",
+  "title": "iPhone 16 Pro Max: the battery king",
   "section": "reviews",
-  "author": "Julian Chokkattu",
-  "publishedAt": "2026-05-14T19:00:00.000Z",
-  "readTime": "9 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1400&q=80"
+  "category": "Flagship",
+  "author": "Priya Shah",
+  "imageUrl": "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "An iPhone and wireless earbuds on a wooden table",
+  "imageCredit": "Unsplash",
+  "excerpt": "The longest-lasting iPhone yet, in a body that asks a lot of your hands and your pockets.",
+  "content": "The Pro Max exists for people who want the battery and the biggest screen, and it delivers both without qualification this year.\n\n## Battery\n\nComfortably two days of ordinary use. Heavy days — navigation, hotspot, video — end with meaningful charge remaining, which changes travel behaviour more than any feature on the spec sheet.\n\n## Display\n\nMarginally brighter than the smaller Pro and identical in every other respect. The extra area is most noticeable when editing or reading rather than watching.\n\n## Cameras\n\nIdentical to the Pro apart from the longer telephoto, which is a genuine advantage for anyone who shoots at distance regularly.\n\n## Living with it\n\nIt is heavy. One-handed use requires either large hands or a tolerance for reachability gestures. Everyone who buys this phone knows that and buys it anyway.\n\n## Verdict\n\n**Buy it if** battery life is the thing you complain about most.\n\n**Skip it if** you have ever described a phone as too big.",
+  "slug": "iphone-16-pro-max",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-14T06:00:00.000Z",
+  "updatedAt": "2026-08-14T06:00:00.000Z"
 }

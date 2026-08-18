@@ -1,13 +1,18 @@
 {
   "id": "llama-3-mac",
-  "title": "How to Run Llama 3 Locally on Your Mac",
-  "slug": "llama-3-mac",
-  "excerpt": "Stop paying for API credits. Here is how to get a local LLM running in minutes.",
-  "content": "# How to Run Llama 3 Locally on Your Mac\n\nStop paying for API credits. Here is how to get a local LLM running in minutes.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Software",
+  "title": "How to run a local language model on your Mac",
   "section": "how-to",
-  "author": "Reece Rogers",
-  "publishedAt": "2026-05-14T16:00:00.000Z",
-  "readTime": "15 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=80"
+  "category": "Software",
+  "author": "Daniel Kimani",
+  "imageUrl": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Python source code on a monitor",
+  "imageCredit": "Unsplash",
+  "excerpt": "Stop paying per token for routine work. A capable model runs on Apple Silicon in about fifteen minutes of setup.",
+  "content": "Running a model locally is no longer an expert activity. On an Apple Silicon Mac with 16GB of memory or more, a capable open-weight model runs fast enough for everyday drafting, summarising, and code assistance.\n\n## What you need\n\n- An Apple Silicon Mac (M1 or newer)\n- 16GB unified memory for a comfortable experience\n- Roughly 10GB of free disk space per model\n\n## Step 1: install a runner\n\nThe simplest option installs a background service and a command line tool. Download the installer, run it, and confirm it works by asking for a version number in Terminal.\n\n## Step 2: pull a model\n\nModel files are large, so the first download takes a while. Start with a mid-sized instruction-tuned model rather than the largest one available — the quality difference on everyday tasks is smaller than the speed difference.\n\n## Step 3: choose a quantisation\n\nQuantisation trades precision for memory. A 4-bit version of a larger model usually beats a full-precision version of a smaller one at the same memory budget.\n\n## Step 4: connect it to something useful\n\nMost local runners expose an OpenAI-compatible endpoint on localhost, which means editors and note apps that support a custom base URL work without modification.\n\n## When local is the wrong answer\n\nLong documents, heavy reasoning, and anything where quality matters more than privacy or cost are still better served by a hosted frontier model. Local models are for the routine ninety percent.",
+  "slug": "llama-3-mac",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-13T09:00:00.000Z",
+  "updatedAt": "2026-08-13T09:00:00.000Z"
 }

@@ -1,13 +1,18 @@
 {
   "id": "agi-achieved",
-  "title": "AGI Achieved Internally?",
-  "slug": "agi-achieved",
-  "excerpt": "Rumors swirl as a tech giant claims a breakthrough in reasoning models.",
-  "content": "# AGI Achieved Internally?\n\nRumors swirl as a tech giant claims a breakthrough in reasoning models.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "AI",
+  "title": "AGI achieved internally? Reading between the lines",
   "section": "news",
-  "author": "Staff Writer",
-  "publishedAt": "2026-05-15T06:00:00.000Z",
-  "readTime": "3 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=80"
+  "category": "Artificial Intelligence",
+  "author": "Tom Whitfield",
+  "imageUrl": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A small humanoid robot sitting on a red bench",
+  "imageCredit": "Unsplash",
+  "excerpt": "Another round of rumours claims a lab has crossed the line. The claims deserve scrutiny, not headlines.",
+  "content": "Every few months a screenshot circulates claiming that some lab has quietly built artificial general intelligence. The pattern is familiar enough to be predictable: an ambiguous post from a researcher, a wave of speculation, and a carefully worded non-denial.\n\n## The problem with the claim\n\nThere is still no agreed definition of what would count. Ask ten researchers and you will get answers ranging from \"passes any exam a human can\" to \"can run a company unsupervised for a year\". Without a shared bar, the announcement is unfalsifiable by construction.\n\n## What the evidence supports\n\nCurrent systems are genuinely strong at bounded, well-specified tasks and genuinely weak at open-ended ones that require holding a goal across weeks. They do not accumulate experience between sessions unless someone builds that memory around them.\n\n- Impressive: exam-style reasoning, code generation, translation, summarisation\n- Unreliable: long-horizon planning, knowing what they do not know\n- Absent: durable memory, genuine goal formation\n\nThe honest summary is that capabilities are advancing quickly and unevenly. That is a more interesting story than a threshold being crossed in secret, and it is the one worth following.",
+  "slug": "agi-achieved",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-18T01:00:00.000Z",
+  "updatedAt": "2026-08-18T01:00:00.000Z"
 }

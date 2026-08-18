@@ -1,13 +1,18 @@
 {
   "id": "google-pixel-9-pro",
-  "title": "Google Pixel 9 Pro",
-  "slug": "google-pixel-9-pro",
-  "excerpt": "AI in your pocket. The smartest smartphone gets a major design overhaul.",
-  "content": "# Google Pixel 9 Pro\n\nAI in your pocket. The smartest smartphone gets a major design overhaul.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Smartphone",
+  "title": "Google Pixel 9 Pro review: AI in your pocket",
   "section": "reviews",
-  "author": "Julian Chokkattu",
-  "publishedAt": "2026-05-14T22:00:00.000Z",
-  "readTime": "8 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=80"
+  "category": "Smartphone",
+  "author": "Daniel Kimani",
+  "imageUrl": "https://images.unsplash.com/photo-1533228100845-08145b01de14?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A Google Pixel phone showing the Google search page",
+  "imageCredit": "Unsplash",
+  "excerpt": "The smartest phone on the market gets a design that finally matches its software. The camera remains the reason to buy it.",
+  "content": "Google's hardware has caught up with its software. The Pixel 9 Pro is the first in the line that feels designed rather than assembled, and it no longer asks buyers to forgive anything.\n\n## Software is still the differentiator\n\nOn-device processing handles call screening, live translation, and photo cleanup without a round trip to a server. The practical effect is that these features work on a bad connection, which is when you actually need them.\n\n- Call screening that reads intent well enough to be trusted\n- Photo cleanup that removes objects without the smeared background giveaway\n- Translation that keeps up with normal speaking pace\n\n## Camera\n\nStill the best point-and-shoot phone available. The processing leans toward contrast and shadow detail, which flatters most scenes and occasionally overdoes a sunset.\n\n## What holds it back\n\nBattery life is good rather than exceptional, and charging remains slower than competitors at this price. Seven years of promised updates makes the calculation easier to accept.\n\n## Verdict\n\n**Buy it if** photography and software features matter more than raw speed.\n\n**Skip it if** you need the fastest charging in the class.",
+  "slug": "google-pixel-9-pro",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-15T03:00:00.000Z",
+  "updatedAt": "2026-08-15T03:00:00.000Z"
 }

@@ -1,13 +1,18 @@
 {
   "id": "nvidia-chip",
-  "title": "NVIDIA's New Chip Crushes Benchmarks",
-  "slug": "nvidia-chip",
-  "excerpt": "The H200 is faster, more efficient, and already sold out.",
-  "content": "# NVIDIA's New Chip Crushes Benchmarks\n\nThe H200 is faster, more efficient, and already sold out.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Hardware",
+  "title": "The new accelerator crushing benchmarks — and already sold out",
   "section": "news",
-  "author": "Julian Chokkattu",
-  "publishedAt": "2026-05-15T01:00:00.000Z",
-  "readTime": "3 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=1400&q=80"
+  "category": "Hardware",
+  "author": "Samuel Otieno",
+  "imageUrl": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A desktop processor seated in a motherboard socket",
+  "imageCredit": "Unsplash",
+  "excerpt": "Faster, more power-efficient, and unavailable. Supply, not silicon, is what decides who gets to train large models this year.",
+  "content": "The newest datacentre accelerator posts the numbers everyone expected: a substantial jump in throughput and a better performance-per-watt figure than the part it replaces. It is also allocated through next year.\n\n## Where the gains come from\n\nMost of the improvement is memory, not maths. Bandwidth and capacity have grown faster than raw compute, which matters because large models spend much of their time waiting for weights rather than multiplying them.\n\n- Higher memory bandwidth feeding the same execution units\n- Lower precision formats used more aggressively\n- Interconnect improvements that make multi-chip training less painful\n\n## The constraint is packaging\n\nAdvanced packaging capacity, not wafer starts, is the bottleneck. That capacity is booked years ahead and cannot be conjured quickly, which is why allocation rather than price is what buyers negotiate over.\n\nFor everyone outside the largest labs, the practical implication is that renting compute in short bursts is likely to remain more sensible than owning it.",
+  "slug": "nvidia-chip",
+  "status": "published",
+  "featured": false,
+  "readTime": "1 min read",
+  "publishedAt": "2026-08-16T00:00:00.000Z",
+  "updatedAt": "2026-08-16T00:00:00.000Z"
 }

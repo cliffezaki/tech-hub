@@ -1,13 +1,18 @@
 {
   "id": "scrub-data-ai",
-  "title": "How to Scrub Your Data From AI Training Sets",
-  "slug": "scrub-data-ai",
-  "excerpt": "Opt-out tools are hidden and confusing. We guide you through the process.",
-  "content": "# How to Scrub Your Data From AI Training Sets\n\nOpt-out tools are hidden and confusing. We guide you through the process.\n\n## What matters\n\n- This is editable starter content.\n- Replace this section with your own reporting, review notes, or guide steps.\n- Keep the category and section fields updated so the story appears in the right part of the site.\n\n## Editor notes\n\nThis demo article was seeded into the local CMS so the website feels complete while you prepare real content. You can edit or delete it from the dashboard.",
-  "category": "Privacy",
+  "title": "How to remove your data from AI training sets",
   "section": "how-to",
-  "author": "David Nield",
-  "publishedAt": "2026-05-14T15:00:00.000Z",
-  "readTime": "8 min read",
-  "imageUrl": "https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=1400&q=80"
+  "category": "Privacy",
+  "author": "Elena Rossi",
+  "imageUrl": "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A padlock resting on a laptop keyboard lit in red and green",
+  "imageCredit": "Unsplash",
+  "excerpt": "Opt-out tools exist, but they are scattered and deliberately hard to find. Here is where they live.",
+  "content": "Most large training corpora were assembled from public web data before opt-out mechanisms existed. You cannot undo that. What you can do is limit what gets collected next time and remove what is still being served.\n\n## Start with what you control\n\nIf you run a site, the crawler directives in your robots file are honoured by the major AI crawlers. Each operates under a distinct user agent, so a blanket rule is not enough — list them individually.\n\n## Platform settings worth checking\n\n- Social accounts: look for \"data for AI improvement\" in privacy settings, usually off the main page\n- Cloud storage and email providers: separate toggles for content analysis\n- Developer platforms: repository-level settings that govern code training\n\n## Formal requests\n\nIn jurisdictions with data protection law, you can make a deletion request naming yourself as the data subject. Responses vary in usefulness. A request is more likely to succeed against a searchable index than against weights already trained.\n\n## Set expectations\n\nRemoving a page from an index is achievable. Removing information from a trained model is not currently possible at the individual level, whatever a form implies. Treat this as reducing future exposure rather than erasing past exposure.",
+  "slug": "scrub-data-ai",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-13T02:00:00.000Z",
+  "updatedAt": "2026-08-13T02:00:00.000Z"
 }

@@ -1,52 +1,55 @@
-import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import type { Metadata } from "next"
+import { Playfair_Display, Inter } from "next/font/google"
 
-// Import Playfair Display for headlines
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { getSiteSettings } from "@/lib/content"
+import { getSiteUrl } from "@/lib/site"
+
 const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
+    subsets: ["latin"],
+    variable: "--font-playfair",
+    display: "swap",
+})
 
-// Import Inter for body text and UI
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+    subsets: ["latin"],
+    variable: "--font-inter",
+    display: "swap",
+})
 
-export const metadata: Metadata = {
-  title: "Tech Hub | Technology News, Reviews, and Guides",
-  description: "Technology news, smartphone reviews, explainers, and practical guides from Tech Hub.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const settings = await getSiteSettings()
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" suppressHydrationWarning className={`${playfair.variable} ${inter.variable}`}>
-      <body
-        className={`${inter.className} antialiased`}
-        suppressHydrationWarning
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          disableTransitionOnChange
-        >
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+    return {
+        metadataBase: new URL(getSiteUrl()),
+        title: {
+            default: `${settings.siteName} | ${settings.tagline}`,
+            template: `%s | ${settings.siteName}`,
+        },
+        description: settings.tagline,
+        openGraph: {
+            siteName: settings.siteName,
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+        },
+    }
+}
+
+/**
+ * Shared document shell only. The public site adds its header and footer in
+ * `app/(site)/layout.tsx`; the dashboard supplies its own chrome instead.
+ */
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+    return (
+        <html lang="en" suppressHydrationWarning className={`${playfair.variable} ${inter.variable}`}>
+            <body suppressHydrationWarning>
+                <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+                    {children}
+                </ThemeProvider>
+            </body>
+        </html>
+    )
 }
