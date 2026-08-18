@@ -4,6 +4,7 @@
   "section": "how-stuff-works",
   "category": "Physics",
   "author": "James Mwangi",
+  "featured": true,
   "imageUrl": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1600&q=80",
   "imageAlt": "An engineer working at an industrial machine in a laboratory",
   "imageCredit": "Unsplash",
@@ -11,7 +12,6 @@
   "content": "Fusion releases energy by forcing light atomic nuclei together, the same process that powers the sun. The difficulty is not the reaction. It is containing something hotter than a star's core long enough to get more energy out than went in.\n\n## The confinement problem\n\nTwo approaches dominate. Magnetic confinement holds a plasma in a magnetic bottle for seconds at a time. Inertial confinement compresses a fuel pellet with lasers in an instant. Both work in the sense that fusion occurs. Neither has produced sustained net electricity.\n\n## What \"net energy\" actually means\n\nAnnouncements about breaking even usually measure energy delivered to the fuel, not energy drawn from the wall. The gap between those two numbers is enormous — lasers and magnets are inefficient — and closing it is the real engineering challenge.\n\n- Scientific gain: energy out versus energy into the fuel\n- Engineering gain: energy out versus energy into the whole facility\n- Commercial viability: engineering gain, sustained, at a price that competes\n\n## Why it is moving now\n\nBetter superconducting magnets allow stronger fields in smaller machines, and simulation has improved enough that designs can be tested before being built. Private capital has followed.\n\nNobody serious is promising grid power this decade. The credible claim is a demonstration plant in the 2030s.",
   "slug": "fusion-energy",
   "status": "published",
-  "featured": false,
   "readTime": "2 min read",
   "publishedAt": "2026-08-12T19:00:00.000Z",
   "updatedAt": "2026-08-12T19:00:00.000Z"

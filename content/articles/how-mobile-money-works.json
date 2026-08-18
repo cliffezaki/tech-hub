@@ -1,0 +1,18 @@
+{
+  "id": "how-mobile-money-works",
+  "title": "How mobile money actually works",
+  "section": "how-stuff-works",
+  "category": "Finance",
+  "author": "Grace Wanjiru",
+  "imageUrl": "https://images.unsplash.com/photo-1601597111158-2fceff292cdc?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A hand entering a PIN on a cash machine keypad",
+  "imageCredit": "Unsplash",
+  "excerpt": "There is no money on your phone. Understanding what is really moving explains why the system is so hard to copy.",
+  "content": "When you send money from a phone, nothing travels except a message. The value sits in a pooled bank account, and what changes is a number in a ledger recording how much of that pool is yours.\n\n## The three moving parts\n\n- **The float** — real money held in trust at a commercial bank, matching the total of every user balance\n- **The ledger** — the operator's record of who owns what share of that float\n- **The agent network** — the shops that convert physical cash into ledger entries and back\n\nThe technology is the least difficult part. The agent network is the reason the system works.\n\n## Why agents are the hard problem\n\nAn agent must hold both cash and electronic balance at all times. Too much of either and they cannot serve the next customer. Rebalancing thousands of small businesses every day, profitably, is the operational feat competitors underestimate.\n\n## What keeps the value safe\n\nRegulators require the float to be fully backed and held separately from the operator's own money, so a company failure does not take customer balances with it. That trust requirement — not the app — is what made the system credible enough for people to use for their wages.\n\n## Why interoperability took so long\n\nSending between networks means two ledgers agreeing, then settling in real money between banks. The plumbing is unglamorous, arrived years after the product, and is what turned competing services into something closer to a shared payment system.",
+  "slug": "how-mobile-money-works",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-10T18:00:00.000Z",
+  "updatedAt": "2026-08-10T18:00:00.000Z"
+}

@@ -67,16 +67,17 @@ export async function getArticleDetail(section: ArticleSection, slug: string): P
 }
 
 /**
- * Homepage composition: the pinned lead story if the dashboard set one, otherwise the
- * newest featured article, otherwise simply the newest article.
+ * Homepage composition. The page leads on news and editor-featured stories rather than
+ * showing every section, so the rest of the site is reached through the navigation and
+ * the section links at the foot of the page.
  */
 export interface HomepageContent {
     settings: SiteSettings
     lead: ArticleSummary | null
     secondary: ArticleSummary[]
     featured: ArticleSummary[]
-    latest: ArticleSummary[]
-    bySection: { section: ArticleSection; title: string; href: string; articles: ArticleSummary[] }[]
+    latestNews: ArticleSummary[]
+    sections: { section: ArticleSection; label: string; subtitle: string; href: string; count: number }[]
     totalArticles: number
 }
 
@@ -85,35 +86,55 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     const [articles, settings] = await Promise.all([getPublishedArticles(), store.getSettings()])
     const summaries = articles.map(toSummary)
 
-    const featured = summaries.filter((article) => article.featured)
+    const featuredAll = summaries.filter((article) => article.featured)
     const pinned = settings.heroArticleId
         ? summaries.find((article) => article.id === settings.heroArticleId)
         : undefined
 
-    const lead = pinned || featured[0] || summaries[0] || null
-    const rest = summaries.filter((article) => article.id !== lead?.id)
-    const secondary = [...featured.filter((article) => article.id !== lead?.id), ...rest]
-        .filter((article, index, all) => all.findIndex((item) => item.id === article.id) === index)
+    // Pinned choice wins, then the newest featured story, then simply the newest article.
+    const lead = pinned || featuredAll[0] || summaries[0] || null
+
+    const used = new Set<string>(lead ? [lead.id] : [])
+
+    // The two slots beside the lead prefer other featured stories, then the newest news.
+    // Deduplicate with a local set: marking `used` here would consume every candidate
+    // before the slice, leaving the featured and news blocks below empty.
+    const seen = new Set(used)
+    const secondary = [...featuredAll, ...summaries.filter((article) => article.section === "news"), ...summaries]
+        .filter((article) => {
+            if (seen.has(article.id)) return false
+            seen.add(article.id)
+            return true
+        })
         .slice(0, 2)
 
-    const usedIds = new Set([lead?.id, ...secondary.map((article) => article.id)].filter(Boolean))
+    secondary.forEach((article) => used.add(article.id))
 
-    const bySection = (Object.keys(SECTION_META) as ArticleSection[])
+    const featured = featuredAll.filter((article) => !used.has(article.id)).slice(0, 3)
+    featured.forEach((article) => used.add(article.id))
+
+    const latestNews = summaries
+        .filter((article) => article.section === "news" && !used.has(article.id))
+        .slice(0, 6)
+
+    const sections = (Object.keys(SECTION_META) as ArticleSection[])
+        .filter((section) => section !== "news")
         .map((section) => ({
             section,
-            title: SECTION_META[section].title,
+            label: SECTION_META[section].label,
+            subtitle: SECTION_META[section].subtitle,
             href: `/${section}`,
-            articles: summaries.filter((article) => article.section === section).slice(0, 4),
+            count: summaries.filter((article) => article.section === section).length,
         }))
-        .filter((group) => group.articles.length > 0)
+        .filter((group) => group.count > 0)
 
     return {
         settings,
         lead,
         secondary,
         featured,
-        latest: rest.filter((article) => !usedIds.has(article.id)).slice(0, 6),
-        bySection,
+        latestNews,
+        sections,
         totalArticles: summaries.length,
     }
 }

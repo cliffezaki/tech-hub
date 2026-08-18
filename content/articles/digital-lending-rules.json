@@ -1,0 +1,18 @@
+{
+  "id": "digital-lending-rules",
+  "title": "Digital lending rules tighten, and the market adjusts",
+  "section": "tech-kenya",
+  "category": "Policy",
+  "author": "Elena Rossi",
+  "imageUrl": "https://images.unsplash.com/photo-1580048915913-4f8f5cb481c4?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A hand holding a fan of banknotes",
+  "imageCredit": "Unsplash",
+  "excerpt": "Licensing brought order to app-based lending. The lenders that survived look quite different from the ones that arrived.",
+  "content": "App-based lending grew faster than the rules covering it. Licensing requirements, caps on charges, and limits on how borrowers may be pursued have since reshaped the sector.\n\n## What the rules changed\n\nThree requirements did most of the work:\n\n- **Licensing** — lenders must register and disclose ownership\n- **Pricing transparency** — the total cost of credit must be stated up front, not as a daily rate that obscures the annual figure\n- **Debt collection limits** — contacting a borrower's phone contacts, once routine, is prohibited\n\nThe third mattered most to borrowers. Shame-based collection was the practice that caused real harm, and removing it forced lenders to underwrite properly rather than rely on social pressure to recover.\n\n## Who survived\n\nLenders that priced for risk and could demonstrate where their capital came from. Those whose model depended on very high effective rates and aggressive recovery largely exited or were absorbed.\n\n## What replaced them\n\nUnderwriting now leans on transaction history — mobile money flows, till receipts, repayment records — rather than on the threat of exposure. That favours lenders with a data relationship to the borrower, which is why payment processors and marketplaces have moved into credit.\n\n## The open question\n\nAccess has narrowed at the riskiest end of the market. Whether that represents people protected from unaffordable debt or people pushed toward informal lenders is genuinely contested, and the data to settle it does not yet exist.",
+  "slug": "digital-lending-rules",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-09T07:00:00.000Z",
+  "updatedAt": "2026-08-09T07:00:00.000Z"
+}

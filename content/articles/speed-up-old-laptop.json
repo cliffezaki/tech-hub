@@ -1,0 +1,18 @@
+{
+  "id": "speed-up-old-laptop",
+  "title": "How to make an ageing laptop fast again",
+  "section": "how-to",
+  "category": "Hardware",
+  "author": "Daniel Kimani",
+  "imageUrl": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Two people looking at a laptop screen together",
+  "imageCredit": "Unsplash",
+  "excerpt": "Before replacing a slow machine, two cheap changes recover most of the speed it has lost.",
+  "content": "A four-year-old laptop that feels unusable is rarely short of processing power. It is almost always short of memory or waiting on a slow disk.\n\n## Find the real bottleneck first\n\nOpen your system monitor and watch while the machine is being slow.\n\n- **Memory near capacity** — the system is swapping to disk; add RAM\n- **Disk at 100%** — a mechanical drive is the limit; fit an SSD\n- **CPU pinned with fans loud** — a background process, or dust and dried thermal paste\n\nSpending money before this check is how people replace a machine that needed a 5,000 shilling part.\n\n## The two upgrades that matter\n\nReplacing a mechanical hard drive with an SSD is the single largest improvement available to an old laptop — boot and application launch times drop by a factor of five or more. Doubling the RAM is second.\n\n## Then clean up the software\n\n- Remove programs that start automatically and are never used\n- Reduce browser extensions; each one costs memory on every tab\n- Clear enough disk space to leave 15% free, or the SSD slows down\n\n## When to stop\n\nIf the machine cannot take more memory, has no upgradeable storage, or no longer receives security updates, stop spending. That is the point where replacement is the honest answer.",
+  "slug": "speed-up-old-laptop",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-11T01:00:00.000Z",
+  "updatedAt": "2026-08-11T01:00:00.000Z"
+}

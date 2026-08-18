@@ -1,0 +1,18 @@
+{
+  "id": "how-data-centres-stay-cool",
+  "title": "How data centres stay cool",
+  "section": "how-stuff-works",
+  "category": "Infrastructure",
+  "author": "Samuel Otieno",
+  "imageUrl": "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Technicians working between rows of servers in a data centre",
+  "imageCredit": "Unsplash",
+  "excerpt": "Nearly all the electricity a server draws leaves as heat. Removing it is most of the building's engineering.",
+  "content": "A server converts almost all the power it consumes into heat. A room of them produces the output of a small industrial heater, continuously, and the entire facility is designed around moving that heat somewhere else.\n\n## Hot aisles and cold aisles\n\nRacks face each other so intakes draw from one aisle and exhausts blow into another. Keeping the two air streams from mixing is the cheapest efficiency gain available, and doing it badly wastes more energy than any other single mistake.\n\n## Measuring the overhead\n\nEfficiency is expressed as PUE — total facility power divided by power reaching the computers. A PUE of 2.0 means a watt of cooling for every watt of computing. Modern designs target 1.2 or lower.\n\n- **Free cooling** — using outside air when it is cool enough, no chiller needed\n- **Evaporative cooling** — cheap on electricity, expensive on water\n- **Liquid cooling** — coolant to the chip itself, now common for AI hardware\n\n## Why AI changed the design\n\nA rack of general-purpose servers might draw 5 to 10 kilowatts. A rack of AI accelerators can draw ten times that. Air cannot carry heat away fast enough at that density, which is why liquid cooling moved from exotic to standard in a couple of years.\n\n## The local constraint\n\nIn warm climates, free cooling is available for fewer hours a year and water is often scarce, so operators lean on efficient chillers and heat-tolerant equipment. It is a real cost difference, and one reason siting decisions follow climate as much as connectivity.",
+  "slug": "how-data-centres-stay-cool",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-10T04:00:00.000Z",
+  "updatedAt": "2026-08-10T04:00:00.000Z"
+}

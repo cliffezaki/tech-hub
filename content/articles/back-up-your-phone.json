@@ -1,0 +1,18 @@
+{
+  "id": "back-up-your-phone",
+  "title": "How to back up your phone so you never lose anything",
+  "section": "how-to",
+  "category": "Mobile",
+  "author": "Priya Shah",
+  "imageUrl": "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "A smartphone lying face up on a wooden desk",
+  "imageCredit": "Unsplash",
+  "excerpt": "Cloud backup covers less than most people assume. Twenty minutes now saves a very bad afternoon later.",
+  "content": "Most people believe their phone is backed up because a cloud service is switched on. That service usually covers photos and settings — and not much else.\n\n## Check what is actually included\n\nOpen your backup settings and read the list rather than the toggle. Messages, authenticator apps, and downloaded media are the three that are most often missing.\n\n- **Photos and video** — usually covered, but check the resolution being stored\n- **Messages** — frequently excluded, or capped at a small history\n- **Authenticator codes** — almost never included, and the most painful to lose\n- **Documents** — only if they live in a synced folder\n\n## Move authenticator codes first\n\nIf your two-factor codes exist only on the phone, losing it locks you out of the accounts you would use to recover everything else. Most authenticator apps now offer an encrypted export or account sync. Turn it on before you need it.\n\n## Add a second copy\n\nCloud sync is not a backup — deleting a file deletes it everywhere. Once a month, copy your photo library to a computer or an external drive. It takes minutes and it is the copy that survives an accidental deletion.\n\n## Test it\n\nRestore a single file. A backup nobody has ever restored from is an assumption, not a backup.",
+  "slug": "back-up-your-phone",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-11T15:00:00.000Z",
+  "updatedAt": "2026-08-11T15:00:00.000Z"
+}

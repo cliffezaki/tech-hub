@@ -1,0 +1,18 @@
+{
+  "id": "how-solar-mini-grids-work",
+  "title": "How solar mini-grids keep the lights on",
+  "section": "how-stuff-works",
+  "category": "Energy",
+  "author": "James Mwangi",
+  "imageUrl": "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Rows of solar panels in a field under a bright sky",
+  "imageCredit": "Unsplash",
+  "excerpt": "A village-scale power station is mostly a battery problem, and the economics turn on who uses the power at midday.",
+  "content": "A mini-grid is a small, self-contained power system: panels, a battery bank, an inverter, and a few kilometres of distribution wire serving one community. The engineering is well understood. Making it pay is the interesting part.\n\n## The parts, and what each costs\n\n- **Panels** — the cheapest component, and no longer the constraint\n- **Batteries** — the largest single cost, and the part that wears out\n- **Inverter and controls** — converts and regulates; determines reliability\n- **Distribution** — poles and wire, which scale with how spread out the households are\n\n## Why daytime demand decides everything\n\nSolar produces at midday and households consume in the evening. Every unit shifted through a battery costs more than one used as it is generated. A mini-grid serving only homes is therefore expensive per unit.\n\nAdd a daytime commercial load — a maize mill, a welding shop, a cold store — and the same panels earn revenue without touching the battery. Operators now recruit those businesses deliberately, because they make the tariff affordable for everyone else.\n\n## What goes wrong\n\nDemand grows faster than forecast, batteries degrade sooner than modelled, and collection is harder than expected. Prepaid metering solved the third. The first two are managed by designing for expansion from the start.\n\n## The connection question\n\nWhen the national grid eventually arrives, a well-built mini-grid can sell into it or operate alongside it. The systems built to that standard hold their value; those built as temporary stopgaps do not.",
+  "slug": "how-solar-mini-grids-work",
+  "status": "published",
+  "featured": false,
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-10T11:00:00.000Z",
+  "updatedAt": "2026-08-10T11:00:00.000Z"
+}

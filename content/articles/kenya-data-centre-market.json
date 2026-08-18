@@ -1,0 +1,18 @@
+{
+  "id": "kenya-data-centre-market",
+  "title": "Inside Kenya's data centre buildout",
+  "section": "tech-kenya",
+  "category": "Infrastructure",
+  "author": "Samuel Otieno",
+  "featured": true,
+  "imageUrl": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Structured cabling running through server racks",
+  "imageCredit": "Unsplash",
+  "excerpt": "Regional demand for local hosting is real. Power, not demand, decides how quickly capacity arrives.",
+  "content": "Data hosted locally is faster to reach and easier to keep compliant, and demand from banks, government, and regional businesses has grown steadily. Several operators are expanding capacity to meet it.\n\n## Why local hosting matters\n\nLatency is the plain commercial argument: an application served from Nairobi responds noticeably faster than one served from Europe. Data residency rules are the regulatory one — some categories of records are expected to stay in the country.\n\n## Power is the binding constraint\n\nA data centre needs uninterrupted, high-quality power at a predictable price. Kenya has an advantage most of the region does not — a grid with a high share of geothermal and hydro generation, which is both low-carbon and relatively stable.\n\nThat advantage is undercut by connection timelines. Securing a dedicated supply of the required capacity takes longer than building the facility, and every operator interviewed described the same sequencing problem.\n\n- Grid connections that outlast construction schedules\n- Backup generation and fuel storage as a licensing requirement\n- Cooling costs that rise with ambient temperature\n\n## What comes next\n\nThe current phase is aimed at colocation — companies renting space for their own equipment. The larger prize is persuading international cloud providers to place a region here, which requires capacity, redundancy, and connectivity to be demonstrably in place first.",
+  "slug": "kenya-data-centre-market",
+  "status": "published",
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-09T21:00:00.000Z",
+  "updatedAt": "2026-08-09T21:00:00.000Z"
+}

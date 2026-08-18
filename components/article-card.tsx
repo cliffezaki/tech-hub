@@ -48,7 +48,10 @@ export function ArticleCard({ article, variant = "default", priority = false, cl
     const isFeature = variant === "feature"
 
     return (
-        <Link href={article.href} className={cn("group flex h-full flex-col", className)}>
+        // No `h-full` here: as a grid item the card already stretches to the row height,
+        // while inside a flex column `height: 100%` resolves against the whole column and
+        // makes every card as tall as the container, overlapping whatever follows it.
+        <Link href={article.href} className={cn("group flex flex-col", className)}>
             <div
                 className={cn(
                     "relative overflow-hidden rounded-lg bg-muted",

@@ -1,0 +1,18 @@
+{
+  "id": "switch-to-passkeys",
+  "title": "How to switch your accounts to passkeys",
+  "section": "how-to",
+  "category": "Security",
+  "author": "Elena Rossi",
+  "featured": true,
+  "imageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1600&q=80",
+  "imageAlt": "Streams of green code on a dark screen",
+  "imageCredit": "Unsplash",
+  "excerpt": "Passkeys remove the password entirely, and they are now supported by most services worth protecting.",
+  "content": "A passkey replaces your password with a key stored on your device and unlocked by your fingerprint, face, or screen lock. There is nothing to remember, nothing to type, and nothing for a phishing site to steal.\n\n## Why it is worth the twenty minutes\n\nA passkey is bound to the real website address. A convincing fake login page cannot use it, because the key simply will not offer itself to the wrong domain. That single property removes the most common way ordinary accounts are compromised.\n\n## Where to start\n\nDo the accounts that can reset the others first:\n\n1. Your email account — everything else recovers through it\n2. Your password manager\n3. Banking and mobile money\n4. Social accounts\n\nIn each service, look under **Security → Passkeys → Add a passkey**.\n\n## Keep a fallback\n\nRegister a passkey on more than one device, or store it in a password manager that syncs. Then keep your recovery codes somewhere offline. Losing the only device holding the only key is the one real risk.\n\n## What does not change\n\nPasswords do not disappear overnight. Most services keep the old password active alongside the passkey, so delete it manually once the passkey works — otherwise the weaker route is still open.",
+  "slug": "switch-to-passkeys",
+  "status": "published",
+  "readTime": "2 min read",
+  "publishedAt": "2026-08-11T08:00:00.000Z",
+  "updatedAt": "2026-08-11T08:00:00.000Z"
+}

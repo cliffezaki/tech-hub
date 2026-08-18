@@ -32,6 +32,15 @@ const IMAGES = {
     chipMacro: img("1550751827-4bd374c3f58b"),
     cardPayment: img("1556742049-0cfed4f6a45d"),
     savannah: img("1547471080-7cc2caa01a7e"),
+    phoneOnDesk: img("1585060544812-6b45742d762f"),
+    greenCode: img("1526374965328-7f61d4dc18c5"),
+    laptopHelp: img("1516321318423-f06f85e504b3"),
+    atmKeypad: img("1601597111158-2fceff292cdc"),
+    solarPanels: img("1509391366360-2e959784a276"),
+    dataCentre: img("1573164713988-8665fc963095"),
+    serverRoom: img("1558494949-ef010cbdcc31"),
+    officeWindow: img("1497215728101-856f4ea42174"),
+    banknotes: img("1580048915913-4f8f5cb481c4"),
 }
 
 // Newest first; each entry is published a few hours before the one above it.
@@ -631,6 +640,7 @@ Removing a page from an index is achievable. Removing information from a trained
         section: "how-stuff-works",
         category: "Physics",
         author: "James Mwangi",
+        featured: true,
         imageUrl: IMAGES.engineerLab,
         imageAlt: "An engineer working at an industrial machine in a laboratory",
         imageCredit: "Unsplash",
@@ -746,6 +756,319 @@ Equipment needs uninterrupted electricity. In areas with intermittent supply, op
 ## What changes when it lands
 
 The measurable effects show up first in education and small business — remote coursework becoming viable, and traders reaching customers outside their immediate market. Those effects take a year or two to appear in the data, which is why coverage announcements tend to outrun visible change.`,
+    },
+
+    // How to
+    {
+        id: "back-up-your-phone",
+        title: "How to back up your phone so you never lose anything",
+        section: "how-to",
+        category: "Mobile",
+        author: "Priya Shah",
+        imageUrl: IMAGES.phoneOnDesk,
+        imageAlt: "A smartphone lying face up on a wooden desk",
+        imageCredit: "Unsplash",
+        excerpt:
+            "Cloud backup covers less than most people assume. Twenty minutes now saves a very bad afternoon later.",
+        content: `Most people believe their phone is backed up because a cloud service is switched on. That service usually covers photos and settings — and not much else.
+
+## Check what is actually included
+
+Open your backup settings and read the list rather than the toggle. Messages, authenticator apps, and downloaded media are the three that are most often missing.
+
+- **Photos and video** — usually covered, but check the resolution being stored
+- **Messages** — frequently excluded, or capped at a small history
+- **Authenticator codes** — almost never included, and the most painful to lose
+- **Documents** — only if they live in a synced folder
+
+## Move authenticator codes first
+
+If your two-factor codes exist only on the phone, losing it locks you out of the accounts you would use to recover everything else. Most authenticator apps now offer an encrypted export or account sync. Turn it on before you need it.
+
+## Add a second copy
+
+Cloud sync is not a backup — deleting a file deletes it everywhere. Once a month, copy your photo library to a computer or an external drive. It takes minutes and it is the copy that survives an accidental deletion.
+
+## Test it
+
+Restore a single file. A backup nobody has ever restored from is an assumption, not a backup.`,
+    },
+    {
+        id: "switch-to-passkeys",
+        title: "How to switch your accounts to passkeys",
+        section: "how-to",
+        category: "Security",
+        author: "Elena Rossi",
+        featured: true,
+        imageUrl: IMAGES.greenCode,
+        imageAlt: "Streams of green code on a dark screen",
+        imageCredit: "Unsplash",
+        excerpt:
+            "Passkeys remove the password entirely, and they are now supported by most services worth protecting.",
+        content: `A passkey replaces your password with a key stored on your device and unlocked by your fingerprint, face, or screen lock. There is nothing to remember, nothing to type, and nothing for a phishing site to steal.
+
+## Why it is worth the twenty minutes
+
+A passkey is bound to the real website address. A convincing fake login page cannot use it, because the key simply will not offer itself to the wrong domain. That single property removes the most common way ordinary accounts are compromised.
+
+## Where to start
+
+Do the accounts that can reset the others first:
+
+1. Your email account — everything else recovers through it
+2. Your password manager
+3. Banking and mobile money
+4. Social accounts
+
+In each service, look under **Security → Passkeys → Add a passkey**.
+
+## Keep a fallback
+
+Register a passkey on more than one device, or store it in a password manager that syncs. Then keep your recovery codes somewhere offline. Losing the only device holding the only key is the one real risk.
+
+## What does not change
+
+Passwords do not disappear overnight. Most services keep the old password active alongside the passkey, so delete it manually once the passkey works — otherwise the weaker route is still open.`,
+    },
+    {
+        id: "speed-up-old-laptop",
+        title: "How to make an ageing laptop fast again",
+        section: "how-to",
+        category: "Hardware",
+        author: "Daniel Kimani",
+        imageUrl: IMAGES.laptopHelp,
+        imageAlt: "Two people looking at a laptop screen together",
+        imageCredit: "Unsplash",
+        excerpt: "Before replacing a slow machine, two cheap changes recover most of the speed it has lost.",
+        content: `A four-year-old laptop that feels unusable is rarely short of processing power. It is almost always short of memory or waiting on a slow disk.
+
+## Find the real bottleneck first
+
+Open your system monitor and watch while the machine is being slow.
+
+- **Memory near capacity** — the system is swapping to disk; add RAM
+- **Disk at 100%** — a mechanical drive is the limit; fit an SSD
+- **CPU pinned with fans loud** — a background process, or dust and dried thermal paste
+
+Spending money before this check is how people replace a machine that needed a 5,000 shilling part.
+
+## The two upgrades that matter
+
+Replacing a mechanical hard drive with an SSD is the single largest improvement available to an old laptop — boot and application launch times drop by a factor of five or more. Doubling the RAM is second.
+
+## Then clean up the software
+
+- Remove programs that start automatically and are never used
+- Reduce browser extensions; each one costs memory on every tab
+- Clear enough disk space to leave 15% free, or the SSD slows down
+
+## When to stop
+
+If the machine cannot take more memory, has no upgradeable storage, or no longer receives security updates, stop spending. That is the point where replacement is the honest answer.`,
+    },
+
+    // How stuff works
+    {
+        id: "how-mobile-money-works",
+        title: "How mobile money actually works",
+        section: "how-stuff-works",
+        category: "Finance",
+        author: "Grace Wanjiru",
+        imageUrl: IMAGES.atmKeypad,
+        imageAlt: "A hand entering a PIN on a cash machine keypad",
+        imageCredit: "Unsplash",
+        excerpt:
+            "There is no money on your phone. Understanding what is really moving explains why the system is so hard to copy.",
+        content: `When you send money from a phone, nothing travels except a message. The value sits in a pooled bank account, and what changes is a number in a ledger recording how much of that pool is yours.
+
+## The three moving parts
+
+- **The float** — real money held in trust at a commercial bank, matching the total of every user balance
+- **The ledger** — the operator's record of who owns what share of that float
+- **The agent network** — the shops that convert physical cash into ledger entries and back
+
+The technology is the least difficult part. The agent network is the reason the system works.
+
+## Why agents are the hard problem
+
+An agent must hold both cash and electronic balance at all times. Too much of either and they cannot serve the next customer. Rebalancing thousands of small businesses every day, profitably, is the operational feat competitors underestimate.
+
+## What keeps the value safe
+
+Regulators require the float to be fully backed and held separately from the operator's own money, so a company failure does not take customer balances with it. That trust requirement — not the app — is what made the system credible enough for people to use for their wages.
+
+## Why interoperability took so long
+
+Sending between networks means two ledgers agreeing, then settling in real money between banks. The plumbing is unglamorous, arrived years after the product, and is what turned competing services into something closer to a shared payment system.`,
+    },
+    {
+        id: "how-solar-mini-grids-work",
+        title: "How solar mini-grids keep the lights on",
+        section: "how-stuff-works",
+        category: "Energy",
+        author: "James Mwangi",
+        imageUrl: IMAGES.solarPanels,
+        imageAlt: "Rows of solar panels in a field under a bright sky",
+        imageCredit: "Unsplash",
+        excerpt:
+            "A village-scale power station is mostly a battery problem, and the economics turn on who uses the power at midday.",
+        content: `A mini-grid is a small, self-contained power system: panels, a battery bank, an inverter, and a few kilometres of distribution wire serving one community. The engineering is well understood. Making it pay is the interesting part.
+
+## The parts, and what each costs
+
+- **Panels** — the cheapest component, and no longer the constraint
+- **Batteries** — the largest single cost, and the part that wears out
+- **Inverter and controls** — converts and regulates; determines reliability
+- **Distribution** — poles and wire, which scale with how spread out the households are
+
+## Why daytime demand decides everything
+
+Solar produces at midday and households consume in the evening. Every unit shifted through a battery costs more than one used as it is generated. A mini-grid serving only homes is therefore expensive per unit.
+
+Add a daytime commercial load — a maize mill, a welding shop, a cold store — and the same panels earn revenue without touching the battery. Operators now recruit those businesses deliberately, because they make the tariff affordable for everyone else.
+
+## What goes wrong
+
+Demand grows faster than forecast, batteries degrade sooner than modelled, and collection is harder than expected. Prepaid metering solved the third. The first two are managed by designing for expansion from the start.
+
+## The connection question
+
+When the national grid eventually arrives, a well-built mini-grid can sell into it or operate alongside it. The systems built to that standard hold their value; those built as temporary stopgaps do not.`,
+    },
+    {
+        id: "how-data-centres-stay-cool",
+        title: "How data centres stay cool",
+        section: "how-stuff-works",
+        category: "Infrastructure",
+        author: "Samuel Otieno",
+        imageUrl: IMAGES.dataCentre,
+        imageAlt: "Technicians working between rows of servers in a data centre",
+        imageCredit: "Unsplash",
+        excerpt:
+            "Nearly all the electricity a server draws leaves as heat. Removing it is most of the building's engineering.",
+        content: `A server converts almost all the power it consumes into heat. A room of them produces the output of a small industrial heater, continuously, and the entire facility is designed around moving that heat somewhere else.
+
+## Hot aisles and cold aisles
+
+Racks face each other so intakes draw from one aisle and exhausts blow into another. Keeping the two air streams from mixing is the cheapest efficiency gain available, and doing it badly wastes more energy than any other single mistake.
+
+## Measuring the overhead
+
+Efficiency is expressed as PUE — total facility power divided by power reaching the computers. A PUE of 2.0 means a watt of cooling for every watt of computing. Modern designs target 1.2 or lower.
+
+- **Free cooling** — using outside air when it is cool enough, no chiller needed
+- **Evaporative cooling** — cheap on electricity, expensive on water
+- **Liquid cooling** — coolant to the chip itself, now common for AI hardware
+
+## Why AI changed the design
+
+A rack of general-purpose servers might draw 5 to 10 kilowatts. A rack of AI accelerators can draw ten times that. Air cannot carry heat away fast enough at that density, which is why liquid cooling moved from exotic to standard in a couple of years.
+
+## The local constraint
+
+In warm climates, free cooling is available for fewer hours a year and water is often scarce, so operators lean on efficient chillers and heat-tolerant equipment. It is a real cost difference, and one reason siting decisions follow climate as much as connectivity.`,
+    },
+
+    // Tech Kenya
+    {
+        id: "kenya-data-centre-market",
+        title: "Inside Kenya's data centre buildout",
+        section: "tech-kenya",
+        category: "Infrastructure",
+        author: "Samuel Otieno",
+        featured: true,
+        imageUrl: IMAGES.serverRoom,
+        imageAlt: "Structured cabling running through server racks",
+        imageCredit: "Unsplash",
+        excerpt:
+            "Regional demand for local hosting is real. Power, not demand, decides how quickly capacity arrives.",
+        content: `Data hosted locally is faster to reach and easier to keep compliant, and demand from banks, government, and regional businesses has grown steadily. Several operators are expanding capacity to meet it.
+
+## Why local hosting matters
+
+Latency is the plain commercial argument: an application served from Nairobi responds noticeably faster than one served from Europe. Data residency rules are the regulatory one — some categories of records are expected to stay in the country.
+
+## Power is the binding constraint
+
+A data centre needs uninterrupted, high-quality power at a predictable price. Kenya has an advantage most of the region does not — a grid with a high share of geothermal and hydro generation, which is both low-carbon and relatively stable.
+
+That advantage is undercut by connection timelines. Securing a dedicated supply of the required capacity takes longer than building the facility, and every operator interviewed described the same sequencing problem.
+
+- Grid connections that outlast construction schedules
+- Backup generation and fuel storage as a licensing requirement
+- Cooling costs that rise with ambient temperature
+
+## What comes next
+
+The current phase is aimed at colocation — companies renting space for their own equipment. The larger prize is persuading international cloud providers to place a region here, which requires capacity, redundancy, and connectivity to be demonstrably in place first.`,
+    },
+    {
+        id: "kenyan-startups-remote-hiring",
+        title: "Why Kenyan startups are hiring remote-first",
+        section: "tech-kenya",
+        category: "Startups",
+        author: "Grace Wanjiru",
+        imageUrl: IMAGES.officeWindow,
+        imageAlt: "A laptop on a bench beside a window in a modern office",
+        imageCredit: "Unsplash",
+        excerpt:
+            "Competing for engineers against foreign employers changed how local companies hire, pay, and organise.",
+        content: `When an engineer in Nairobi can be paid by a company in Berlin without leaving home, every local employer is competing in a market it did not choose to enter. The response has reshaped how startups here are built.
+
+## What changed in practice
+
+Salary bands moved first, particularly for engineers with three or more years of experience. Companies that could not match cash competed on the things distributed employers struggle to offer: ownership, decision-making authority, and work whose results are visible locally.
+
+- Equity offered earlier and explained more carefully
+- Hiring across the region rather than within one city
+- Written-first working practices, so time zones matter less
+
+## The upside nobody expected
+
+Recruiting remotely widened the pool well beyond the capital. Companies that adopted asynchronous habits found they could hire in Kisumu, Eldoret, or Kampala without an office, and retention improved because people were not required to relocate.
+
+## The costs
+
+Junior hiring suffered. Remote-first organisations are demanding for people who learn by watching others work, and several founders admitted their graduate pipeline weakened before they rebuilt it deliberately with structured mentoring.
+
+## Where it settles
+
+The emerging pattern is hybrid by intent rather than by compromise: a small office used for onboarding and design work, with the default being distributed. It is a more expensive way to run a company, and the alternative is losing the third engineer you hired.`,
+    },
+    {
+        id: "digital-lending-rules",
+        title: "Digital lending rules tighten, and the market adjusts",
+        section: "tech-kenya",
+        category: "Policy",
+        author: "Elena Rossi",
+        imageUrl: IMAGES.banknotes,
+        imageAlt: "A hand holding a fan of banknotes",
+        imageCredit: "Unsplash",
+        excerpt:
+            "Licensing brought order to app-based lending. The lenders that survived look quite different from the ones that arrived.",
+        content: `App-based lending grew faster than the rules covering it. Licensing requirements, caps on charges, and limits on how borrowers may be pursued have since reshaped the sector.
+
+## What the rules changed
+
+Three requirements did most of the work:
+
+- **Licensing** — lenders must register and disclose ownership
+- **Pricing transparency** — the total cost of credit must be stated up front, not as a daily rate that obscures the annual figure
+- **Debt collection limits** — contacting a borrower's phone contacts, once routine, is prohibited
+
+The third mattered most to borrowers. Shame-based collection was the practice that caused real harm, and removing it forced lenders to underwrite properly rather than rely on social pressure to recover.
+
+## Who survived
+
+Lenders that priced for risk and could demonstrate where their capital came from. Those whose model depended on very high effective rates and aggressive recovery largely exited or were absorbed.
+
+## What replaced them
+
+Underwriting now leans on transaction history — mobile money flows, till receipts, repayment records — rather than on the threat of exposure. That favours lenders with a data relationship to the borrower, which is why payment processors and marketplaces have moved into credit.
+
+## The open question
+
+Access has narrowed at the riskiest end of the market. Whether that represents people protected from unaffordable debt or people pushed toward informal lenders is genuinely contested, and the data to settle it does not yet exist.`,
     },
 ]
 
