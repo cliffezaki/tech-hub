@@ -148,31 +148,52 @@ export function createSanityStore(): ContentStore {
         return writeClient
     }
 
+    /**
+     * A misconfigured or momentarily unreachable Sanity project must not take the whole
+     * site down. Public reads fall back to an empty/default value and log the real cause
+     * to the server console (visible in Vercel's function logs); only writes are allowed
+     * to throw, since those already surface as a clear error in the dashboard.
+     */
+    async function safeRead<T>(label: string, fallback: T, run: () => Promise<T>): Promise<T> {
+        try {
+            return await run()
+        } catch (error) {
+            console.error(`Sanity read failed (${label}):`, error)
+            return fallback
+        }
+    }
+
     return {
         mode: "sanity",
         writable: Boolean(writeToken),
 
         async listArticles() {
-            const docs = await readClient.fetch<SanityArticleDoc[]>(
-                `*[_type == "article"] | order(publishedAt desc) ${ARTICLE_PROJECTION}`
-            )
-            return docs.map(toArticle)
+            return safeRead("listArticles", [], async () => {
+                const docs = await readClient.fetch<SanityArticleDoc[]>(
+                    `*[_type == "article"] | order(publishedAt desc) ${ARTICLE_PROJECTION}`
+                )
+                return docs.map(toArticle)
+            })
         },
 
         async getArticle(id) {
-            const doc = await readClient.fetch<SanityArticleDoc | null>(
-                `*[_type == "article" && _id == $id][0] ${ARTICLE_PROJECTION}`,
-                { id }
-            )
-            return doc ? toArticle(doc) : null
+            return safeRead("getArticle", null, async () => {
+                const doc = await readClient.fetch<SanityArticleDoc | null>(
+                    `*[_type == "article" && _id == $id][0] ${ARTICLE_PROJECTION}`,
+                    { id }
+                )
+                return doc ? toArticle(doc) : null
+            })
         },
 
         async getArticleBySlug(slug) {
-            const doc = await readClient.fetch<SanityArticleDoc | null>(
-                `*[_type == "article" && slug.current == $slug][0] ${ARTICLE_PROJECTION}`,
-                { slug }
-            )
-            return doc ? toArticle(doc) : null
+            return safeRead("getArticleBySlug", null, async () => {
+                const doc = await readClient.fetch<SanityArticleDoc | null>(
+                    `*[_type == "article" && slug.current == $slug][0] ${ARTICLE_PROJECTION}`,
+                    { slug }
+                )
+                return doc ? toArticle(doc) : null
+            })
         },
 
         async createArticle(input) {
@@ -208,26 +229,32 @@ export function createSanityStore(): ContentStore {
         },
 
         async listPages() {
-            const docs = await readClient.fetch<SanityPageDoc[]>(
-                `*[_type == "page"] | order(_updatedAt desc) ${PAGE_PROJECTION}`
-            )
-            return docs.map(toPage)
+            return safeRead("listPages", [], async () => {
+                const docs = await readClient.fetch<SanityPageDoc[]>(
+                    `*[_type == "page"] | order(_updatedAt desc) ${PAGE_PROJECTION}`
+                )
+                return docs.map(toPage)
+            })
         },
 
         async getPage(id) {
-            const doc = await readClient.fetch<SanityPageDoc | null>(
-                `*[_type == "page" && _id == $id][0] ${PAGE_PROJECTION}`,
-                { id }
-            )
-            return doc ? toPage(doc) : null
+            return safeRead("getPage", null, async () => {
+                const doc = await readClient.fetch<SanityPageDoc | null>(
+                    `*[_type == "page" && _id == $id][0] ${PAGE_PROJECTION}`,
+                    { id }
+                )
+                return doc ? toPage(doc) : null
+            })
         },
 
         async getPageBySlug(slug) {
-            const doc = await readClient.fetch<SanityPageDoc | null>(
-                `*[_type == "page" && slug.current == $slug][0] ${PAGE_PROJECTION}`,
-                { slug }
-            )
-            return doc ? toPage(doc) : null
+            return safeRead("getPageBySlug", null, async () => {
+                const doc = await readClient.fetch<SanityPageDoc | null>(
+                    `*[_type == "page" && slug.current == $slug][0] ${PAGE_PROJECTION}`,
+                    { slug }
+                )
+                return doc ? toPage(doc) : null
+            })
         },
 
         async createPage(input) {
@@ -274,11 +301,13 @@ export function createSanityStore(): ContentStore {
         },
 
         async getSettings() {
-            const doc = await readClient.fetch<Partial<SiteSettings> | null>(
-                `*[_type == "siteSettings" && _id == $id][0]`,
-                { id: SETTINGS_DOC_ID }
-            )
-            return doc ? normalizeSettings(doc) : { ...DEFAULT_SETTINGS }
+            return safeRead("getSettings", { ...DEFAULT_SETTINGS }, async () => {
+                const doc = await readClient.fetch<Partial<SiteSettings> | null>(
+                    `*[_type == "siteSettings" && _id == $id][0]`,
+                    { id: SETTINGS_DOC_ID }
+                )
+                return doc ? normalizeSettings(doc) : { ...DEFAULT_SETTINGS }
+            })
         },
 
         async saveSettings(patch) {
@@ -295,17 +324,19 @@ export function createSanityStore(): ContentStore {
         },
 
         async listMedia() {
-            const assets = await readClient.fetch<
-                { _id: string; url: string; originalFilename?: string; _createdAt: string; size?: number }[]
-            >(`*[_type == "sanity.imageAsset"] | order(_createdAt desc) {_id, url, originalFilename, _createdAt, size}`)
+            return safeRead("listMedia", [], async () => {
+                const assets = await readClient.fetch<
+                    { _id: string; url: string; originalFilename?: string; _createdAt: string; size?: number }[]
+                >(`*[_type == "sanity.imageAsset"] | order(_createdAt desc) {_id, url, originalFilename, _createdAt, size}`)
 
-            return assets.map((asset) => ({
-                id: asset._id,
-                url: asset.url,
-                filename: asset.originalFilename || `${asset._id}.jpg`,
-                uploadedAt: asset._createdAt,
-                size: asset.size,
-            }))
+                return assets.map((asset) => ({
+                    id: asset._id,
+                    url: asset.url,
+                    filename: asset.originalFilename || `${asset._id}.jpg`,
+                    uploadedAt: asset._createdAt,
+                    size: asset.size,
+                }))
+            })
         },
 
         async uploadMedia({ filename, contentType, data }: UploadInput): Promise<MediaItem> {
