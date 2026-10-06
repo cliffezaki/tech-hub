@@ -2,6 +2,13 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 import vm from "node:vm"
 import ts from "typescript"
+import { createRequire } from "node:module"
+
+const require = createRequire(import.meta.url)
+const { unstable_rethrow } = require("next/navigation")
+const {
+    DynamicServerError,
+} = require("next/dist/client/components/hooks-server-context")
 
 const env = {
     SUPABASE_URL: "https://test-project.supabase.co",
@@ -12,6 +19,7 @@ const records = new Map()
 const calls = []
 let error = null
 let networkFailure = false
+let frameworkFailure = null
 function loadModule(filename, imports, extra = {}) {
     const exports = {}
     const source = ts.transpileModule(filename, {
@@ -38,7 +46,7 @@ function loadModule(filename, imports, extra = {}) {
 }
 const adapter = loadModule(
     await readFile("lib/supabase-store.ts", "utf8"),
-    {},
+    { "next/navigation": { unstable_rethrow } },
     {
         fetch: async (url, options) => {
             calls.push({ url: String(url), options })
@@ -46,6 +54,7 @@ const adapter = loadModule(
             assert.equal(options.headers.Authorization, undefined)
             assert.equal(options.cache, "no-store")
             assert.equal(options.redirect, "error")
+            if (frameworkFailure) throw frameworkFailure
             if (networkFailure) throw new Error("provider contained a secret")
             if (error)
                 return Response.json(error.body, { status: error.status })
@@ -141,6 +150,12 @@ await assert.rejects(
     /temporarily unavailable/
 )
 networkFailure = false
+frameworkFailure = new DynamicServerError("cache: no-store")
+await assert.rejects(
+    platform.getRecord("users", "one"),
+    (failure) => failure === frameworkFailure
+)
+frameworkFailure = null
 env.SUPABASE_SECRET_KEY = "sb_publishable_not_privileged"
 assert.equal(platform.platformReady(), false)
 env.NODE_ENV = "development"

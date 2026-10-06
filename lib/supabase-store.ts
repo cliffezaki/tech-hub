@@ -1,4 +1,5 @@
 import "server-only"
+import { unstable_rethrow } from "next/navigation"
 
 function endpoint() {
     try {
@@ -54,7 +55,10 @@ async function request(query: Record<string, string>, init: RequestInit = {}) {
             redirect: "error",
             signal: AbortSignal.timeout(10000),
         })
-    } catch {
+    } catch (error) {
+        // Next.js uses thrown signals to switch private reads to request-time rendering.
+        // Preserve those signals; only actual transport failures are sanitized below.
+        unstable_rethrow(error)
         throw new Error("Private CMS storage is temporarily unavailable.")
     }
     if (!response.ok) {
