@@ -1,104 +1,60 @@
-/**
- * Password-based admin sessions.
- *
- * Deliberately small: one shared password in an environment variable, and a signed
- * cookie proving it was entered. No user table to provision, and it works identically
- * on a laptop and on serverless hosting. Uses Web Crypto so the same code can run in
- * middleware (edge runtime) and in route handlers (node runtime).
- */
-
 export const SESSION_COOKIE = "techhub_session"
-
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000
-
-export function getAdminPassword() {
-    return process.env.ADMIN_PASSWORD || ""
-}
-
-export function isAuthConfigured() {
-    return getAdminPassword().length > 0
-}
-
-/**
- * With no password configured, editing is allowed on a local machine (so `npm run dev`
- * needs no setup) but refused anywhere that looks like a real deployment.
- */
-export function isProductionLikeEnvironment() {
-    return process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL)
-}
-
-export function isAdminAccessOpen() {
-    return !isAuthConfigured() && !isProductionLikeEnvironment()
-}
-
-function getSecret() {
-    return process.env.ADMIN_SESSION_SECRET || getAdminPassword()
-}
-
-function toBase64Url(bytes: ArrayBuffer) {
-    let binary = ""
-    for (const byte of new Uint8Array(bytes)) {
-        binary += String.fromCharCode(byte)
-    }
-
-    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
-}
-
-async function sign(value: string, secret: string) {
+export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24
+export const isAuthConfigured = () =>
+    (process.env.ADMIN_SESSION_SECRET || "").length >= 32
+export const isAdminAccessOpen = () => false
+export const isProductionLikeEnvironment = () =>
+    process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL)
+async function sign(value: string) {
+    if (!isAuthConfigured())
+        throw new Error(
+            "Set ADMIN_SESSION_SECRET to a random value of at least 32 characters."
+        )
     const key = await crypto.subtle.importKey(
         "raw",
-        new TextEncoder().encode(secret),
+        new TextEncoder().encode(process.env.ADMIN_SESSION_SECRET!),
         { name: "HMAC", hash: "SHA-256" },
         false,
         ["sign"]
     )
-
-    return toBase64Url(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value)))
+    return Buffer.from(
+        await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value))
+    ).toString("base64url")
 }
-
-function timingSafeEqual(a: string, b: string) {
-    if (a.length !== b.length) {
-        return false
-    }
-
-    let mismatch = 0
-    for (let index = 0; index < a.length; index += 1) {
-        mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index)
-    }
-
-    return mismatch === 0
+export async function createSessionToken(id: string, version: number) {
+    const payload = Buffer.from(
+        JSON.stringify({
+            id,
+            version,
+            expires: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
+        })
+    ).toString("base64url")
+    return `${payload}.${await sign(payload)}`
 }
-
-export function verifyPassword(candidate: string) {
-    const password = getAdminPassword()
-    return password.length > 0 && timingSafeEqual(candidate, password)
+export async function readSession(
+    token?: string | null
+): Promise<{ id: string; version: number; expires: number } | null> {
+    if (!token || !isAuthConfigured()) return null
+    try {
+        const [payload, signature, extra] = token.split(".")
+        if (extra || !signature) return null
+        const expected = await sign(payload)
+        if (expected.length !== signature.length) return null
+        let diff = 0
+        for (let i = 0; i < expected.length; i++)
+            diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i)
+        if (diff) return null
+        const result = JSON.parse(Buffer.from(payload, "base64url").toString())
+        return typeof result.id === "string" &&
+            Number.isFinite(result.expires) &&
+            result.expires > Date.now() &&
+            Number.isInteger(result.version)
+            ? result
+            : null
+    } catch {
+        return null
+    }
 }
-
-export async function createSessionToken() {
-    const expiresAt = String(Date.now() + SESSION_DURATION_MS)
-    return `${expiresAt}.${await sign(expiresAt, getSecret())}`
+export async function verifySessionToken(token?: string | null) {
+    return Boolean(await readSession(token))
 }
-
-export async function verifySessionToken(token: string | undefined | null) {
-    if (!token) {
-        return false
-    }
-
-    const [expiresAt, signature] = token.split(".")
-    if (!expiresAt || !signature) {
-        return false
-    }
-
-    if (Number(expiresAt) < Date.now()) {
-        return false
-    }
-
-    const secret = getSecret()
-    if (!secret) {
-        return false
-    }
-
-    return timingSafeEqual(signature, await sign(expiresAt, secret))
-}
-
-export const SESSION_MAX_AGE_SECONDS = SESSION_DURATION_MS / 1000

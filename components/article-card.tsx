@@ -29,6 +29,7 @@ export function ArticleCard({ article, variant = "default", priority = false, cl
             <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
             <span aria-hidden="true">·</span>
             <span>{article.readTime}</span>
+            {article.demo && <span className="rounded border px-1.5 py-0.5 text-[10px]">Demo</span>}
         </div>
     )
 

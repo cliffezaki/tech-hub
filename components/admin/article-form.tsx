@@ -16,6 +16,7 @@ import type { Article, ArticleSection, ArticleStatus } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface ArticleFormProps {
+    defaults?: { author: string; category: string }
     initialData?: Article
     isEditing?: boolean
 }
@@ -41,7 +42,11 @@ function toLocalInputValue(iso: string) {
     return new Date(date.getTime() - offset).toISOString().slice(0, 16)
 }
 
-export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps) {
+export function ArticleForm({
+    initialData,
+    isEditing = false,
+    defaults,
+}: ArticleFormProps) {
     const router = useRouter()
     const [saving, setSaving] = useState(false)
     const [deleting, setDeleting] = useState(false)
@@ -53,19 +58,24 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
         slug: initialData?.slug || "",
         excerpt: initialData?.excerpt || "",
         content: initialData?.content || "",
-        category: initialData?.category || SECTION_META.news.defaultCategory,
+        category: initialData?.category || defaults?.category || SECTION_META.news.defaultCategory,
         section: (initialData?.section || "news") as ArticleSection,
-        author: initialData?.author || "Tech Hub Staff",
+        author: initialData?.author || defaults?.author || "Tech Hub Staff",
         readTime: initialData?.readTime || "",
-        publishedAt: toLocalInputValue(initialData?.publishedAt || new Date().toISOString()),
+        publishedAt: toLocalInputValue(
+            initialData?.publishedAt || new Date().toISOString()
+        ),
         imageUrl: initialData?.imageUrl || "",
         imageAlt: initialData?.imageAlt || "",
         imageCredit: initialData?.imageCredit || "",
-        status: (initialData?.status || "published") as ArticleStatus,
+        status: (initialData?.status || "draft") as ArticleStatus,
         featured: initialData?.featured || false,
     })
 
-    const update = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    const update = <K extends keyof typeof form>(
+        key: K,
+        value: (typeof form)[K]
+    ) => {
         setForm((current) => ({ ...current, [key]: value }))
     }
 
@@ -86,11 +96,15 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
             const payload = {
                 ...form,
                 slug: form.slug || slugify(form.title),
-                publishedAt: form.publishedAt ? new Date(form.publishedAt).toISOString() : new Date().toISOString(),
+                publishedAt: form.publishedAt
+                    ? new Date(form.publishedAt).toISOString()
+                    : new Date().toISOString(),
             }
 
             const response = await fetch(
-                isEditing && initialData ? `/api/articles/${initialData.id}` : "/api/articles",
+                isEditing && initialData
+                    ? `/api/articles/${initialData.id}`
+                    : "/api/articles",
                 {
                     method: isEditing ? "PUT" : "POST",
                     headers: { "Content-Type": "application/json" },
@@ -107,20 +121,28 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
             router.push("/admin/articles")
             router.refresh()
         } catch {
-            setError("Could not save this article. Check your connection and try again.")
+            setError(
+                "Could not save this article. Check your connection and try again."
+            )
         } finally {
             setSaving(false)
         }
     }
 
     const handleDelete = async () => {
-        if (!initialData || !confirm(`Delete "${initialData.title}"? This cannot be undone.`)) return
+        if (
+            !initialData ||
+            !confirm(`Delete "${initialData.title}"? This cannot be undone.`)
+        )
+            return
 
         setDeleting(true)
         setError("")
 
         try {
-            const response = await fetch(`/api/articles/${initialData.id}`, { method: "DELETE" })
+            const response = await fetch(`/api/articles/${initialData.id}`, {
+                method: "DELETE",
+            })
 
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}))
@@ -153,20 +175,34 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
 
                 <div className="flex items-center gap-2">
                     {isEditing && (
-                        <Button type="button" variant="outline" onClick={handleDelete} disabled={deleting}>
-                            {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleDelete}
+                            disabled={deleting}
+                        >
+                            {deleting ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Trash2 className="mr-2 h-4 w-4" />
+                            )}
                             Delete
                         </Button>
                     )}
                     <Button type="submit" disabled={saving}>
-                        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {saving && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
                         {isEditing ? "Save changes" : "Publish article"}
                     </Button>
                 </div>
             </div>
 
             {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+                <p
+                    className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                    role="alert"
+                >
                     {error}
                 </p>
             )}
@@ -179,7 +215,9 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Input
                                 id="title"
                                 value={form.title}
-                                onChange={(event) => handleTitleChange(event.target.value)}
+                                onChange={(event) =>
+                                    handleTitleChange(event.target.value)
+                                }
                                 placeholder="Write the headline"
                                 required
                                 className="text-lg"
@@ -208,7 +246,9 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Textarea
                                 id="excerpt"
                                 value={form.excerpt}
-                                onChange={(event) => update("excerpt", event.target.value)}
+                                onChange={(event) =>
+                                    update("excerpt", event.target.value)
+                                }
                                 rows={3}
                                 placeholder="One or two sentences shown on cards and in search results"
                             />
@@ -219,13 +259,19 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Textarea
                                 id="content"
                                 value={form.content}
-                                onChange={(event) => update("content", event.target.value)}
+                                onChange={(event) =>
+                                    update("content", event.target.value)
+                                }
                                 rows={22}
                                 className="font-mono text-sm"
-                                placeholder={"## A section heading\n\nWrite your article here.\n\n- Markdown lists work\n- **Bold** and [links](https://example.com) too"}
+                                placeholder={
+                                    "## A section heading\n\nWrite your article here.\n\n- Markdown lists work\n- **Bold** and [links](https://example.com) too"
+                                }
                             />
                             <p className="text-xs text-muted-foreground">
-                                Markdown is supported: ## headings, **bold**, *italic*, - lists, &gt; quotes, and [links](url).
+                                Markdown is supported: ## headings, **bold**,
+                                *italic*, - lists, &gt; quotes, and
+                                [links](url).
                             </p>
                         </div>
                     </Card>
@@ -240,7 +286,12 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <select
                                 id="status"
                                 value={form.status}
-                                onChange={(event) => update("status", event.target.value as ArticleStatus)}
+                                onChange={(event) =>
+                                    update(
+                                        "status",
+                                        event.target.value as ArticleStatus
+                                    )
+                                }
                                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                             >
                                 <option value="published">Published</option>
@@ -253,13 +304,25 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             onClick={() => update("featured", !form.featured)}
                             className={cn(
                                 "flex w-full items-center gap-3 rounded-md border p-3 text-left text-sm transition-colors",
-                                form.featured ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30" : "hover:bg-muted"
+                                form.featured
+                                    ? "border-amber-400 bg-amber-50 dark:bg-amber-950/30"
+                                    : "hover:bg-muted"
                             )}
                         >
-                            <Star className={cn("h-4 w-4", form.featured && "fill-amber-400 text-amber-400")} />
+                            <Star
+                                className={cn(
+                                    "h-4 w-4",
+                                    form.featured &&
+                                        "fill-amber-400 text-amber-400"
+                                )}
+                            />
                             <span>
-                                <span className="block font-medium">Featured</span>
-                                <span className="block text-xs text-muted-foreground">Promote this story on the homepage</span>
+                                <span className="block font-medium">
+                                    Featured
+                                </span>
+                                <span className="block text-xs text-muted-foreground">
+                                    Promote this story on the homepage
+                                </span>
                             </span>
                         </button>
 
@@ -269,7 +332,9 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                                 id="publishedAt"
                                 type="datetime-local"
                                 value={form.publishedAt}
-                                onChange={(event) => update("publishedAt", event.target.value)}
+                                onChange={(event) =>
+                                    update("publishedAt", event.target.value)
+                                }
                             />
                         </div>
                     </Card>
@@ -282,7 +347,12 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <select
                                 id="section"
                                 value={form.section}
-                                onChange={(event) => update("section", event.target.value as ArticleSection)}
+                                onChange={(event) =>
+                                    update(
+                                        "section",
+                                        event.target.value as ArticleSection
+                                    )
+                                }
                                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                             >
                                 {ARTICLE_SECTIONS.map((section) => (
@@ -298,7 +368,9 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Input
                                 id="category"
                                 value={form.category}
-                                onChange={(event) => update("category", event.target.value)}
+                                onChange={(event) =>
+                                    update("category", event.target.value)
+                                }
                                 placeholder="e.g. Artificial Intelligence"
                                 required
                             />
@@ -309,7 +381,9 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Input
                                 id="author"
                                 value={form.author}
-                                onChange={(event) => update("author", event.target.value)}
+                                onChange={(event) =>
+                                    update("author", event.target.value)
+                                }
                                 required
                             />
                         </div>
@@ -319,21 +393,28 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Input
                                 id="readTime"
                                 value={form.readTime}
-                                onChange={(event) => update("readTime", event.target.value)}
+                                onChange={(event) =>
+                                    update("readTime", event.target.value)
+                                }
                                 placeholder="Calculated automatically if left empty"
                             />
                         </div>
                     </Card>
 
                     <Card className="space-y-4 p-5">
-                        <ImageField value={form.imageUrl} onChange={(url) => update("imageUrl", url)} />
+                        <ImageField
+                            value={form.imageUrl}
+                            onChange={(url) => update("imageUrl", url)}
+                        />
 
                         <div className="space-y-2">
                             <Label htmlFor="imageAlt">Image description</Label>
                             <Input
                                 id="imageAlt"
                                 value={form.imageAlt}
-                                onChange={(event) => update("imageAlt", event.target.value)}
+                                onChange={(event) =>
+                                    update("imageAlt", event.target.value)
+                                }
                                 placeholder="Describes the image for screen readers"
                             />
                         </div>
@@ -343,7 +424,9 @@ export function ArticleForm({ initialData, isEditing = false }: ArticleFormProps
                             <Input
                                 id="imageCredit"
                                 value={form.imageCredit}
-                                onChange={(event) => update("imageCredit", event.target.value)}
+                                onChange={(event) =>
+                                    update("imageCredit", event.target.value)
+                                }
                                 placeholder="Photographer or source"
                             />
                         </div>

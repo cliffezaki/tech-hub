@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 
 import { useEffect, useState } from "react"
 import { Loader2, Save } from "lucide-react"
@@ -60,13 +61,19 @@ export default function AdminSettingsPage() {
         )
     }
 
-    const field = (key: keyof SiteSettings, label: string, placeholder?: string) => (
+    const field = (
+        key: keyof SiteSettings,
+        label: string,
+        placeholder?: string
+    ) => (
         <div className="space-y-2">
             <Label htmlFor={key}>{label}</Label>
             <Input
                 id={key}
                 value={settings[key]}
-                onChange={(event) => setSettings({ ...settings, [key]: event.target.value })}
+                onChange={(event) =>
+                    setSettings({ ...settings, [key]: event.target.value })
+                }
                 placeholder={placeholder}
             />
         </div>
@@ -74,19 +81,48 @@ export default function AdminSettingsPage() {
 
     return (
         <div className="space-y-6">
+            <div className="rounded-xl border bg-background p-5">
+                <Link
+                    href="/admin/publishing"
+                    className="font-semibold underline"
+                >
+                    Publishing, accounts, privacy & SEO
+                </Link>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Configure reader registration, moderated comments, analytics
+                    consent, site metadata and content defaults.
+                </p>
+                <Link
+                    className="mt-3 inline-block text-sm underline"
+                    href="/admin/navigation"
+                >
+                    Manage main and footer menus
+                </Link>
+            </div>
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">Settings</h1>
-                    <p className="text-muted-foreground">Site name, newsletter box, footer, and social links.</p>
+                    <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">
+                        Settings
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Site name, newsletter box, footer, and social links.
+                    </p>
                 </div>
                 <Button onClick={save} disabled={saving}>
-                    {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {saving ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Save className="mr-2 h-4 w-4" />
+                    )}
                     Save settings
                 </Button>
             </div>
 
             {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+                <p
+                    className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                    role="alert"
+                >
                     {error}
                 </p>
             )}
@@ -113,7 +149,12 @@ export default function AdminSettingsPage() {
                     <Textarea
                         id="newsletterText"
                         value={settings.newsletterText}
-                        onChange={(event) => setSettings({ ...settings, newsletterText: event.target.value })}
+                        onChange={(event) =>
+                            setSettings({
+                                ...settings,
+                                newsletterText: event.target.value,
+                            })
+                        }
                         rows={2}
                     />
                 </div>
@@ -126,14 +167,31 @@ export default function AdminSettingsPage() {
                     <Textarea
                         id="footerText"
                         value={settings.footerText}
-                        onChange={(event) => setSettings({ ...settings, footerText: event.target.value })}
+                        onChange={(event) =>
+                            setSettings({
+                                ...settings,
+                                footerText: event.target.value,
+                            })
+                        }
                         rows={2}
                     />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-3">
-                    {field("twitterUrl", "X / Twitter URL", "https://x.com/yourhandle")}
-                    {field("linkedinUrl", "LinkedIn URL", "https://linkedin.com/company/...")}
-                    {field("youtubeUrl", "YouTube URL", "https://youtube.com/@...")}
+                    {field(
+                        "twitterUrl",
+                        "X / Twitter URL",
+                        "https://x.com/yourhandle"
+                    )}
+                    {field(
+                        "linkedinUrl",
+                        "LinkedIn URL",
+                        "https://linkedin.com/company/..."
+                    )}
+                    {field(
+                        "youtubeUrl",
+                        "YouTube URL",
+                        "https://youtube.com/@..."
+                    )}
                 </div>
             </Card>
         </div>

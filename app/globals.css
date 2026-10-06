@@ -150,3 +150,46 @@
 @utility text-balance {
   text-wrap: balance;
 }
+/* Shared controls for accounts and publishing tools. */
+.cms-input { display:block; width:100%; margin-top:.4rem; border:1px solid var(--border, #d4d4d8); border-radius:.5rem; padding:.65rem .8rem; background:var(--background, white); color:inherit; }
+.cms-primary { display:inline-flex; align-items:center; justify-content:center; border-radius:.5rem; background:#c62936; color:white; padding:.65rem 1.2rem; font-weight:600; }
+.cms-primary:disabled { opacity:.55; cursor:wait; }
+.cms-input:focus-visible, .cms-primary:focus-visible { outline:2px solid #c62936; outline-offset:3px; }
+
+/* Quiet, left-origin navigation motion; keep the modal mounted while it closes. */
+.navigation-drawer {
+  animation: navigation-slide-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.navigation-backdrop {
+  animation: navigation-fade-in 200ms ease-out both;
+}
+[data-closing="true"] > .navigation-drawer {
+  animation: navigation-slide-out 180ms ease-in both;
+}
+[data-closing="true"] > .navigation-backdrop {
+  animation: navigation-fade-out 180ms ease-in both;
+}
+@keyframes navigation-slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes navigation-slide-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+@keyframes navigation-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes navigation-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navigation-drawer,
+  .navigation-backdrop,
+  [data-closing="true"] > .navigation-drawer,
+  [data-closing="true"] > .navigation-backdrop {
+    animation-duration: 1ms;
+  }
+}

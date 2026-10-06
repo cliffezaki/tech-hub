@@ -1,27 +1,32 @@
 import "server-only"
 
-import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { NextResponse } from "next/server"
 
-import { SESSION_COOKIE, isAdminAccessOpen, verifySessionToken } from "@/lib/auth"
+import { authorized, sameOrigin } from "@/lib/accounts"
+import type { Permission } from "@/lib/permissions"
 import { getStore } from "@/lib/store"
 
 /**
  * Middleware already blocks unauthenticated writes; this repeats the check inside the
  * handler so a route is never left open if the matcher config changes.
  */
-export async function requireAdmin() {
-    if (isAdminAccessOpen()) {
+export async function requireAdmin(permission: Permission = "settings.manage") {
+    if (!(await sameOrigin()))
+        return NextResponse.json(
+            { error: "Request origin is not allowed." },
+            { status: 403 }
+        )
+    if (
+        (await authorized(permission)) ||
+        (permission === "articles.editOwn" &&
+            (await authorized("articles.editAll")))
+    )
         return null
-    }
-
-    const store = await cookies()
-    if (await verifySessionToken(store.get(SESSION_COOKIE)?.value)) {
-        return null
-    }
-
-    return NextResponse.json({ error: "Not authorised." }, { status: 401 })
+    return NextResponse.json(
+        { error: "You do not have permission for this action." },
+        { status: 403 }
+    )
 }
 
 /** Turns a read-only environment into an explanation rather than a filesystem crash. */

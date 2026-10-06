@@ -1,8 +1,14 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getSiteSettings } from "@/lib/content"
+import { TrackingConsent } from "@/components/tracking"
+import { AdSlot } from "@/components/ad-slot"
 
-export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
     const settings = await getSiteSettings()
 
     return (
@@ -14,10 +20,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
                 Skip to content
             </a>
             <Navbar siteName={settings.siteName} />
+            <AdSlot slot="header" />
             <main id="main-content" className="flex-1">
                 {children}
             </main>
+            <AdSlot slot="footer" />
             <Footer />
+            <TrackingConsent />
         </div>
     )
 }

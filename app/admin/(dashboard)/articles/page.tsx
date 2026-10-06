@@ -11,6 +11,8 @@ import { formatDate } from "@/lib/format"
 import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 import type { Article, ArticleSection } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { ArticleActions } from "@/components/admin/article-actions"
+import { DemoSeedButton } from "@/components/admin/demo-seed-button"
 
 type SectionFilter = ArticleSection | "all"
 type StatusFilter = "all" | "published" | "draft"
@@ -21,6 +23,7 @@ export default function AdminArticlesPage() {
     const [search, setSearch] = useState("")
     const [section, setSection] = useState<SectionFilter>("all")
     const [status, setStatus] = useState<StatusFilter>("all")
+    const [demoOnly, setDemoOnly] = useState(false)
     const [busyId, setBusyId] = useState<string | null>(null)
     const [error, setError] = useState("")
 
@@ -38,6 +41,7 @@ export default function AdminArticlesPage() {
         const term = search.trim().toLowerCase()
 
         return articles.filter((article) => {
+            if (demoOnly && !article.demo) return false
             if (section !== "all" && article.section !== section) return false
             if (status !== "all" && article.status !== status) return false
             if (!term) return true
@@ -48,16 +52,19 @@ export default function AdminArticlesPage() {
                 article.author.toLowerCase().includes(term)
             )
         })
-    }, [articles, search, section, status])
+    }, [articles, search, section, status, demoOnly])
 
     const handleDelete = async (article: Article) => {
-        if (!confirm(`Delete "${article.title}"? This cannot be undone.`)) return
+        if (!confirm(`Delete "${article.title}"? This cannot be undone.`))
+            return
 
         setBusyId(article.id)
         setError("")
 
         try {
-            const response = await fetch(`/api/articles/${article.id}`, { method: "DELETE" })
+            const response = await fetch(`/api/articles/${article.id}`, {
+                method: "DELETE",
+            })
 
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}))
@@ -65,7 +72,9 @@ export default function AdminArticlesPage() {
                 return
             }
 
-            setArticles((current) => current.filter((item) => item.id !== article.id))
+            setArticles((current) =>
+                current.filter((item) => item.id !== article.id)
+            )
         } finally {
             setBusyId(null)
         }
@@ -89,7 +98,9 @@ export default function AdminArticlesPage() {
             }
 
             const updated: Article = await response.json()
-            setArticles((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+            setArticles((current) =>
+                current.map((item) => (item.id === updated.id ? updated : item))
+            )
         } finally {
             setBusyId(null)
         }
@@ -99,8 +110,12 @@ export default function AdminArticlesPage() {
         <div className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">Articles</h1>
-                    <p className="text-muted-foreground">Create, edit, feature, and remove stories.</p>
+                    <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">
+                        Articles
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Create, edit, feature, and remove stories.
+                    </p>
                 </div>
                 <Link href="/admin/articles/new">
                     <Button>
@@ -109,6 +124,10 @@ export default function AdminArticlesPage() {
                     </Button>
                 </Link>
             </div>
+
+            <DemoSeedButton onSaved={(article) =>
+                setArticles(items => [article, ...items.filter(a => a.id !== article.id)])
+            } />
 
             <Card className="p-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -124,7 +143,9 @@ export default function AdminArticlesPage() {
 
                     <select
                         value={section}
-                        onChange={(event) => setSection(event.target.value as SectionFilter)}
+                        onChange={(event) =>
+                            setSection(event.target.value as SectionFilter)
+                        }
                         className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                         aria-label="Filter by section"
                     >
@@ -138,7 +159,9 @@ export default function AdminArticlesPage() {
 
                     <select
                         value={status}
-                        onChange={(event) => setStatus(event.target.value as StatusFilter)}
+                        onChange={(event) =>
+                            setStatus(event.target.value as StatusFilter)
+                        }
                         className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                         aria-label="Filter by status"
                     >
@@ -147,10 +170,17 @@ export default function AdminArticlesPage() {
                         <option value="draft">Drafts</option>
                     </select>
                 </div>
+                <label className="mt-3 flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={demoOnly} onChange={event => setDemoOnly(event.target.checked)} />
+                    Show demo articles only
+                </label>
             </Card>
 
             {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+                <p
+                    className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                    role="alert"
+                >
                     {error}
                 </p>
             )}
@@ -161,15 +191,22 @@ export default function AdminArticlesPage() {
                 </div>
             ) : visible.length === 0 ? (
                 <Card className="p-10 text-center">
-                    <h3 className="font-semibold">No articles match those filters</h3>
+                    <h3 className="font-semibold">
+                        No articles match those filters
+                    </h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        {articles.length === 0 ? "Create your first article to get started." : "Try clearing the search or filters."}
+                        {articles.length === 0
+                            ? "Create your first article to get started."
+                            : "Try clearing the search or filters."}
                     </p>
                 </Card>
             ) : (
                 <Card className="divide-y">
                     {visible.map((article) => (
-                        <div key={article.id} className="flex flex-wrap items-center gap-4 p-4">
+                        <div
+                            key={article.id}
+                            className="flex flex-wrap items-center gap-4 p-4"
+                        >
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
                                     <Link
@@ -183,40 +220,81 @@ export default function AdminArticlesPage() {
                                             Draft
                                         </span>
                                     )}
+                                    {article.demo && (
+                                        <span className="shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium">
+                                            Demo
+                                        </span>
+                                    )}
                                 </div>
                                 <p className="mt-1 truncate text-xs uppercase tracking-wider text-muted-foreground">
-                                    {SECTION_META[article.section].label} · {article.category} · {article.author} ·{" "}
+                                    {SECTION_META[article.section].label} ·{" "}
+                                    {article.category} · {article.author} ·{" "}
                                     {formatDate(article.publishedAt)}
                                 </p>
+                                <ArticleActions
+                                    article={article}
+                                    onUpdated={(updated) =>
+                                        setArticles((items) =>
+                                            items.map((a) =>
+                                                a.id === updated.id
+                                                    ? updated
+                                                    : a
+                                            )
+                                        )
+                                    }
+                                />
                             </div>
 
                             <div className="flex items-center gap-1">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    title={article.featured ? "Remove from featured" : "Mark as featured"}
-                                    aria-label={article.featured ? "Remove from featured" : "Mark as featured"}
+                                    title={
+                                        article.featured
+                                            ? "Remove from featured"
+                                            : "Mark as featured"
+                                    }
+                                    aria-label={
+                                        article.featured
+                                            ? "Remove from featured"
+                                            : "Mark as featured"
+                                    }
                                     disabled={busyId === article.id}
                                     onClick={() => toggleFeatured(article)}
                                 >
                                     <Star
                                         className={cn(
                                             "h-4 w-4",
-                                            article.featured ? "fill-amber-400 text-amber-400" : "text-muted-foreground"
+                                            article.featured
+                                                ? "fill-amber-400 text-amber-400"
+                                                : "text-muted-foreground"
                                         )}
                                     />
                                 </Button>
 
                                 {article.status === "published" && (
-                                    <Link href={`/${article.section}/${article.slug}`} target="_blank">
-                                        <Button variant="ghost" size="icon" title="View on site" aria-label="View on site">
+                                    <Link
+                                        href={`/${article.section}/${article.slug}`}
+                                        target="_blank"
+                                    >
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            title="View on site"
+                                            aria-label="View on site"
+                                        >
                                             <Eye className="h-4 w-4" />
                                         </Button>
                                     </Link>
                                 )}
 
                                 <Link href={`/admin/articles/${article.id}`}>
-                                    <Button variant="ghost" size="icon" title="Edit" aria-label="Edit">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Edit"
+                                        aria-label="Edit"
+                                    >
                                         <Pencil className="h-4 w-4" />
                                     </Button>
                                 </Link>
