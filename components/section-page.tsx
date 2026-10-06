@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { FileText } from "lucide-react"
 
-import { ArticleCard } from "@/components/article-card"
+import { ArticleCollection } from "@/components/article-collection"
 import { Button } from "@/components/ui/button"
 import { getSectionArticles, getPublishedPage } from "@/lib/content"
 import { Markdown } from "@/components/markdown"
@@ -15,10 +15,6 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)
     if (!page) notFound()
-
-    const [lead, ...rest] = articles
-    const secondary = rest.slice(0, 2)
-    const grid = rest.slice(2)
 
     return (
         <div className="site-container py-10 md:py-14">
@@ -50,39 +46,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                <>
-                    <div className="grid gap-10 py-10 lg:grid-cols-12">
-                        <div className="lg:col-span-8">
-                            <ArticleCard
-                                article={lead}
-                                variant="feature"
-                                priority
-                            />
-                        </div>
-
-                        {secondary.length > 0 && (
-                            <div className="flex flex-col gap-8 lg:col-span-4">
-                                {secondary.map((article) => (
-                                    <ArticleCard
-                                        key={article.id}
-                                        article={article}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {grid.length > 0 && (
-                        <div className="grid gap-x-8 gap-y-10 border-t pt-10 sm:grid-cols-2 lg:grid-cols-3">
-                            {grid.map((article) => (
-                                <ArticleCard
-                                    key={article.id}
-                                    article={article}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </>
+                <ArticleCollection articles={articles} leadLayout />
             )}
         </div>
     )

@@ -91,7 +91,19 @@ export async function DELETE(request: Request) {
             )
         }
 
-        const deleted = await getStore().deleteMedia(id)
+        const store = getStore()
+        const asset = (await store.listMedia()).find((item) => item.id === id)
+        if (asset) {
+            const [articles, pages] = await Promise.all([store.listArticles(), store.listPages()])
+            if (articles.some((a) => a.imageUrl?.startsWith(asset.url) || a.content.includes(asset.url)) ||
+                pages.some((p) => p.content.includes(asset.url))) {
+                return NextResponse.json(
+                    { error: "This image is still used in content. Remove those references before deleting it." },
+                    { status: 409 }
+                )
+            }
+        }
+        const deleted = await store.deleteMedia(id)
 
         if (!deleted) {
             return NextResponse.json(

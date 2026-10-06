@@ -20,7 +20,10 @@ const CONTENT_DIR =
 const ARTICLES_DIR = path.join(CONTENT_DIR, "articles")
 const PAGES_DIR = path.join(CONTENT_DIR, "pages")
 const SETTINGS_FILE = path.join(CONTENT_DIR, "settings.json")
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads")
+const UPLOADS_DIR =
+    process.env.CMS_TEST_CONTENT_DIR && process.env.NODE_ENV !== "production"
+        ? path.join(CONTENT_DIR, "uploads")
+        : path.join(process.cwd(), "public", "uploads")
 
 /**
  * Serverless hosts ship a read-only bundle, so writing JSON to disk silently loses
@@ -114,9 +117,15 @@ export function createFileStore(): ContentStore {
             return articles.find((article) => article.slug === slug) || null
         },
 
-        async createArticle(input) {
+        async createArticle(input, createOnlyId) {
+            if (createOnlyId && !/^[a-zA-Z0-9_-]+$/.test(createOnlyId))
+                throw new Error("Invalid article identifier")
+            if (createOnlyId) {
+                const existing = await this.getArticle(createOnlyId)
+                if (existing) return existing
+            }
             const articles = await this.listArticles()
-            const id = generateId()
+            const id = createOnlyId || generateId()
             const article = normalizeArticle({
                 ...input,
                 id,
@@ -124,7 +133,16 @@ export function createFileStore(): ContentStore {
                 updatedAt: new Date().toISOString(),
             })
 
-            writeJson(path.join(ARTICLES_DIR, `${id}.json`), article)
+            const destination = path.join(ARTICLES_DIR, `${id}.json`)
+            if (createOnlyId) {
+                ensureDir(ARTICLES_DIR)
+                try {
+                    fs.writeFileSync(destination, JSON.stringify(article, null, 2), { flag: "wx" })
+                } catch (error) {
+                    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error
+                    return (await this.getArticle(id))!
+                }
+            } else writeJson(destination, article)
             return article
         },
 

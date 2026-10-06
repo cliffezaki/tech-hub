@@ -11,6 +11,7 @@ import { getArticleDetail, getRelatedArticles } from "@/lib/content"
 import { formatDate } from "@/lib/format"
 import { getSiteUrl } from "@/lib/site"
 import { SECTION_META } from "@/lib/types"
+import { authorHref } from "@/lib/authors"
 import type { ArticleSection } from "@/lib/types"
 
 interface ArticleDetailPageProps {
@@ -34,12 +35,12 @@ export async function ArticleDetailPage({
     // Helps Google show the headline, author, and image in search results.
     const structuredData = {
         "@context": "https://schema.org",
-        "@type": "NewsArticle",
+        "@type": article.demo ? "Article" : "NewsArticle",
         headline: article.title,
         description: article.excerpt,
         image: article.imageUrl ? [article.imageUrl] : undefined,
         datePublished: article.publishedAt,
-        author: [{ "@type": "Person", name: article.author }],
+        author: [{ "@type": article.demo ? "Organization" : "Person", name: article.author, url: `${getSiteUrl()}${authorHref(article.author)}` }],
         mainEntityOfPage: `${getSiteUrl()}${article.href}`,
     }
 
@@ -69,6 +70,12 @@ export async function ArticleDetailPage({
                     <span className="kicker text-brand-red">
                         {article.category}
                     </span>
+                    {article.demo && (
+                        <p className="mt-3 rounded border bg-muted/30 p-3 text-sm">
+                            Editorial sample · Researched demo content, not original reporting or hands-on testing.
+                            Edit or remove this story from the CMS.
+                        </p>
+                    )}
                     {article.sponsorship && (
                         <p className="mt-3 rounded border p-3 text-sm font-semibold">
                             {article.sponsorship}
@@ -86,9 +93,9 @@ export async function ArticleDetailPage({
                     )}
 
                     <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-4 text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">
+                        <Link href={authorHref(article.author)} className="font-medium text-foreground hover:underline">
                             {article.author}
-                        </span>
+                        </Link>
                         <span aria-hidden="true">·</span>
                         <time dateTime={article.publishedAt}>
                             {formatDate(article.publishedAt)}
@@ -112,7 +119,7 @@ export async function ArticleDetailPage({
                         </div>
                         {article.imageCredit && (
                             <figcaption className="mt-2 text-xs text-muted-foreground">
-                                Photograph: {article.imageCredit}
+                                Image: {article.imageCredit}
                             </figcaption>
                         )}
                     </figure>

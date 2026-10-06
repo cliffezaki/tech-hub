@@ -131,7 +131,7 @@ export async function POST(request: Request, { params }: Context) {
                     { status: 403 }
                 )
             const article = await getStore().getArticle(
-                String(body.articleId || "")
+                String(body.articleId || ""), false
             )
             if (!article || article.status !== "published")
                 return NextResponse.json(

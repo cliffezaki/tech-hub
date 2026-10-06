@@ -134,6 +134,7 @@ try {
     assert(ownerInfo.data.permissions.includes("users.manage"))
     assert(ownerInfo.data.permissions.includes("articles.publish"))
     assert(ownerInfo.data.permissions.includes("ads.settings"))
+    await call("/api/cms/demo", { status: 403 })
     const reader = await post("/api/auth/register", {
         email: "reader@example.test",
         password: "Test-password-long!",
@@ -144,6 +145,11 @@ try {
     assert.equal(reader.data.redirect, "/account")
     await call("/api/cms/users", { cookie: reader.cookie, status: 403 })
     await post("/api/articles", { title: "Denied" }, reader.cookie, 403)
+    await post("/api/cms/demo", { index: 0 }, reader.cookie, 403)
+    await call("/api/cms/demo", {
+        method: "POST", body: { index: 0 }, cookie: owner.cookie,
+        origin: "https://attacker.example", status: 403,
+    })
     await call("/api/cms/categories", {
         method: "POST",
         body: { name: "CSRF" },
@@ -268,6 +274,7 @@ try {
         assert.equal(login.data.user.role, role)
         assert.equal(login.data.redirect, "/admin")
         assert(!Object.hasOwn(login.data.user, "passwordHash"))
+        await post("/api/cms/demo", { index: 0 }, login.cookie, 403)
         await call("/api/cms/users", { cookie: login.cookie, status: 403 })
         await post("/api/cms/users", {
             email: "privileged@example.test", role: "administrator", password: "Test-password-long!",
@@ -428,6 +435,68 @@ try {
         `/api/public/comments?articleId=${draft.data.id}`
     )
     assert.equal(publicComments.data.length, 0)
+    const demoPlan = await call("/api/cms/demo", { cookie: owner.cookie })
+    assert.equal(demoPlan.data.enabled, true)
+    assert.equal(demoPlan.data.count, 17)
+    assert.deepEqual(demoPlan.data.sections, {
+        news: 5, reviews: 3, "how-to": 3, "how-stuff-works": 3, "tech-kenya": 3,
+    })
+    await post("/api/cms/demo", { index: -1 }, owner.cookie, 400)
+    await post("/api/cms/demo", { index: "0" }, owner.cookie, 400)
+    await post("/api/cms/demo", { index: 17 }, owner.cookie, 400)
+    const seeded = []
+    for (let index = 0; index < 17; index++) {
+        const sample = await post("/api/cms/demo", { index }, owner.cookie, 201)
+        assert.equal(sample.data.article.demo, true)
+        assert.equal(sample.data.article.ownerId, ownerId)
+        assert(sample.data.article.imageUrl.startsWith("/uploads/"))
+        assert(!sample.data.article.content.includes("{{diagram}}"))
+        assert(sample.data.article.content.includes("https://"))
+        seeded.push(sample.data.article)
+    }
+    await call(`/api/articles/${seeded[0].id}`, {
+        method: "PUT", body: { title: "Owner edited sample", featured: false }, cookie: owner.cookie,
+    })
+    const repeated = await post("/api/cms/demo", { index: 0 }, owner.cookie)
+    assert.equal(repeated.data.skipped, true)
+    assert.equal(repeated.data.article.title, "Owner edited sample")
+    assert.equal(repeated.data.article.imageUrl, seeded[0].imageUrl)
+    const media = await call("/api/media")
+    assert.equal(media.data.length, 21)
+    const image = media.data.find(m => m.url === seeded[0].imageUrl)
+    await call(`/api/media?id=${encodeURIComponent(image.id)}`, {
+        method: "DELETE", cookie: owner.cookie, status: 409,
+    })
+    // Exercise the normal image-upload path without enabling unsafe SVG uploads.
+    const form = new FormData()
+    form.set("file", new Blob([Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9kAAAAASUVORK5CYII=", "base64")], { type: "image/png" }), "isolated-test.png")
+    const upload = await fetch(`${base}/api/media`, { method: "POST", headers: { Origin: base, Cookie: owner.cookie }, body: form })
+    assert.equal(upload.status, 201)
+    checks++
+    const uploaded = await upload.json()
+    await call(`/api/media?id=${encodeURIComponent(uploaded.id)}`, { method: "DELETE", cookie: owner.cookie })
+    const svgForm = new FormData()
+    svgForm.set("file", new Blob(["<svg/>"], { type: "image/svg+xml" }), "blocked.svg")
+    const blockedSvg = await fetch(`${base}/api/media`, { method: "POST", headers: { Origin: base, Cookie: owner.cookie }, body: svgForm })
+    assert.equal(blockedSvg.status, 400)
+    checks++
+    const home = await call("/")
+    assert(home.data.includes("Owner edited sample"))
+    const storyPage = await call(`/how-stuff-works/${seeded[11].slug}`)
+    assert(storyPage.data.includes("Editorial sample"))
+    assert(storyPage.data.includes("Simplified sequence"))
+    const bylinePage = await call("/authors/tech-hub-demo-desk")
+    assert(bylinePage.data.includes("Page <!-- -->1<!-- --> of <!-- -->3") || bylinePage.data.includes("Article pagination"))
+    assert(!bylinePage.data.includes("PRIVATE_TEST_MARKER"))
+    await call("/authors/nonexistent-author", { status: 404 })
+    await call(`/api/articles/${seeded[1].id}`, {
+        method: "PUT", body: { status: "draft" }, cookie: owner.cookie,
+    })
+    await call(`/news/${seeded[1].slug}`, { status: 404 })
+    await call(`/api/articles/${seeded[1].id}`, {
+        method: "PUT", body: { status: "published" }, cookie: owner.cookie,
+    })
+    await call(`/news/${seeded[1].slug}`)
     await post("/api/auth/forgot", { email: "reader@example.test" }, "", 503)
     const digest = (value) => createHash("sha256").update(value).digest("hex")
     const readerId = digest("reader@example.test")

@@ -18,6 +18,7 @@ export interface ArticleDetail extends ArticleSummary {
 
 function toSummary(article: Article): ArticleSummary {
     return {
+        demo: article.demo,
         id: article.id,
         title: article.title,
         slug: article.slug,
@@ -41,7 +42,7 @@ function isPublished(article: Article) {
 
 /** Every public read goes through here, so drafts can never leak onto the live site. */
 async function getPublishedArticles(): Promise<Article[]> {
-    const articles = await getStore().listArticles()
+    const articles = await getStore().listArticles(false)
     return articles.filter(isPublished)
 }
 
@@ -79,7 +80,7 @@ export async function getArticleDetail(
     section: ArticleSection,
     slug: string
 ): Promise<ArticleDetail | null> {
-    const article = await getStore().getArticleBySlug(slug)
+    const article = await getStore().getArticleBySlug(slug, false)
 
     if (!article || article.section !== section || !isPublished(article)) {
         return null
@@ -214,13 +215,13 @@ export async function getPublishedPage(
     slug: string
 ): Promise<PageContent | null> {
     const page =
-        (await getStore().getPageBySlug(slug)) ||
+        (await getStore().getPageBySlug(slug, false)) ||
         BUILTIN_PAGES.find((p) => p.slug === slug)
     return page && page.status === "published" ? page : null
 }
 
 export async function getPublishedPages(): Promise<PageContent[]> {
-    const pages = await getStore().listPages()
+    const pages = await getStore().listPages(false)
     return mergeBuiltinPages(pages).filter(
         (page) => page.status === "published"
     )

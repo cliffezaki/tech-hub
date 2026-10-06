@@ -13,9 +13,10 @@ import { slugify } from "@/lib/store/normalize"
 
 export async function GET() {
     try {
-        const pages = mergeBuiltinPages(await getStore().listPages())
+        const manager = await authorized("pages.manage")
+        const pages = mergeBuiltinPages(await getStore().listPages(Boolean(manager)))
         return NextResponse.json(
-            (await authorized("pages.manage"))
+            manager
                 ? pages
                 : pages.filter((p) => p.status === "published")
         )

@@ -62,6 +62,8 @@ export function normalizeArticle(input: unknown): Article {
     const content = String(raw.content || "")
 
     return {
+        demo: raw.demo === true,
+        demoBatch: typeof raw.demoBatch === "string" ? raw.demoBatch : undefined,
         id: String(raw.id || generateId()),
         title,
         slug: slugify(String(raw.slug || title)) || generateId(),

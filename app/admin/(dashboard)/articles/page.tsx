@@ -12,6 +12,7 @@ import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 import type { Article, ArticleSection } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { ArticleActions } from "@/components/admin/article-actions"
+import { DemoSeedButton } from "@/components/admin/demo-seed-button"
 
 type SectionFilter = ArticleSection | "all"
 type StatusFilter = "all" | "published" | "draft"
@@ -22,6 +23,7 @@ export default function AdminArticlesPage() {
     const [search, setSearch] = useState("")
     const [section, setSection] = useState<SectionFilter>("all")
     const [status, setStatus] = useState<StatusFilter>("all")
+    const [demoOnly, setDemoOnly] = useState(false)
     const [busyId, setBusyId] = useState<string | null>(null)
     const [error, setError] = useState("")
 
@@ -39,6 +41,7 @@ export default function AdminArticlesPage() {
         const term = search.trim().toLowerCase()
 
         return articles.filter((article) => {
+            if (demoOnly && !article.demo) return false
             if (section !== "all" && article.section !== section) return false
             if (status !== "all" && article.status !== status) return false
             if (!term) return true
@@ -49,7 +52,7 @@ export default function AdminArticlesPage() {
                 article.author.toLowerCase().includes(term)
             )
         })
-    }, [articles, search, section, status])
+    }, [articles, search, section, status, demoOnly])
 
     const handleDelete = async (article: Article) => {
         if (!confirm(`Delete "${article.title}"? This cannot be undone.`))
@@ -122,6 +125,10 @@ export default function AdminArticlesPage() {
                 </Link>
             </div>
 
+            <DemoSeedButton onSaved={(article) =>
+                setArticles(items => [article, ...items.filter(a => a.id !== article.id)])
+            } />
+
             <Card className="p-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                     <div className="relative flex-1">
@@ -163,6 +170,10 @@ export default function AdminArticlesPage() {
                         <option value="draft">Drafts</option>
                     </select>
                 </div>
+                <label className="mt-3 flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={demoOnly} onChange={event => setDemoOnly(event.target.checked)} />
+                    Show demo articles only
+                </label>
             </Card>
 
             {error && (
@@ -207,6 +218,11 @@ export default function AdminArticlesPage() {
                                     {article.status === "draft" && (
                                         <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                                             Draft
+                                        </span>
+                                    )}
+                                    {article.demo && (
+                                        <span className="shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium">
+                                            Demo
                                         </span>
                                     )}
                                 </div>

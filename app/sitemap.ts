@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next"
 import { getAllArticleSummaries, getPublishedPages } from "@/lib/content"
 import { getSiteUrl } from "@/lib/site"
 import { ARTICLE_SECTIONS } from "@/lib/types"
+import { authorHref } from "@/lib/authors"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = getSiteUrl()
@@ -26,6 +27,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
         return [
             ...staticRoutes,
+            ...[...new Set(articles.map(a => authorHref(a.author)))].map(href => ({
+                url: `${baseUrl}${href}`, changeFrequency: "weekly" as const, priority: 0.4,
+            })),
             ...articles.map((article) => ({
                 url: `${baseUrl}${article.href}`,
                 lastModified: new Date(article.publishedAt),

@@ -31,7 +31,7 @@ export const SECTION_META: Record<
         label: "Reviews",
         navLabel: "Reviews",
         title: "Reviews",
-        subtitle: "Hands-on verdicts on the hardware worth your money",
+        subtitle: "Independent assessments of hardware and software",
         defaultCategory: "Review",
     },
     "how-to": {
@@ -60,6 +60,8 @@ export const SECTION_META: Record<
 export type ArticleStatus = "draft" | "published"
 
 export interface Article {
+    demo?: boolean
+    demoBatch?: string
     ownerId?: string
     pinnedAreas?: string[]
     manualOrder?: number
@@ -135,6 +137,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 }
 
 export interface ArticleSummary {
+    demo?: boolean
     sponsorship?: string
     id: string
     title: string
@@ -152,6 +155,8 @@ export interface ArticleSummary {
 }
 
 export interface SanityArticle {
+    demo?: boolean
+    demoBatch?: string
     _id: string
     title?: string
     slug?: string

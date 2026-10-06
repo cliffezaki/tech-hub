@@ -14,9 +14,11 @@ import { currentUser, userPermissions } from "@/lib/accounts"
 
 export async function GET() {
     try {
-        const articles = await getStore().listArticles()
         const user = await currentUser()
         const permissions = user ? await userPermissions(user) : []
+        const articles = await getStore().listArticles(
+            permissions.includes("articles.editAll") || permissions.includes("articles.editOwn")
+        )
         return NextResponse.json(
             articles.filter(
                 (a) =>
