@@ -2,7 +2,7 @@
 
 The website runs on Vercel, articles/pages/media stay in Sanity, and private accounts,
 advertising records, subscriber preferences and reporting events live in Supabase.
-Password-reset emails use Resend. The account upgrade replaces the old shared
+Password-reset emails can use a dedicated Gmail account or Resend. The account upgrade replaces the old shared
 `ADMIN_PASSWORD` login. See [CMS-SETUP.md](./CMS-SETUP.md) for remaining feature scope.
 
 ## 1. Prepare isolated staging storage
@@ -36,32 +36,54 @@ branches. Branch-specific overrides keep live settings intact.
 | `SUPABASE_URL` | HTTPS URL of the staging Supabase project |
 | `SUPABASE_SECRET_KEY` | Staging secret API key beginning with `sb_secret_` |
 | `ADMIN_SESSION_SECRET` | A new random secret of at least 32 characters |
-| `OWNER_EMAIL` | Your chosen owner sign-in email |
-| `OWNER_SETUP_TOKEN` | A different random secret of at least 32 characters |
 | `NEXT_PUBLIC_SITE_URL` | The stable HTTPS URL for this preview branch |
 
 Keep secret values server-only. Do not add `NEXT_PUBLIC_` to the Supabase secret,
-Sanity write token, session secret or setup token. `CMS_PRIVATE_DATASET` and
-`ADMIN_PASSWORD` are no longer used by this branch.
+Sanity write token or session secret. `CMS_PRIVATE_DATASET`, `ADMIN_PASSWORD`,
+`OWNER_EMAIL` and `OWNER_SETUP_TOKEN` are no longer used by this branch.
 
 Redeploy the existing preview after setting the variables. Do not promote it to
 production yet. A successful code build alone does not verify database access.
 
-## 3. Create the owner account
+## 3. Sign in with the existing owner account
 
-Open the preview's `/account` page, select **Owner setup**, and enter the configured
-owner email, your name, setup token and a password of 12–256 characters. Complete
-password entry yourself. The website should open `/admin` afterward.
+Open the preview's `/account` page and sign in using the existing owner's email
+and password. The authenticated private user record determines the role, not an
+environment-variable email match. The website should open `/admin` afterward.
+Passwords are hashed using scrypt; never insert plaintext passwords into storage.
 
-Remove the preview's `OWNER_SETUP_TOKEN` from Vercel after setup and redeploy the
-preview. The owner account remains in Supabase. Public registration creates readers
-and cannot claim the reserved owner email or choose a privileged role.
+The existing owner record remains in Supabase. Public registration creates readers
+only, and there is no public endpoint for creating an Owner. Owner account provisioning
+in a separate, empty environment requires a trusted offline migration with a securely
+generated password hash; public registration cannot perform that migration.
 
 ## 4. Enable password-reset delivery
 
-Configure a Resend account and verified sender. Add preview-only `RESEND_API_KEY`
-and `RESEND_FROM_EMAIL` in Vercel. `NEXT_PUBLIC_SITE_URL` must point to the HTTPS
-preview, so email links return to that environment. Redeploy and request a reset
+For the selected Gmail option, use a separate Gmail account for Tech Hub. Enable
+[Google 2-Step Verification](https://support.google.com/accounts/answer/185839),
+then generate an [app password](https://support.google.com/accounts/answer/185833)
+named for Tech Hub. The account owner must enter and save it directly in Vercel;
+do not share it in chat or use the normal Gmail password. An app password grants
+account access, so keep this account separate from personal email and revoke the
+credential if it is exposed.
+
+Add these variables only to the existing preview branch:
+
+| Variable | Value |
+| --- | --- |
+| `MAIL_PROVIDER` | `gmail` |
+| `SMTP_USER` | The dedicated Gmail address |
+| `SMTP_PASSWORD` | Its Google app password, marked Sensitive |
+
+Gmail is contacted through TLS on `smtp.gmail.com:465`; the From address is always
+the configured Gmail account, with display name Tech Hub. No owned domain is needed.
+Google may block server sign-ins and imposes sending limits; test real delivery before
+rollout. A larger site should use a transactional provider. As an alternative, set
+`MAIL_PROVIDER=resend`, `RESEND_API_KEY` and `RESEND_FROM_EMAIL` for a verified sender.
+There is no silent fallback to another sender if the selected provider fails.
+
+`NEXT_PUBLIC_SITE_URL` must point to the HTTPS preview, so email links return to
+that environment. Redeploy and request a reset
 for your own account. Links expire after 30 minutes and work once. Resetting the
 password invalidates older sessions and sibling reset links.
 

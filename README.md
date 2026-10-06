@@ -14,8 +14,8 @@ npm run dev
 ```
 
 Open <http://localhost:3000>. No configuration is needed: content is read from the JSON
-files in `content/`. To use the dashboard, configure a session secret and owner setup
-details as described in CMS-SETUP.md. Local private accounts are stored in `.data/platform`.
+files in `content/`. To use the dashboard, configure a session secret and sign in
+with an existing private account as described in CMS-SETUP.md. Local private accounts are stored in `.data/platform`.
 
 ## The dashboard
 
@@ -44,7 +44,8 @@ deployment. The short version:
   so the dashboard needs a database behind it to work in production.
 - Store accounts and advertising records in **Supabase** (free tier), with the private
   table created by `supabase/cms-records.sql` and a server-only secret API key.
-- Configure individual accounts and owner setup. `ADMIN_PASSWORD` is no longer used.
+- Sign in with an existing individual account. Public signup creates readers only;
+  it cannot create an Owner. `ADMIN_PASSWORD` is no longer used.
 
 ## How content storage works
 
