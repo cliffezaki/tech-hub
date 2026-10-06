@@ -1,9 +1,9 @@
 import assert from "node:assert/strict"
 import { spawn } from "node:child_process"
-import { mkdtemp, mkdir } from "node:fs/promises"
+import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { randomBytes } from "node:crypto"
+import { randomBytes, createHash } from "node:crypto"
 
 const temporary = await mkdtemp(path.join(os.tmpdir(), "techhub-cms-test-"))
 await mkdir(path.join(temporary, "content"))
@@ -25,6 +25,8 @@ const server = spawn(
             NEXT_PUBLIC_SANITY_PROJECT_ID: "",
             SANITY_API_WRITE_TOKEN: "",
             CMS_PRIVATE_DATASET: "",
+            RESEND_API_KEY: "",
+            RESEND_FROM_EMAIL: "",
         },
         stdio: ["ignore", "pipe", "pipe"],
     }
@@ -349,6 +351,80 @@ try {
     )
     assert.equal(publicComments.data.length, 0)
     await post("/api/auth/forgot", { email: "reader@example.test" }, "", 503)
+    const digest = (value) => createHash("sha256").update(value).digest("hex")
+    const readerId = digest("reader@example.test")
+    const accountFile = path.join(
+        temporary,
+        "private",
+        `drafts.platform.users.${readerId}.json`
+    )
+    const account = JSON.parse(await readFile(accountFile, "utf8"))
+    async function resetFixture(expiresAt, version = account.sessionVersion) {
+        const token = randomBytes(32).toString("hex")
+        await writeFile(
+            path.join(
+                temporary,
+                "private",
+                `drafts.platform.password-resets.${digest(token)}.json`
+            ),
+            JSON.stringify({
+                userId: readerId,
+                sessionVersion: version,
+                expiresAt,
+            })
+        )
+        return token
+    }
+    const resetPassword = "New-reset-password-long!"
+    await post(
+        "/api/auth/reset",
+        { token: "invalid", password: resetPassword },
+        "",
+        400
+    )
+    await post(
+        "/api/auth/reset",
+        {
+            token: await resetFixture(Date.now() - 1000),
+            password: resetPassword,
+        },
+        "",
+        400
+    )
+    await post(
+        "/api/auth/reset",
+        {
+            token: await resetFixture(Date.now() + 60000, 0),
+            password: resetPassword,
+        },
+        "",
+        400
+    )
+    const token = await resetFixture(Date.now() + 60000)
+    const sibling = await resetFixture(Date.now() + 60000)
+    await post("/api/auth/reset", { token, password: "short" }, "", 400)
+    await post("/api/auth/reset", { token, password: resetPassword }, "", 200)
+    assert.equal(
+        (await call("/api/auth/me", { cookie: reader.cookie })).data.user,
+        null
+    )
+    await post("/api/auth/reset", { token, password: resetPassword }, "", 400)
+    await post(
+        "/api/auth/reset",
+        { token: sibling, password: resetPassword },
+        "",
+        400
+    )
+    await post(
+        "/api/auth/login",
+        { email: account.email, password: "Test-password-long!" },
+        "",
+        401
+    )
+    await post("/api/auth/login", {
+        email: account.email,
+        password: resetPassword,
+    })
     console.log(
         `PASS: ${checks} HTTP checks plus assertions for account roles, owner protection, draft privacy, authorization, CSRF, scheduling, consent, inquiry privacy, and moderation.`
     )

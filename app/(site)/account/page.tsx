@@ -9,11 +9,18 @@ export default function AccountPage() {
     const [message, setMessage] = useState("")
     const [busy, setBusy] = useState(false)
     const [ready, setReady] = useState(false)
+    const [resetToken, setResetToken] = useState("")
     useEffect(() => {
+        const token = new URLSearchParams(location.hash.slice(1)).get("reset")
+        if (token) {
+            setResetToken(token)
+            setMode("reset")
+            history.replaceState(null, "", location.pathname + location.search)
+        }
         fetch("/api/auth/me")
             .then((r) => r.json())
             .then((d) => {
-                setUser(d.user)
+                setUser(token ? null : d.user)
                 setStaff(d.permissions?.length > 0)
                 setReady(true)
                 if (!d.configured)
@@ -32,6 +39,11 @@ export default function AccountPage() {
         setMessage("")
         const form = new FormData(event.currentTarget)
         try {
+            if (
+                mode === "reset" &&
+                form.get("password") !== form.get("confirmPassword")
+            )
+                throw new Error("Passwords do not match.")
             const response = await fetch(
                 `/api/auth/${user ? "profile" : mode}`,
                 {
@@ -39,6 +51,7 @@ export default function AccountPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         ...Object.fromEntries(form),
+                        token: resetToken,
                         subscribed: form.get("subscribed") === "on",
                     }),
                 }
@@ -49,6 +62,10 @@ export default function AccountPage() {
             else {
                 setMessage(result.message)
                 if (result.user) setUser(result.user)
+                if (mode === "reset") {
+                    setResetToken("")
+                    setMode("login")
+                }
             }
         } catch (e) {
             setMessage((e as Error).message)
@@ -81,7 +98,7 @@ export default function AccountPage() {
             {!ready ? (
                 <p>Loading account…</p>
             ) : (
-                <form onSubmit={submit} className="mt-7 space-y-5">
+                <form key={mode} onSubmit={submit} className="mt-7 space-y-5">
                     {(user || ["register", "setup"].includes(mode)) && (
                         <label className="block">
                             Name
@@ -94,7 +111,7 @@ export default function AccountPage() {
                             />
                         </label>
                     )}
-                    {!user && (
+                    {!user && mode !== "reset" && (
                         <label className="block">
                             Email
                             <input
@@ -140,6 +157,20 @@ export default function AccountPage() {
                             />
                         </label>
                     )}
+                    {mode === "reset" && (
+                        <label className="block">
+                            Confirm new password
+                            <input
+                                className="cms-input"
+                                name="confirmPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                required
+                                minLength={12}
+                                maxLength={256}
+                            />
+                        </label>
+                    )}
                     {mode === "setup" && (
                         <label className="block">
                             Owner setup token
@@ -170,7 +201,9 @@ export default function AccountPage() {
                                 ? "Log in"
                                 : mode === "forgot"
                                   ? "Request password reset"
-                                  : "Create account"}
+                                  : mode === "reset"
+                                    ? "Save new password"
+                                    : "Create account"}
                     </button>
                 </form>
             )}

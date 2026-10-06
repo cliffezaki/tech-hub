@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { timingSafeEqual } from "node:crypto"
 import {
+    resetConfigured,
+    requestReset,
+    redeemReset,
+} from "@/lib/password-reset"
+import {
     currentUser,
     emailId,
     hashPassword,
@@ -24,7 +29,7 @@ export async function GET() {
             user: user ? safeUser(user) : null,
             permissions: user ? await userPermissions(user) : [],
             configured: platformReady() && isAuthConfigured(),
-            resetConfigured: false,
+            resetConfigured: resetConfigured(),
         },
         { headers: { "Cache-Control": "no-store" } }
     )
@@ -49,13 +54,23 @@ export async function POST(request: Request) {
             .trim()
             .toLowerCase()
         const id = emailId(email)
-        if (action === "forgot")
-            return NextResponse.json(
-                {
-                    error: "Password-reset email delivery is not configured. Contact the site owner for account recovery.",
-                },
-                { status: 503 }
+        if (action === "reset") {
+            await redeemReset(
+                String(body.token || ""),
+                String(body.password || "")
             )
+            const response = NextResponse.json({
+                message: "Password reset. Sign in with your new password.",
+            })
+            response.cookies.set(SESSION_COOKIE, "", {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production",
+                path: "/",
+                maxAge: 0,
+            })
+            return response
+        }
         if (action === "profile") {
             const user = await currentUser()
             if (!user)
@@ -107,6 +122,20 @@ export async function POST(request: Request) {
                 { error: "Too many attempts. Try again in 15 minutes." },
                 { status: 429 }
             )
+        if (action === "forgot") {
+            if (!resetConfigured())
+                return NextResponse.json(
+                    {
+                        error: "Password-reset email delivery is not configured. Contact the site owner for account recovery.",
+                    },
+                    { status: 503 }
+                )
+            await requestReset(email)
+            return NextResponse.json({
+                message:
+                    "If this address belongs to an active account, a reset link will be sent. Check your inbox and spam folder.",
+            })
+        }
         let user = await getRecord<User>("users", id)
         if (action === "register" || action === "setup") {
             const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase()

@@ -26,7 +26,8 @@ Local development keeps private data in `.data/platform`, ignored by Git. Produc
 ## Before production use
 
 - Review and publish your actual Privacy Policy and Terms. The privacy draft requires your business contact, retention and legal review. No third-party tracking scripts are installed.
-- Password-reset email delivery is **unconfigured**. Automatic approval review rejected adding Resend without approval of the provider and the email/reset-token payload. The UI reports that state. The owner can reset non-owner passwords in Users; self-service reset remains to be connected after choosing an email provider.
+- Password-reset email uses the approved Resend integration. Configure `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (a verified sender), and `NEXT_PUBLIC_SITE_URL` (the canonical HTTPS website URL) in the hosting environment, never in source control. Until configured, requests report that delivery is unavailable. See [Resend email API setup](https://resend.com/docs/api-reference/emails/send-email). Resend receives the recipient address and one-time reset link. Delivery failures produce a sanitized server log; monitor Resend delivery logs as well. No live email delivery has been verified without credentials.
+- Reset links expire after 30 minutes. Only a hash of the random token is stored in private CMS storage. Links carry the token in a URL fragment which the account screen removes immediately. Redemption consumes the account's reset generation atomically, changes the password, and revokes existing sessions and sibling reset links. Requests return the same message for unknown and eligible addresses. Include expired reset records, consumed reset generations, and rate-limit records in production retention cleanup.
 - Private Sanity access and hosting environment variables still need live validation. Tests exercise the local private store, not your live datasets.
 - Review the dependency audit for the existing lockfile. This change does not silently upgrade framework or CMS dependencies.
 - Inquiry protection includes validation, consent, honeypot and email-based throttles. Add a configured edge rate limiter/challenge service before high-volume public use.
@@ -34,7 +35,7 @@ Local development keeps private data in `.data/platform`, ignored by Git. Produc
 
 ## Remaining scope
 
-This is a reviewable first implementation, not every item in the full brief. Remaining enhancements: self-service password reset; email verification/newsletter delivery; geography/session engagement provider integration; advanced homepage layout builders; full category rename propagation; ownership reassignment UI; move-button/drag-and-drop ordering; logo/time-zone/date-format and pagination controls; richer advertiser asset libraries and revenue summaries; invoicing/payments; and production retention/abuse controls. Raw HTML/script ads are disabled. Sidebar placements need final template/design integration.
+This is a reviewable first implementation, not every item in the full brief. Remaining enhancements: email verification/newsletter delivery; geography/session engagement provider integration; advanced homepage layout builders; full category rename propagation; ownership reassignment UI; move-button/drag-and-drop ordering; logo/time-zone/date-format and pagination controls; richer advertiser asset libraries and revenue summaries; invoicing/payments; and production retention/abuse controls. Raw HTML/script ads are disabled. Sidebar placements need final template/design integration.
 
 ## Verification
 
