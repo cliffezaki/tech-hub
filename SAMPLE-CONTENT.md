@@ -39,4 +39,6 @@ Checks:
 - Owner confirmed receiving the Gmail reset message and logging in with the new password.
 
 Preview import and live-content verification are separate from production promotion.
+Article detail routes render at request time: new CMS slugs must not be generated as
+static fallbacks while the shared layout reads live navigation/settings from private storage.
 Do not merge/promote the preview or copy its environment secrets without the Owner's approval.

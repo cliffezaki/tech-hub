@@ -144,4 +144,9 @@ for (const [index, s] of stories.DEMO_STORIES.entries()) {
     assert(!/<script|foreignObject|href=|onload=|https?:\/\//i.test(svg.replace("http://www.w3.org/2000/svg", "")))
     if (s.diagram) assert(artwork.diagramSvg(s.diagram).includes("SIMPLIFIED CONCEPT"))
 }
-console.log("PASS: Sanity private draft paths, atomic article/page publishing and unpublishing, stable ids, slug normalization, sparse image patches, demo metadata, create-only imports, production guards, 17 source-linked stories and safe SVG illustrations.")
+for (const section of ["news", "reviews", "how-to", "how-stuff-works", "tech-kenya", ""]) {
+    const route = await readFile(`app/(site)/${section ? `${section}/` : ""}[slug]/page.tsx`, "utf8")
+    assert(route.includes('export const dynamic = "force-dynamic"'), section)
+    assert(!route.includes("generateStaticParams"), section)
+}
+console.log("PASS: Sanity private draft paths, atomic article/page publishing and unpublishing, stable ids, slug normalization, sparse image patches, demo metadata, create-only imports, production guards, 17 source-linked stories, safe SVG illustrations and request-time article routes.")
