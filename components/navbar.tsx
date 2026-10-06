@@ -31,6 +31,7 @@ const defaults: Item[] = [
 ]
 export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
     const [open, setOpen] = useState(false)
+    const [closing, setClosing] = useState(false)
     const [items, setItems] = useState(defaults)
     const [signedIn, setSignedIn] = useState(false)
     const path = usePathname()
@@ -63,13 +64,22 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
             .catch(() => {})
     }, [path])
     useEffect(() => {
+        if (!closing) return
+        // Safety fallback if an animation is interrupted or its end event is missed.
+        const timeout = window.setTimeout(() => {
+            setOpen(false)
+            setClosing(false)
+        }, 200)
+        return () => window.clearTimeout(timeout)
+    }, [closing])
+    useEffect(() => {
         if (!open) return
         const returnFocus = trigger.current
         const previous = document.body.style.overflow
         document.body.style.overflow = "hidden"
         drawer.current?.querySelector<HTMLElement>("button")?.focus()
         function key(e: KeyboardEvent) {
-            if (e.key === "Escape") setOpen(false)
+            if (e.key === "Escape") setClosing(true)
             if (e.key === "Tab") {
                 const links =
                     drawer.current?.querySelectorAll<HTMLElement>("a,button")
@@ -103,7 +113,10 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                             aria-label="Open navigation"
                             aria-expanded={open}
                             aria-controls="main-drawer"
-                            onClick={() => setOpen(true)}
+                            onClick={() => {
+                                setClosing(false)
+                                setOpen(true)
+                            }}
                         >
                             <Menu size={23} />
                         </button>
@@ -156,10 +169,10 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                 </div>
             </header>
             {open && (
-                <div className="fixed inset-0 z-50">
+                <div className="fixed inset-0 z-50" data-closing={closing}>
                     <div
-                        className="absolute inset-0 bg-black/45"
-                        onClick={() => setOpen(false)}
+                        className="navigation-backdrop absolute inset-0 bg-black/45"
+                        onClick={() => setClosing(true)}
                     />
                     <div
                         ref={drawer}
@@ -167,18 +180,24 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                         role="dialog"
                         aria-modal="true"
                         aria-label="Site navigation"
-                        className="absolute inset-y-0 left-0 w-[min(88vw,380px)] overflow-y-auto border-r bg-background p-7 shadow-xl"
+                        className="navigation-drawer absolute inset-y-0 left-0 w-[min(88vw,380px)] overflow-y-auto border-r bg-background p-7 shadow-xl"
+                        onAnimationEnd={(event) => {
+                            if (closing && event.target === event.currentTarget) {
+                                setOpen(false)
+                                setClosing(false)
+                            }
+                        }}
                     >
                         <div className="mb-8 flex items-center justify-between">
                             <Link
                                 href="/"
                                 aria-label={`${siteName} home`}
-                                onClick={() => setOpen(false)}
+                                onClick={() => setClosing(true)}
                             >
                                 {logo}
                             </Link>
                             <button
-                                onClick={() => setOpen(false)}
+                                onClick={() => setClosing(true)}
                                 aria-label="Close navigation"
                             >
                                 <X />
@@ -192,7 +211,7 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                                         className="border-b py-3 text-lg font-semibold"
                                         href={i.href}
                                         key={i.id}
-                                        onClick={() => setOpen(false)}
+                                        onClick={() => setClosing(true)}
                                     >
                                         {i.name}
                                     </Link>
@@ -200,7 +219,7 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                             <Link
                                 className="mt-6 cms-primary"
                                 href="/account"
-                                onClick={() => setOpen(false)}
+                                onClick={() => setClosing(true)}
                             >
                                 {signedIn ? "My account" : "Log in / Sign up"}
                             </Link>
