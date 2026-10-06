@@ -96,13 +96,24 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
         <>
             <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
                 <div className="site-container grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-                    <Link
-                        href="/"
-                        className="justify-self-start"
-                        aria-label={`${siteName} home`}
-                    >
-                        {logo}
-                    </Link>
+                    <div className="flex items-center justify-self-start gap-2 sm:gap-3">
+                        <button
+                            ref={trigger}
+                            className="shrink-0 rounded p-2 hover:bg-muted"
+                            aria-label="Open navigation"
+                            aria-expanded={open}
+                            aria-controls="main-drawer"
+                            onClick={() => setOpen(true)}
+                        >
+                            <Menu size={23} />
+                        </button>
+                        <Link
+                            href="/"
+                            aria-label={`${siteName} home`}
+                        >
+                            {logo}
+                        </Link>
+                    </div>
                     <nav
                         className="hidden items-center justify-center gap-5 lg:flex"
                         aria-label="Primary"
@@ -140,16 +151,6 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                         >
                             <Sun className="hidden dark:block" size={19} />
                             <Moon className="dark:hidden" size={19} />
-                        </button>
-                        <button
-                            ref={trigger}
-                            className="rounded p-2 hover:bg-muted"
-                            aria-label="Open navigation"
-                            aria-expanded={open}
-                            aria-controls="main-drawer"
-                            onClick={() => setOpen(true)}
-                        >
-                            <Menu size={23} />
                         </button>
                     </div>
                 </div>
