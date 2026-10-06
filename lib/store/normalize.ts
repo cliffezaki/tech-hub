@@ -1,5 +1,11 @@
 import { ARTICLE_SECTIONS, DEFAULT_SETTINGS, SECTION_META } from "@/lib/types"
-import type { Article, ArticleSection, ArticleStatus, PageContent, SiteSettings } from "@/lib/types"
+import type {
+    Article,
+    ArticleSection,
+    ArticleStatus,
+    PageContent,
+    SiteSettings,
+} from "@/lib/types"
 
 export function slugify(text: string) {
     return String(text)
@@ -16,7 +22,9 @@ export function generateId() {
 }
 
 function asSection(value: unknown): ArticleSection {
-    return ARTICLE_SECTIONS.includes(value as ArticleSection) ? (value as ArticleSection) : "news"
+    return ARTICLE_SECTIONS.includes(value as ArticleSection)
+        ? (value as ArticleSection)
+        : "news"
 }
 
 function asStatus(value: unknown): ArticleStatus {
@@ -36,7 +44,10 @@ function asDate(value: unknown): string {
 
 /** Roughly 200 words per minute, which is the usual reading-speed assumption for news copy. */
 export function estimateReadTime(content: string) {
-    const words = String(content || "").trim().split(/\s+/).filter(Boolean).length
+    const words = String(content || "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean).length
     return `${Math.max(1, Math.ceil(words / 200))} min read`
 }
 
@@ -61,12 +72,28 @@ export function normalizeArticle(input: unknown): Article {
         author: String(raw.author || "Tech Hub Staff"),
         publishedAt: asDate(raw.publishedAt),
         readTime: String(raw.readTime || estimateReadTime(content)),
-        imageUrl: typeof raw.imageUrl === "string" && raw.imageUrl.trim() ? raw.imageUrl.trim() : undefined,
-        imageAlt: typeof raw.imageAlt === "string" && raw.imageAlt.trim() ? raw.imageAlt.trim() : undefined,
-        imageCredit: typeof raw.imageCredit === "string" && raw.imageCredit.trim() ? raw.imageCredit.trim() : undefined,
+        imageUrl:
+            typeof raw.imageUrl === "string" && raw.imageUrl.trim()
+                ? raw.imageUrl.trim()
+                : undefined,
+        imageAlt:
+            typeof raw.imageAlt === "string" && raw.imageAlt.trim()
+                ? raw.imageAlt.trim()
+                : undefined,
+        imageCredit:
+            typeof raw.imageCredit === "string" && raw.imageCredit.trim()
+                ? raw.imageCredit.trim()
+                : undefined,
         status: asStatus(raw.status),
         featured: raw.featured === true,
-        updatedAt: typeof raw.updatedAt === "string" ? raw.updatedAt : undefined,
+        ownerId: typeof raw.ownerId === "string" ? raw.ownerId : undefined,
+        pinnedAreas: Array.isArray(raw.pinnedAreas)
+            ? raw.pinnedAreas.filter((v): v is string => typeof v === "string")
+            : [],
+        manualOrder: typeof raw.manualOrder === "number" ? raw.manualOrder : 0,
+        sponsorship: typeof raw.sponsorship === "string" ? raw.sponsorship : "",
+        updatedAt:
+            typeof raw.updatedAt === "string" ? raw.updatedAt : undefined,
     }
 }
 
@@ -85,11 +112,15 @@ export function normalizePage(input: unknown): PageContent {
     }
 }
 
-export function normalizeSettings(raw: Partial<SiteSettings> | null | undefined): SiteSettings {
+export function normalizeSettings(
+    raw: Partial<SiteSettings> | null | undefined
+): SiteSettings {
     const settings = { ...DEFAULT_SETTINGS }
 
     if (raw) {
-        for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof SiteSettings)[]) {
+        for (const key of Object.keys(
+            DEFAULT_SETTINGS
+        ) as (keyof SiteSettings)[]) {
             const value = raw[key]
             if (typeof value === "string") {
                 settings[key] = value
@@ -100,6 +131,8 @@ export function normalizeSettings(raw: Partial<SiteSettings> | null | undefined)
     return settings
 }
 
-export function sortByPublishedAt<T extends { publishedAt: string }>(items: T[]) {
+export function sortByPublishedAt<T extends { publishedAt: string }>(
+    items: T[]
+) {
     return [...items].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
 }

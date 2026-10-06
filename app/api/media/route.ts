@@ -1,10 +1,22 @@
 import { NextResponse } from "next/server"
 
-import { handleError, requireAdmin, requireWritableStore, revalidateSite } from "@/lib/api"
+import {
+    handleError,
+    requireAdmin,
+    requireWritableStore,
+    revalidateSite,
+} from "@/lib/api"
 import { getStore } from "@/lib/store"
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "image/svg+xml"])
+const ALLOWED_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/avif",
+    "application/pdf",
+])
 
 export async function GET() {
     try {
@@ -16,7 +28,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const unauthorized = await requireAdmin()
+    const unauthorized = await requireAdmin("media.manage")
     if (unauthorized) return unauthorized
 
     const readOnly = requireWritableStore()
@@ -27,18 +39,26 @@ export async function POST(request: Request) {
         const file = formData.get("file")
 
         if (!(file instanceof File)) {
-            return NextResponse.json({ error: "No file was uploaded." }, { status: 400 })
+            return NextResponse.json(
+                { error: "No file was uploaded." },
+                { status: 400 }
+            )
         }
 
         if (!ALLOWED_TYPES.has(file.type)) {
             return NextResponse.json(
-                { error: "Unsupported file type. Upload a JPG, PNG, WebP, AVIF, GIF, or SVG image." },
+                {
+                    error: "Unsupported file type. Upload a JPG, PNG, WebP, AVIF, GIF, or PDF. Active SVG uploads are not supported.",
+                },
                 { status: 400 }
             )
         }
 
         if (file.size > MAX_UPLOAD_BYTES) {
-            return NextResponse.json({ error: "Images must be 8MB or smaller." }, { status: 400 })
+            return NextResponse.json(
+                { error: "Images must be 8MB or smaller." },
+                { status: 400 }
+            )
         }
 
         const media = await getStore().uploadMedia({
@@ -55,7 +75,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-    const unauthorized = await requireAdmin()
+    const unauthorized = await requireAdmin("media.manage")
     if (unauthorized) return unauthorized
 
     const readOnly = requireWritableStore()
@@ -65,14 +85,19 @@ export async function DELETE(request: Request) {
         const id = new URL(request.url).searchParams.get("id")
 
         if (!id) {
-            return NextResponse.json({ error: "An image id is required." }, { status: 400 })
+            return NextResponse.json(
+                { error: "An image id is required." },
+                { status: 400 }
+            )
         }
 
         const deleted = await getStore().deleteMedia(id)
 
         if (!deleted) {
             return NextResponse.json(
-                { error: "That image could not be deleted. It may still be used by an article." },
+                {
+                    error: "That image could not be deleted. It may still be used by an article.",
+                },
                 { status: 409 }
             )
         }

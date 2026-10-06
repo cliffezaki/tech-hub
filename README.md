@@ -1,5 +1,7 @@
 # Tech Hub
 
+**CMS upgrade:** see [CMS-SETUP.md](./CMS-SETUP.md) for individual accounts, private storage, advertising, verification and remaining rollout work. Its account setup replaces the legacy shared-password/local-unlocked instructions below.
+
 A technology news site built with Next.js — sections for News, Reviews, How To, How Stuff
 Works, and Tech Kenya, with a built-in content dashboard for managing everything without
 touching code.

@@ -5,12 +5,19 @@ import { apiVersion, dataset, projectId, writeToken } from "@/sanity/env"
 import { urlForImage } from "@/sanity/lib/image"
 import { DEFAULT_SETTINGS } from "@/lib/types"
 import type { Article, MediaItem, PageContent, SiteSettings } from "@/lib/types"
-import { generateId, normalizeArticle, normalizePage, normalizeSettings, slugify } from "./normalize"
+import {
+    generateId,
+    normalizeArticle,
+    normalizePage,
+    normalizeSettings,
+    slugify,
+} from "./normalize"
 import type { ContentStore, UploadInput } from "./types"
 
 const SETTINGS_DOC_ID = "siteSettings"
 
 const ARTICLE_PROJECTION = `{
+    ownerId, pinnedAreas, manualOrder, sponsorship,
     _id,
     title,
     "slug": slug.current,
@@ -76,7 +83,9 @@ function toArticle(doc: SanityArticleDoc): Article {
     let imageUrl = doc.imageUrl
     if (!imageUrl && doc.mainImage) {
         try {
-            imageUrl = urlForImage(doc.mainImage as Parameters<typeof urlForImage>[0]).url()
+            imageUrl = urlForImage(
+                doc.mainImage as Parameters<typeof urlForImage>[0]
+            ).url()
         } catch {
             imageUrl = undefined
         }
@@ -119,6 +128,10 @@ function toDocFields(input: Partial<Article>) {
     assign("imageCredit", input.imageCredit ?? null)
     assign("status", input.status)
     assign("featured", input.featured)
+    assign("ownerId", input.ownerId)
+    assign("pinnedAreas", input.pinnedAreas)
+    assign("manualOrder", input.manualOrder)
+    assign("sponsorship", input.sponsorship)
 
     if (input.slug) {
         fields.slug = { _type: "slug", current: slugify(input.slug) }
@@ -136,7 +149,9 @@ export function createSanityStore(): ContentStore {
         perspective: "published",
     })
 
-    const writeClient = writeToken ? readClient.withConfig({ token: writeToken }) : null
+    const writeClient = writeToken
+        ? readClient.withConfig({ token: writeToken })
+        : null
 
     function requireWriteClient(): SanityClient {
         if (!writeClient) {
@@ -154,7 +169,11 @@ export function createSanityStore(): ContentStore {
      * to the server console (visible in Vercel's function logs); only writes are allowed
      * to throw, since those already surface as a clear error in the dashboard.
      */
-    async function safeRead<T>(label: string, fallback: T, run: () => Promise<T>): Promise<T> {
+    async function safeRead<T>(
+        label: string,
+        fallback: T,
+        run: () => Promise<T>
+    ): Promise<T> {
         try {
             return await run()
         } catch (error) {
@@ -262,7 +281,10 @@ export function createSanityStore(): ContentStore {
             const created = await client.create({
                 _type: "page",
                 title: input.title,
-                slug: { _type: "slug", current: slugify(input.slug || input.title) },
+                slug: {
+                    _type: "slug",
+                    current: slugify(input.slug || input.title),
+                },
                 excerpt: input.excerpt,
                 content: input.content,
                 status: input.status,
@@ -283,7 +305,8 @@ export function createSanityStore(): ContentStore {
             if (patch.excerpt !== undefined) fields.excerpt = patch.excerpt
             if (patch.content !== undefined) fields.content = patch.content
             if (patch.status !== undefined) fields.status = patch.status
-            if (patch.slug !== undefined) fields.slug = { _type: "slug", current: slugify(patch.slug) }
+            if (patch.slug !== undefined)
+                fields.slug = { _type: "slug", current: slugify(patch.slug) }
 
             await client.patch(id).set(fields).commit()
             return this.getPage(id)
@@ -301,18 +324,28 @@ export function createSanityStore(): ContentStore {
         },
 
         async getSettings() {
-            return safeRead("getSettings", { ...DEFAULT_SETTINGS }, async () => {
-                const doc = await readClient.fetch<Partial<SiteSettings> | null>(
-                    `*[_type == "siteSettings" && _id == $id][0]`,
-                    { id: SETTINGS_DOC_ID }
-                )
-                return doc ? normalizeSettings(doc) : { ...DEFAULT_SETTINGS }
-            })
+            return safeRead(
+                "getSettings",
+                { ...DEFAULT_SETTINGS },
+                async () => {
+                    const doc =
+                        await readClient.fetch<Partial<SiteSettings> | null>(
+                            `*[_type == "siteSettings" && _id == $id][0]`,
+                            { id: SETTINGS_DOC_ID }
+                        )
+                    return doc
+                        ? normalizeSettings(doc)
+                        : { ...DEFAULT_SETTINGS }
+                }
+            )
         },
 
         async saveSettings(patch) {
             const client = requireWriteClient()
-            const settings = normalizeSettings({ ...(await this.getSettings()), ...patch })
+            const settings = normalizeSettings({
+                ...(await this.getSettings()),
+                ...patch,
+            })
 
             await client.createOrReplace({
                 _id: SETTINGS_DOC_ID,
@@ -326,8 +359,16 @@ export function createSanityStore(): ContentStore {
         async listMedia() {
             return safeRead("listMedia", [], async () => {
                 const assets = await readClient.fetch<
-                    { _id: string; url: string; originalFilename?: string; _createdAt: string; size?: number }[]
-                >(`*[_type == "sanity.imageAsset"] | order(_createdAt desc) {_id, url, originalFilename, _createdAt, size}`)
+                    {
+                        _id: string
+                        url: string
+                        originalFilename?: string
+                        _createdAt: string
+                        size?: number
+                    }[]
+                >(
+                    `*[_type in ["sanity.imageAsset", "sanity.fileAsset"]] | order(_createdAt desc) {_id, url, originalFilename, _createdAt, size}`
+                )
 
                 return assets.map((asset) => ({
                     id: asset._id,
@@ -339,12 +380,20 @@ export function createSanityStore(): ContentStore {
             })
         },
 
-        async uploadMedia({ filename, contentType, data }: UploadInput): Promise<MediaItem> {
+        async uploadMedia({
+            filename,
+            contentType,
+            data,
+        }: UploadInput): Promise<MediaItem> {
             const client = requireWriteClient()
-            const asset = await client.assets.upload("image", data, {
-                filename: filename || `${generateId()}.jpg`,
-                contentType,
-            })
+            const asset = await client.assets.upload(
+                contentType === "application/pdf" ? "file" : "image",
+                data,
+                {
+                    filename: filename || `${generateId()}.jpg`,
+                    contentType,
+                }
+            )
 
             return {
                 id: asset._id,

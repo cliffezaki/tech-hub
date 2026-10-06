@@ -12,7 +12,7 @@ interface PageProps {
 export async function generateStaticParams() {
     try {
         const pages = await getPublishedPages()
-        return pages.map((page) => ({ slug: page.slug }))
+        return pages.filter(page => !["advertise", "contact", "news", "reviews", "how-to", "how-stuff-works", "tech-kenya", "account", "search"].includes(page.slug)).map((page) => ({ slug: page.slug }))
     } catch {
         return []
     }

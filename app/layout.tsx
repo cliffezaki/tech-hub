@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { getSiteSettings } from "@/lib/content"
 import { getSiteUrl } from "@/lib/site"
+import { publishingConfig } from "@/lib/advertising"
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -20,6 +21,7 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
     const settings = await getSiteSettings()
+    const publishing = await publishingConfig()
 
     return {
         metadataBase: new URL(getSiteUrl()),
@@ -27,10 +29,19 @@ export async function generateMetadata(): Promise<Metadata> {
             default: `${settings.siteName} | ${settings.tagline}`,
             template: `%s | ${settings.siteName}`,
         },
-        description: settings.tagline,
+        description: String(publishing?.description || settings.tagline),
+        robots: publishing?.noIndex
+            ? { index: false, follow: false }
+            : undefined,
+        icons: publishing?.favicon
+            ? { icon: String(publishing.favicon) }
+            : undefined,
         openGraph: {
             siteName: settings.siteName,
             type: "website",
+            images: publishing?.socialImage
+                ? [String(publishing.socialImage)]
+                : undefined,
         },
         twitter: {
             card: "summary_large_image",
@@ -42,11 +53,22 @@ export async function generateMetadata(): Promise<Metadata> {
  * Shared document shell only. The public site adds its header and footer in
  * `app/(site)/layout.tsx`; the dashboard supplies its own chrome instead.
  */
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({
+    children,
+}: Readonly<{ children: React.ReactNode }>) {
+    const publishing = await publishingConfig()
     return (
-        <html lang="en" suppressHydrationWarning className={`${playfair.variable} ${inter.variable}`}>
+        <html
+            lang={String(publishing?.language || "en")}
+            suppressHydrationWarning
+            className={`${playfair.variable} ${inter.variable}`}
+        >
             <body suppressHydrationWarning>
-                <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="light"
+                    disableTransitionOnChange
+                >
                     {children}
                 </ThemeProvider>
             </body>

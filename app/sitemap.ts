@@ -19,7 +19,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]
 
     try {
-        const [articles, pages] = await Promise.all([getAllArticleSummaries(), getPublishedPages()])
+        const [articles, pages] = await Promise.all([
+            getAllArticleSummaries(),
+            getPublishedPages(),
+        ])
 
         return [
             ...staticRoutes,
@@ -29,12 +32,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 changeFrequency: "weekly" as const,
                 priority: 0.7,
             })),
-            ...pages.map((page) => ({
-                url: `${baseUrl}/${page.slug}`,
-                lastModified: new Date(page.updatedAt),
-                changeFrequency: "monthly" as const,
-                priority: 0.5,
-            })),
+            ...pages
+                .filter(
+                    (page) =>
+                        !staticRoutes.some(
+                            (route) => route.url === `${baseUrl}/${page.slug}`
+                        )
+                )
+                .map((page) => ({
+                    url: `${baseUrl}/${page.slug}`,
+                    lastModified: page.updatedAt
+                        ? new Date(page.updatedAt)
+                        : undefined,
+                    changeFrequency: "monthly" as const,
+                    priority: 0.5,
+                })),
         ]
     } catch {
         return staticRoutes

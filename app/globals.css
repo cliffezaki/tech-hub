@@ -150,3 +150,8 @@
 @utility text-balance {
   text-wrap: balance;
 }
+/* Shared controls for accounts and publishing tools. */
+.cms-input { display:block; width:100%; margin-top:.4rem; border:1px solid var(--border, #d4d4d8); border-radius:.5rem; padding:.65rem .8rem; background:var(--background, white); color:inherit; }
+.cms-primary { display:inline-flex; align-items:center; justify-content:center; border-radius:.5rem; background:#c62936; color:white; padding:.65rem 1.2rem; font-weight:600; }
+.cms-primary:disabled { opacity:.55; cursor:wait; }
+.cms-input:focus-visible, .cms-primary:focus-visible { outline:2px solid #c62936; outline-offset:3px; }

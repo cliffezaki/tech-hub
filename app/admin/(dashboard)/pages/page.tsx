@@ -26,8 +26,16 @@ export default function AdminPagesPage() {
         <div className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">Pages</h1>
-                    <p className="text-muted-foreground">Standalone pages such as About, Advertise, or Privacy.</p>
+                    <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">
+                        Pages
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Existing sections and standalone pages, together.{" "}
+                        <Link className="underline" href="/admin/navigation">
+                            Control menu visibility and ordering
+                        </Link>
+                        .
+                    </p>
                 </div>
                 <Link href="/admin/pages/new">
                     <Button>
@@ -46,16 +54,23 @@ export default function AdminPagesPage() {
                     <FileText className="mx-auto h-10 w-10 text-muted-foreground/40" />
                     <h3 className="mt-3 font-semibold">No pages yet</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        Add an About page so readers know who is behind Tech Hub.
+                        Add an About page so readers know who is behind Tech
+                        Hub.
                     </p>
                 </Card>
             ) : (
                 <Card className="divide-y">
                     {pages.map((page) => (
-                        <div key={page.id} className="flex flex-wrap items-center gap-4 p-4">
+                        <div
+                            key={page.id}
+                            className="flex flex-wrap items-center gap-4 p-4"
+                        >
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <Link href={`/admin/pages/${page.id}`} className="truncate font-medium hover:underline">
+                                    <Link
+                                        href={`/admin/pages/${page.id}`}
+                                        className="truncate font-medium hover:underline"
+                                    >
                                         {page.title}
                                     </Link>
                                     <span
@@ -69,20 +84,36 @@ export default function AdminPagesPage() {
                                     </span>
                                 </div>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
-                                    /{page.slug} · updated {formatDate(page.updatedAt)}
+                                    /{page.slug} ·{" "}
+                                    {page.updatedAt
+                                        ? `updated ${formatDate(page.updatedAt)}`
+                                        : "Built-in page — not yet customized"}
                                 </p>
                             </div>
 
                             <div className="flex items-center gap-1">
                                 {page.status === "published" && (
-                                    <Link href={`/${page.slug}`} target="_blank">
-                                        <Button variant="ghost" size="icon" title="View page" aria-label="View page">
+                                    <Link
+                                        href={`/${page.slug}`}
+                                        target="_blank"
+                                    >
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            title="View page"
+                                            aria-label="View page"
+                                        >
                                             <Eye className="h-4 w-4" />
                                         </Button>
                                     </Link>
                                 )}
                                 <Link href={`/admin/pages/${page.id}`}>
-                                    <Button variant="ghost" size="icon" title="Edit" aria-label="Edit">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Edit"
+                                        aria-label="Edit"
+                                    >
                                         <Pencil className="h-4 w-4" />
                                     </Button>
                                 </Link>

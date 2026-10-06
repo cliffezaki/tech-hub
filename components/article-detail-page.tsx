@@ -1,4 +1,6 @@
 import Link from "next/link"
+import { AdSlot } from "@/components/ad-slot"
+import { ArticleComments } from "@/components/article-comments"
 import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
@@ -16,7 +18,10 @@ interface ArticleDetailPageProps {
     slug: string
 }
 
-export async function ArticleDetailPage({ section, slug }: ArticleDetailPageProps) {
+export async function ArticleDetailPage({
+    section,
+    slug,
+}: ArticleDetailPageProps) {
     const article = await getArticleDetail(section, slug)
 
     if (!article) {
@@ -42,9 +47,15 @@ export async function ArticleDetailPage({ section, slug }: ArticleDetailPageProp
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(structuredData).replace(
+                        /</g,
+                        "\\u003c"
+                    ),
+                }}
             />
 
+            <AdSlot slot="article-top" />
             <article className="site-container py-8 md:py-12">
                 <Link
                     href={`/${section}`}
@@ -55,18 +66,33 @@ export async function ArticleDetailPage({ section, slug }: ArticleDetailPageProp
                 </Link>
 
                 <header className="mx-auto mt-6 max-w-3xl">
-                    <span className="kicker text-brand-red">{article.category}</span>
+                    <span className="kicker text-brand-red">
+                        {article.category}
+                    </span>
+                    {article.sponsorship && (
+                        <p className="mt-3 rounded border p-3 text-sm font-semibold">
+                            {article.sponsorship}
+                        </p>
+                    )}
 
-                    <h1 className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">{article.title}</h1>
+                    <h1 className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">
+                        {article.title}
+                    </h1>
 
                     {article.excerpt && (
-                        <p className="mt-4 text-lg leading-relaxed text-muted-foreground md:text-xl">{article.excerpt}</p>
+                        <p className="mt-4 text-lg leading-relaxed text-muted-foreground md:text-xl">
+                            {article.excerpt}
+                        </p>
                     )}
 
                     <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-4 text-sm text-muted-foreground">
-                        <span className="font-medium text-foreground">{article.author}</span>
+                        <span className="font-medium text-foreground">
+                            {article.author}
+                        </span>
                         <span aria-hidden="true">·</span>
-                        <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+                        <time dateTime={article.publishedAt}>
+                            {formatDate(article.publishedAt)}
+                        </time>
                         <span aria-hidden="true">·</span>
                         <span>{article.readTime}</span>
                     </div>
@@ -93,7 +119,10 @@ export async function ArticleDetailPage({ section, slug }: ArticleDetailPageProp
                 )}
 
                 <div className="mx-auto mt-10 max-w-3xl">
+                    <AdSlot slot="article-middle" />
                     <Markdown content={article.content} />
+                    <AdSlot slot="article-bottom" />
+                    <ArticleComments articleId={article.id} />
                 </div>
 
                 <div className="mx-auto mt-12 max-w-3xl border-t pt-6">
@@ -110,7 +139,9 @@ export async function ArticleDetailPage({ section, slug }: ArticleDetailPageProp
             {related.length > 0 && (
                 <aside className="border-t bg-muted/20">
                     <div className="site-container py-12">
-                        <h2 className="mb-6 border-b pb-4 text-2xl font-bold">Related reading</h2>
+                        <h2 className="mb-6 border-b pb-4 text-2xl font-bold">
+                            Related reading
+                        </h2>
                         <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                             {related.map((item) => (
                                 <ArticleCard key={item.id} article={item} />

@@ -1,163 +1,189 @@
 "use client"
-
-import * as React from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useTheme } from "next-themes"
-import { Menu, Moon, Search, Sun, X } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
+import { Menu, X, Search, Sun, Moon } from "lucide-react"
 import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
-import { cn } from "@/lib/utils"
-
+type Item = {
+    id: string
+    name: string
+    href: string
+    menu: string
+    hidden?: boolean
+}
+const defaults: Item[] = [
+    { id: "home", name: "Home", href: "/", menu: "main" },
+    ...ARTICLE_SECTIONS.map((s) => ({
+        id: s,
+        name: SECTION_META[s].navLabel,
+        href: `/${s}`,
+        menu: "main",
+    })),
+    { id: "about", name: "About", href: "/about", menu: "main" },
+    { id: "contact", name: "Contact", href: "/contact", menu: "main" },
+    {
+        id: "advertise",
+        name: "Advertise With Us",
+        href: "/advertise",
+        menu: "main",
+    },
+]
 export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
-    const { setTheme, theme } = useTheme()
-    const pathname = usePathname()
-    const [isMenuOpen, setIsMenuOpen] = React.useState(false)
-    const [mounted, setMounted] = React.useState(false)
-
-    React.useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    // The drawer is a full-screen overlay on small screens, so the page behind it must not scroll.
-    React.useEffect(() => {
-        document.body.style.overflow = isMenuOpen ? "hidden" : ""
-        return () => {
-            document.body.style.overflow = ""
+    const [open, setOpen] = useState(false)
+    const [items, setItems] = useState(defaults)
+    const [signedIn, setSignedIn] = useState(false)
+    const path = usePathname()
+    const { theme, setTheme } = useTheme()
+    const trigger = useRef<HTMLButtonElement>(null)
+    const drawer = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+        fetch("/api/public/navigation")
+            .then((r) => r.json())
+            .then((d) => {
+                if (Array.isArray(d) && d.some((i) => i.menu === "main"))
+                    setItems(d.filter((i) => i.menu === "main"))
+            })
+            .catch(() => {})
+        fetch("/api/auth/me")
+            .then((r) => r.json())
+            .then((d) => setSignedIn(Boolean(d.user)))
+            .catch(() => {})
+    }, [path])
+    useEffect(() => {
+        if (!open) return
+        const returnFocus = trigger.current
+        const previous = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        drawer.current?.querySelector<HTMLElement>("button")?.focus()
+        function key(e: KeyboardEvent) {
+            if (e.key === "Escape") setOpen(false)
+            if (e.key === "Tab") {
+                const links =
+                    drawer.current?.querySelectorAll<HTMLElement>("a,button")
+                if (!links?.length) return
+                const first = links[0],
+                    last = links[links.length - 1]
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault()
+                    last.focus()
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault()
+                    first.focus()
+                }
+            }
         }
-    }, [isMenuOpen])
-
-    const [firstWord, ...restWords] = siteName.split(" ")
-    const secondWord = restWords.join(" ") || "Hub"
-
-    const logo = (size: "sm" | "md") => (
-        <span className="flex items-baseline gap-0.5">
-            <span
-                className={cn(
-                    "font-black uppercase leading-none tracking-tight",
-                    size === "md" ? "text-xl md:text-2xl" : "text-base"
-                )}
-            >
-                {firstWord}
-            </span>
-            <span
-                className={cn(
-                    "bg-foreground font-black uppercase leading-none tracking-tight text-background",
-                    size === "md" ? "px-1.5 py-1 text-xl md:text-2xl" : "px-1 py-0.5 text-base"
-                )}
-            >
-                {secondWord}
-            </span>
-        </span>
-    )
-
+        document.addEventListener("keydown", key)
+        return () => {
+            document.body.style.overflow = previous
+            document.removeEventListener("keydown", key)
+            returnFocus?.focus()
+        }
+    }, [open])
     return (
         <>
-            <header className="sticky top-0 z-50 w-full border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-                <div className="site-container flex h-16 items-center gap-3">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="-ml-2 lg:hidden"
-                        onClick={() => setIsMenuOpen(true)}
-                        aria-label="Open menu"
+            <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+                <div className="site-container flex h-16 items-center gap-4">
+                    <button
+                        ref={trigger}
+                        className="rounded p-2 hover:bg-muted"
+                        aria-label="Open navigation"
+                        aria-expanded={open}
+                        aria-controls="main-drawer"
+                        onClick={() => setOpen(true)}
                     >
-                        <Menu className="h-5 w-5" />
-                    </Button>
-
-                    <Link href="/" aria-label={`${siteName} home`} className="shrink-0">
-                        {logo("md")}
+                        <Menu size={23} />
+                    </button>
+                    <Link
+                        href="/"
+                        className="text-xl font-black uppercase tracking-tight"
+                    >
+                        {siteName}
                     </Link>
-
-                    <nav className="hidden flex-1 items-center justify-center gap-6 lg:flex">
-                        {ARTICLE_SECTIONS.map((section) => {
-                            const active = pathname.startsWith(`/${section}`)
-
-                            return (
+                    <nav
+                        className="ml-auto hidden items-center gap-5 xl:flex"
+                        aria-label="Primary"
+                    >
+                        {items
+                            .filter((i) => !i.hidden)
+                            .slice(0, 6)
+                            .map((i) => (
                                 <Link
-                                    key={section}
-                                    href={`/${section}`}
-                                    className={cn(
-                                        "relative py-1 text-sm font-medium transition-colors",
-                                        active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                                    )}
+                                    key={i.id}
+                                    href={i.href}
+                                    className={
+                                        path === i.href
+                                            ? "text-sm font-bold text-brand-red"
+                                            : "text-sm"
+                                    }
                                 >
-                                    {SECTION_META[section].navLabel}
-                                    {active && (
-                                        <span className="absolute -bottom-[13px] left-0 h-0.5 w-full bg-brand-red" />
-                                    )}
+                                    {i.name}
                                 </Link>
-                            )
-                        })}
+                            ))}
                     </nav>
-
-                    <div className="ml-auto flex items-center gap-1 lg:ml-0">
-                        <Link href="/search" aria-label="Search articles">
-                            <Button variant="ghost" size="icon">
-                                <Search className="h-[1.15rem] w-[1.15rem]" />
-                            </Button>
+                    <div className="ml-auto flex items-center gap-3 xl:ml-2">
+                        <Link href="/account" className="text-sm font-semibold">
+                            {signedIn ? "Account" : "Log in / Sign up"}
                         </Link>
-
-                        {mounted ? (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                                aria-label="Toggle theme"
-                            >
-                                <Sun className="h-[1.15rem] w-[1.15rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                                <Moon className="absolute h-[1.15rem] w-[1.15rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                            </Button>
-                        ) : (
-                            <div className="h-10 w-10" />
-                        )}
+                        <Link href="/search" aria-label="Search">
+                            <Search size={19} />
+                        </Link>
+                        <button
+                            onClick={() =>
+                                setTheme(theme === "dark" ? "light" : "dark")
+                            }
+                            aria-label="Toggle color theme"
+                        >
+                            <Sun className="hidden dark:block" size={19} />
+                            <Moon className="dark:hidden" size={19} />
+                        </button>
                     </div>
                 </div>
             </header>
-
-            {isMenuOpen && (
-                <div className="fixed inset-0 z-50 lg:hidden">
+            {open && (
+                <div className="fixed inset-0 z-50">
                     <div
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                        onClick={() => setIsMenuOpen(false)}
-                        aria-hidden="true"
+                        className="absolute inset-0 bg-black/45"
+                        onClick={() => setOpen(false)}
                     />
-
-                    <div className="absolute inset-y-0 left-0 w-[85%] max-w-xs overflow-y-auto border-r bg-background p-6 shadow-xl duration-300 animate-in slide-in-from-left">
+                    <div
+                        ref={drawer}
+                        id="main-drawer"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Site navigation"
+                        className="absolute inset-y-0 left-0 w-[min(88vw,380px)] overflow-y-auto border-r bg-background p-7 shadow-xl"
+                    >
                         <div className="mb-8 flex items-center justify-between">
-                            <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                                {logo("sm")}
-                            </Link>
-                            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
-                                <X className="h-5 w-5" />
-                            </Button>
+                            <span className="text-xl font-black uppercase">
+                                {siteName}
+                            </span>
+                            <button
+                                onClick={() => setOpen(false)}
+                                aria-label="Close navigation"
+                            >
+                                <X />
+                            </button>
                         </div>
-
                         <nav className="flex flex-col">
-                            {ARTICLE_SECTIONS.map((section) => (
-                                <Link
-                                    key={section}
-                                    href={`/${section}`}
-                                    className="border-b py-3 font-[family-name:var(--font-playfair)] text-lg font-semibold transition-colors hover:text-brand-red"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    {SECTION_META[section].navLabel}
-                                </Link>
-                            ))}
+                            {items
+                                .filter((i) => !i.hidden)
+                                .map((i) => (
+                                    <Link
+                                        className="border-b py-3 text-lg font-semibold"
+                                        href={i.href}
+                                        key={i.id}
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        {i.name}
+                                    </Link>
+                                ))}
                             <Link
-                                href="/search"
-                                className="border-b py-3 font-[family-name:var(--font-playfair)] text-lg font-semibold transition-colors hover:text-brand-red"
-                                onClick={() => setIsMenuOpen(false)}
+                                className="mt-6 cms-primary"
+                                href="/account"
+                                onClick={() => setOpen(false)}
                             >
-                                Search
-                            </Link>
-                            <Link
-                                href="/contact"
-                                className="border-b py-3 font-[family-name:var(--font-playfair)] text-lg font-semibold transition-colors hover:text-brand-red"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Contact
+                                {signedIn ? "My account" : "Log in / Sign up"}
                             </Link>
                         </nav>
                     </div>

@@ -8,18 +8,29 @@ import { SectionHeading } from "@/components/section-heading"
 import { Button } from "@/components/ui/button"
 import { getHomepageContent } from "@/lib/content"
 import { formatDate } from "@/lib/format"
+import { AdSlot } from "@/components/ad-slot"
 
 export default async function Home() {
-    const { settings, lead, secondary, featured, latestNews, sections, totalArticles } = await getHomepageContent()
+    const {
+        settings,
+        lead,
+        secondary,
+        featured,
+        latestNews,
+        sections,
+        totalArticles,
+    } = await getHomepageContent()
 
     if (!lead) {
         return (
             <div className="site-container flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
                 <PenLine className="h-12 w-12 text-muted-foreground/40" />
-                <h1 className="mt-6 text-3xl font-bold">Nothing published yet</h1>
+                <h1 className="mt-6 text-3xl font-bold">
+                    Nothing published yet
+                </h1>
                 <p className="mt-3 max-w-md text-muted-foreground">
-                    {settings.siteName} is ready to go. Write your first story in the dashboard and it will appear here
-                    straight away.
+                    {settings.siteName} is ready to go. Write your first story
+                    in the dashboard and it will appear here straight away.
                 </p>
                 <Link href="/admin" className="mt-6">
                     <Button>
@@ -36,6 +47,7 @@ export default async function Home() {
 
     return (
         <div>
+            <AdSlot slot="homepage-top" />
             {/* Lead story with two supporting highlights */}
             <section className="border-b bg-muted/20">
                 <div className="site-container py-10 md:py-14">
@@ -60,11 +72,15 @@ export default async function Home() {
                                         <span className="kicker rounded-full bg-brand-red px-2.5 py-1 text-white">
                                             {settings.heroEyebrow}
                                         </span>
-                                        <span className="kicker text-muted-foreground">{lead.category}</span>
+                                        <span className="kicker text-muted-foreground">
+                                            {lead.category}
+                                        </span>
                                     </div>
 
                                     <h1 className="mt-4 text-3xl font-black leading-[1.08] text-balance md:text-5xl lg:text-6xl">
-                                        <span className="headline-link">{heroTitle}</span>
+                                        <span className="headline-link">
+                                            {heroTitle}
+                                        </span>
                                     </h1>
 
                                     <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
@@ -72,9 +88,13 @@ export default async function Home() {
                                     </p>
 
                                     <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-                                        <span className="font-medium text-foreground/80">{lead.author}</span>
+                                        <span className="font-medium text-foreground/80">
+                                            {lead.author}
+                                        </span>
                                         <span aria-hidden="true">·</span>
-                                        <time dateTime={lead.publishedAt}>{formatDate(lead.publishedAt)}</time>
+                                        <time dateTime={lead.publishedAt}>
+                                            {formatDate(lead.publishedAt)}
+                                        </time>
                                         <span aria-hidden="true">·</span>
                                         <span>{lead.readTime}</span>
                                     </div>
@@ -84,10 +104,15 @@ export default async function Home() {
 
                         {secondary.length > 0 && (
                             <div className="lg:col-span-4">
-                                <h2 className="kicker border-b pb-3 text-muted-foreground">Also this week</h2>
+                                <h2 className="kicker border-b pb-3 text-muted-foreground">
+                                    Also this week
+                                </h2>
                                 <div className="mt-6 flex flex-col gap-8">
                                     {secondary.map((article) => (
-                                        <ArticleCard key={article.id} article={article} />
+                                        <ArticleCard
+                                            key={article.id}
+                                            article={article}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -99,7 +124,10 @@ export default async function Home() {
             {/* Editor-selected highlights */}
             {featured.length > 0 && (
                 <section className="site-container py-12 md:py-16">
-                    <SectionHeading title="Featured" subtitle="Hand-picked reading from across the site" />
+                    <SectionHeading
+                        title="Featured"
+                        subtitle="Hand-picked reading from across the site"
+                    />
                     <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                         {featured.map((article) => (
                             <ArticleCard key={article.id} article={article} />
@@ -110,7 +138,13 @@ export default async function Home() {
 
             {/* The main news feed */}
             {latestNews.length > 0 && (
-                <section className={featured.length > 0 ? "border-t bg-muted/20" : "bg-muted/20"}>
+                <section
+                    className={
+                        featured.length > 0
+                            ? "border-t bg-muted/20"
+                            : "bg-muted/20"
+                    }
+                >
                     <div className="site-container py-12 md:py-16">
                         <SectionHeading
                             title="Latest news"
@@ -120,7 +154,10 @@ export default async function Home() {
                         />
                         <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                             {latestNews.map((article) => (
-                                <ArticleCard key={article.id} article={article} />
+                                <ArticleCard
+                                    key={article.id}
+                                    article={article}
+                                />
                             ))}
                         </div>
                     </div>
@@ -128,10 +165,14 @@ export default async function Home() {
             )}
 
             {/* Sections are linked, not unpacked — each has its own page */}
+            <AdSlot slot="homepage-middle" />
             <section className="site-container py-12 md:py-16">
                 <div className="grid gap-10 lg:grid-cols-12">
                     <div className="lg:col-span-8">
-                        <SectionHeading title="More from Tech Hub" subtitle="Browse the rest of the site by section" />
+                        <SectionHeading
+                            title="More from Tech Hub"
+                            subtitle="Browse the rest of the site by section"
+                        />
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             {sections.map((item) => (
@@ -141,12 +182,17 @@ export default async function Home() {
                                     className="group rounded-xl border bg-card p-5 transition-colors hover:border-foreground/30 hover:bg-accent"
                                 >
                                     <div className="flex items-center justify-between gap-3">
-                                        <h3 className="text-lg font-bold">{item.label}</h3>
+                                        <h3 className="text-lg font-bold">
+                                            {item.label}
+                                        </h3>
                                         <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                                     </div>
-                                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{item.subtitle}</p>
+                                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                                        {item.subtitle}
+                                    </p>
                                     <p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">
-                                        {item.count} article{item.count === 1 ? "" : "s"}
+                                        {item.count} article
+                                        {item.count === 1 ? "" : "s"}
                                     </p>
                                 </Link>
                             ))}

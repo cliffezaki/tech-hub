@@ -12,7 +12,13 @@ export type ArticleSection = (typeof ARTICLE_SECTIONS)[number]
 
 export const SECTION_META: Record<
     ArticleSection,
-    { label: string; navLabel: string; title: string; subtitle: string; defaultCategory: string }
+    {
+        label: string
+        navLabel: string
+        title: string
+        subtitle: string
+        defaultCategory: string
+    }
 > = {
     news: {
         label: "News",
@@ -54,6 +60,10 @@ export const SECTION_META: Record<
 export type ArticleStatus = "draft" | "published"
 
 export interface Article {
+    ownerId?: string
+    pinnedAreas?: string[]
+    manualOrder?: number
+    sponsorship?: string
     id: string
     title: string
     slug: string
@@ -125,6 +135,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 }
 
 export interface ArticleSummary {
+    sponsorship?: string
     id: string
     title: string
     slug: string
