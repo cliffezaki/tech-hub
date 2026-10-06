@@ -25,6 +25,8 @@ const server = spawn(
             NEXT_PUBLIC_SANITY_PROJECT_ID: "",
             SANITY_API_WRITE_TOKEN: "",
             CMS_PRIVATE_DATASET: "",
+            SUPABASE_URL: "",
+            SUPABASE_SECRET_KEY: "",
             RESEND_API_KEY: "",
             RESEND_FROM_EMAIL: "",
         },

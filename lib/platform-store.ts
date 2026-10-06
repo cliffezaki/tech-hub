@@ -2,64 +2,45 @@ import "server-only"
 import fs from "node:fs/promises"
 import path from "node:path"
 import { randomUUID } from "node:crypto"
-import { createClient } from "next-sanity"
 import {
-    isSanityConfigured,
-    projectId,
-    apiVersion,
-    writeToken,
-} from "@/sanity/env"
+    supabaseConfigured,
+    supabaseAttempted,
+    listSupabaseRecords,
+    getSupabaseRecord,
+    saveSupabaseRecord,
+    deleteSupabaseRecord,
+} from "@/lib/supabase-store"
 
-// Personal and commercial data must use a separate private dataset, never public content.
+// Personal and commercial data use private Supabase records; articles stay in Sanity.
 const directory =
     process.env.CMS_TEST_DATA_DIR && process.env.NODE_ENV !== "production"
         ? process.env.CMS_TEST_DATA_DIR
         : path.join(process.cwd(), ".data", "platform")
-const remote = () =>
-    isSanityConfigured() &&
-    Boolean(process.env.CMS_PRIVATE_DATASET && writeToken)
-function client() {
-    if (!remote())
-        throw new Error(
-            "Configure a private CMS_PRIVATE_DATASET and SANITY_API_WRITE_TOKEN."
-        )
-    return createClient({
-        projectId,
-        dataset: process.env.CMS_PRIVATE_DATASET!,
-        apiVersion,
-        token: writeToken,
-        useCdn: false,
-        perspective: "raw",
-    })
-}
+const remote = supabaseConfigured
 export function platformReady() {
     return (
         remote() ||
-        (process.env.NODE_ENV !== "production" && !process.env.VERCEL)
+        (!supabaseAttempted() &&
+            process.env.NODE_ENV !== "production" &&
+            !process.env.VERCEL)
     )
 }
 function check() {
     if (!platformReady())
         throw new Error(
-            "Private CMS storage is not configured. Set CMS_PRIVATE_DATASET and SANITY_API_WRITE_TOKEN."
+            "Private CMS storage is not configured. Set SUPABASE_URL and a server-only SUPABASE_SECRET_KEY."
         )
 }
 function key(collection: string, id: string) {
     if (!/^[a-zA-Z0-9_-]+$/.test(collection) || !/^[a-zA-Z0-9_-]+$/.test(id))
         throw new Error("Invalid record identifier")
-    // Draft namespace adds protection against anonymous reads if the dataset is misconfigured.
+    // Retain local filenames for existing development records.
     return `drafts.platform.${collection}.${id}`
 }
 export async function listRecords<T>(collection: string): Promise<T[]> {
     check()
     key(collection, "validate")
-    if (remote())
-        return (
-            await client().fetch<{ payload: string }[]>(
-                `*[_type == "platformRecord" && collection == $collection]`,
-                { collection }
-            )
-        ).map((d) => JSON.parse(d.payload))
+    if (remote()) return listSupabaseRecords<T>(collection)
     try {
         const names = await fs.readdir(directory)
         return await Promise.all(
@@ -86,10 +67,7 @@ export async function getRecord<T>(
 ): Promise<T | null> {
     check()
     const recordKey = key(collection, id)
-    if (remote()) {
-        const doc = await client().getDocument<{ payload: string }>(recordKey)
-        return doc ? JSON.parse(doc.payload) : null
-    }
+    if (remote()) return getSupabaseRecord<T>(collection, id)
     try {
         return JSON.parse(
             await fs.readFile(path.join(directory, `${recordKey}.json`), "utf8")
@@ -107,16 +85,8 @@ export async function saveRecord<T>(
 ) {
     check()
     const recordKey = key(collection, id)
-    if (remote()) {
-        const doc = {
-            _id: recordKey,
-            _type: "platformRecord",
-            collection,
-            payload: JSON.stringify(value),
-        }
-        if (createOnly) await client().create(doc)
-        else await client().createOrReplace(doc)
-    } else {
+    if (remote()) return saveSupabaseRecord(collection, id, value, createOnly)
+    else {
         await fs.mkdir(directory, { recursive: true, mode: 0o700 })
         const dest = path.join(directory, `${recordKey}.json`)
         if (createOnly)
@@ -135,7 +105,7 @@ export async function saveRecord<T>(
 export async function deleteRecord(collection: string, id: string) {
     check()
     const recordKey = key(collection, id)
-    if (remote()) await client().delete(recordKey)
+    if (remote()) await deleteSupabaseRecord(collection, id)
     else await fs.rm(path.join(directory, `${recordKey}.json`), { force: true })
 }
 export async function claim(collection: string, id: string, value: unknown) {
@@ -145,7 +115,7 @@ export async function claim(collection: string, id: string, value: unknown) {
     } catch (e) {
         if (
             (e as NodeJS.ErrnoException).code === "EEXIST" ||
-            (e as { statusCode?: number }).statusCode === 409
+            (e as { code?: string }).code === "23505"
         )
             return false
         throw e

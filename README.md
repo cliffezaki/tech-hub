@@ -1,6 +1,6 @@
 # Tech Hub
 
-**CMS upgrade:** see [CMS-SETUP.md](./CMS-SETUP.md) for individual accounts, private storage, advertising, verification and remaining rollout work. Its account setup replaces the legacy shared-password/local-unlocked instructions below.
+**CMS upgrade:** see [CMS-SETUP.md](./CMS-SETUP.md) for individual accounts, private Supabase storage, advertising, verification and remaining rollout work.
 
 A technology news site built with Next.js — sections for News, Reviews, How To, How Stuff
 Works, and Tech Kenya, with a built-in content dashboard for managing everything without
@@ -14,8 +14,8 @@ npm run dev
 ```
 
 Open <http://localhost:3000>. No configuration is needed: content is read from the JSON
-files in `content/`, and the dashboard at <http://localhost:3000/admin> is unlocked in
-local development.
+files in `content/`. To use the dashboard, configure a session secret and owner setup
+details as described in CMS-SETUP.md. Local private accounts are stored in `.data/platform`.
 
 ## The dashboard
 
@@ -42,7 +42,9 @@ deployment. The short version:
 - Host on **Vercel**, which builds directly from the GitHub repository.
 - Store content in **Sanity** (free tier). A deployed site cannot write to its own files,
   so the dashboard needs a database behind it to work in production.
-- Set `ADMIN_PASSWORD` so the live dashboard is not open to the public.
+- Store accounts and advertising records in **Supabase** (free tier), with the private
+  table created by `supabase/cms-records.sql` and a server-only secret API key.
+- Configure individual accounts and owner setup. `ADMIN_PASSWORD` is no longer used.
 
 ## How content storage works
 
@@ -61,9 +63,11 @@ which driver is active. Uploaded images follow the same split: Sanity's CDN in p
 
 - `/admin` and every write API route require a signed session cookie, checked in `proxy.ts`
   and again inside each route handler.
-- With no `ADMIN_PASSWORD` set, the dashboard is open on localhost and **locked** anywhere
-  that looks like a deployment, so an unconfigured live site can never be edited by a stranger.
+- The dashboard requires an active individual account and server-checked permissions,
+  including on localhost. Deployed accounts require Supabase and a session secret.
 - The Sanity write token is server-side only and never reaches the browser.
+- Supabase secret keys remain server-side. Anonymous and browser-authenticated users
+  have no direct access to the private CMS table.
 
 ## Commands
 
@@ -89,9 +93,12 @@ components/        UI, article cards, markdown renderer, admin components
 lib/
   store/           storage drivers and normalisation
   content.ts       read layer used by public pages
-  auth.ts          password sessions
+  auth.ts          individual signed sessions
+  platform-store.ts private accounts/advertising storage
+  supabase-store.ts server-only Supabase records
 content/           local JSON content (development only)
 scripts/           demo content and seeding
+supabase/          private CMS table setup
 ```
 
 ## Notes on the demo content

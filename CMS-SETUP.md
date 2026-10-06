@@ -5,13 +5,19 @@ This change extends the existing Next.js app, article/page stores and public URL
 ## Required configuration
 
 1. Retain the existing Sanity public content configuration.
-2. Create a **separate private Sanity dataset**, e.g. `cms-private`, in the same project. Set server-only `CMS_PRIVATE_DATASET` to its name. Give `SANITY_API_WRITE_TOKEN` access to this dataset and the content dataset. Never prefix secrets or the private dataset setting with `NEXT_PUBLIC_`.
+2. Create a **Supabase Free project for staging**, then run `supabase/cms-records.sql` once in its SQL editor. The table blocks anonymous and browser-authenticated access; only the website server uses it. Set server-only `SUPABASE_URL` to the project's HTTPS URL and `SUPABASE_SECRET_KEY` to its secret API key (`sb_secret_...`). Never prefix the key with `NEXT_PUBLIC_`, use a publishable key for this backend, or store credentials in Git. `SANITY_API_WRITE_TOKEN` remains for articles/pages/media only. `CMS_PRIVATE_DATASET` is no longer used.
 3. Set `ADMIN_SESSION_SECRET` to a randomly generated secret of at least 32 characters.
 4. Set `OWNER_EMAIL` to your actual owner email and `OWNER_SETUP_TOKEN` to a different random secret of at least 32 characters.
 5. Open `/account`, choose **Owner setup**, and enter that email, setup token, your name and a new password of at least 12 characters. Remove `OWNER_SETUP_TOKEN` after setup. Public signup always creates readers and cannot claim the reserved owner email.
 6. The old `ADMIN_PASSWORD` login and unauthenticated local admin access are retired. Existing shared-password cookies do not work with individual accounts. There was no existing user database to migrate.
 
-Local development keeps private data in `.data/platform`, ignored by Git. Production account/commercial writes require the private dataset; they never fall back to an ephemeral serverless filesystem. Records also use Sanity's draft namespace as an extra anonymous-read safeguard. Do not publish these private records through Sanity Studio. The custom CMS manages them without duplicating content schemas.
+Local development keeps private data in `.data/platform`, ignored by Git, only when Supabase is entirely unconfigured. Production account/commercial writes require Supabase; invalid or unavailable database configuration never falls back to files. Existing articles/pages/media stay in Sanity. This branch does not migrate private records from an older Sanity deployment; no deployed private CMS records were created during this setup.
+
+## Preview isolation
+
+Use branch-specific Preview variables in Vercel for `codex/publishing-cms-advertising`; exclude Production. In Sanity create a separate public content dataset such as `staging` and set this branch's `NEXT_PUBLIC_SANITY_DATASET` to it, so publishing tests do not edit live articles. Copy existing public content into staging or populate staging deliberately; do not run demo seeding against production. Use a separate Supabase staging project, owner setup token and session secret. Set `NEXT_PUBLIC_SITE_URL` to the stable HTTPS preview address. Keep the PR as a draft until these services are configured and live tests pass.
+
+[Supabase Free](https://supabase.com/pricing) currently includes a 500 MB database and up to two active projects. Free projects can pause after one week of inactivity; automatic backups are not included. These limits are suitable for staging, and production backup/availability needs should be reviewed before rollout. This avoids Sanity's paid private-dataset requirement while retaining Sanity for content.
 
 ## Included workflows
 
@@ -28,7 +34,7 @@ Local development keeps private data in `.data/platform`, ignored by Git. Produc
 - Review and publish your actual Privacy Policy and Terms. The privacy draft requires your business contact, retention and legal review. No third-party tracking scripts are installed.
 - Password-reset email uses the approved Resend integration. Configure `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (a verified sender), and `NEXT_PUBLIC_SITE_URL` (the canonical HTTPS website URL) in the hosting environment, never in source control. Until configured, requests report that delivery is unavailable. See [Resend email API setup](https://resend.com/docs/api-reference/emails/send-email). Resend receives the recipient address and one-time reset link. Delivery failures produce a sanitized server log; monitor Resend delivery logs as well. No live email delivery has been verified without credentials.
 - Reset links expire after 30 minutes. Only a hash of the random token is stored in private CMS storage. Links carry the token in a URL fragment which the account screen removes immediately. Redemption consumes the account's reset generation atomically, changes the password, and revokes existing sessions and sibling reset links. Requests return the same message for unknown and eligible addresses. Include expired reset records, consumed reset generations, and rate-limit records in production retention cleanup.
-- Private Sanity access and hosting environment variables still need live validation. Tests exercise the local private store, not your live datasets.
+- Supabase table permissions, server credentials, and hosting environment variables need live validation. The local HTTP suite and mocked Supabase adapter tests do not replace checking the deployed database. Verify that a publishable key cannot read or write `cms_records`, while the server key can create/read/delete a temporary test record.
 - Review the dependency audit for the existing lockfile. This change does not silently upgrade framework or CMS dependencies.
 - Inquiry protection includes validation, consent, honeypot and email-based throttles. Add a configured edge rate limiter/challenge service before high-volume public use.
 - Schedule retention/cleanup for old rate-limit, audit and analytics records. Reports currently load stored events; production scale requires date-indexed queries/aggregation or a dedicated analytics adapter. This first-party collector is not yet high-volume analytics infrastructure.
@@ -39,6 +45,6 @@ This is a reviewable first implementation, not every item in the full brief. Rem
 
 ## Verification
 
-Run `npm ci`, `npm run typecheck`, `npm run lint`, `npm run build`, and `npm run test:cms`. The HTTP suite starts a temporary development instance on port 3137 and stores test accounts/content under a fresh OS temporary directory. It does not write test users or campaigns into repository content or production. Run builds separately from the test server.
+Run `npm ci`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test:cms`, `node scripts/test-supabase-store.mjs`, and `node scripts/test-password-reset.mjs`. The HTTP suite starts a temporary development instance on port 3137 and stores test accounts/content under a fresh OS temporary directory. The Supabase test uses mocked requests, never real credentials. Tests do not write users or campaigns into repository content or production. Run builds separately from the HTTP suite.
 
 Main, public hosting, and existing content are not changed until this branch is reviewed and deployed.
