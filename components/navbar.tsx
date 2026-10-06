@@ -37,6 +37,18 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
     const { theme, setTheme } = useTheme()
     const trigger = useRef<HTMLButtonElement>(null)
     const drawer = useRef<HTMLDivElement>(null)
+    const [firstWord, ...restWords] = siteName.trim().split(/\s+/)
+    const primaryHrefs = new Set(["/", ...ARTICLE_SECTIONS.map((s) => `/${s}`)])
+    const logo = (
+        <span className="flex items-baseline gap-0.5 text-xl font-black uppercase leading-none tracking-tight md:text-2xl">
+            <span>{firstWord}</span>
+            {restWords.length > 0 && (
+                <span className="bg-foreground px-1.5 py-1 text-background">
+                    {restWords.join(" ")}
+                </span>
+            )}
+        </span>
+    )
     useEffect(() => {
         fetch("/api/public/navigation")
             .then((r) => r.json())
@@ -83,48 +95,40 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
     return (
         <>
             <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-                <div className="site-container flex h-16 items-center gap-4">
-                    <button
-                        ref={trigger}
-                        className="rounded p-2 hover:bg-muted"
-                        aria-label="Open navigation"
-                        aria-expanded={open}
-                        aria-controls="main-drawer"
-                        onClick={() => setOpen(true)}
-                    >
-                        <Menu size={23} />
-                    </button>
+                <div className="site-container grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
                     <Link
                         href="/"
-                        className="text-xl font-black uppercase tracking-tight"
+                        className="justify-self-start"
+                        aria-label={`${siteName} home`}
                     >
-                        {siteName}
+                        {logo}
                     </Link>
                     <nav
-                        className="ml-auto hidden items-center gap-5 xl:flex"
+                        className="hidden items-center justify-center gap-5 lg:flex"
                         aria-label="Primary"
                     >
                         {items
-                            .filter((i) => !i.hidden)
-                            .slice(0, 6)
+                            .filter(
+                                (i) => !i.hidden && primaryHrefs.has(i.href)
+                            )
                             .map((i) => (
                                 <Link
                                     key={i.id}
                                     href={i.href}
+                                    aria-current={
+                                        path === i.href ? "page" : undefined
+                                    }
                                     className={
                                         path === i.href
-                                            ? "text-sm font-bold text-brand-red"
-                                            : "text-sm"
+                                            ? "whitespace-nowrap text-sm font-bold text-foreground"
+                                            : "whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground"
                                     }
                                 >
                                     {i.name}
                                 </Link>
                             ))}
                     </nav>
-                    <div className="ml-auto flex items-center gap-3 xl:ml-2">
-                        <Link href="/account" className="text-sm font-semibold">
-                            {signedIn ? "Account" : "Log in / Sign up"}
-                        </Link>
+                    <div className="flex items-center justify-self-end gap-3">
                         <Link href="/search" aria-label="Search">
                             <Search size={19} />
                         </Link>
@@ -136,6 +140,16 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                         >
                             <Sun className="hidden dark:block" size={19} />
                             <Moon className="dark:hidden" size={19} />
+                        </button>
+                        <button
+                            ref={trigger}
+                            className="rounded p-2 hover:bg-muted"
+                            aria-label="Open navigation"
+                            aria-expanded={open}
+                            aria-controls="main-drawer"
+                            onClick={() => setOpen(true)}
+                        >
+                            <Menu size={23} />
                         </button>
                     </div>
                 </div>
@@ -155,9 +169,13 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                         className="absolute inset-y-0 left-0 w-[min(88vw,380px)] overflow-y-auto border-r bg-background p-7 shadow-xl"
                     >
                         <div className="mb-8 flex items-center justify-between">
-                            <span className="text-xl font-black uppercase">
-                                {siteName}
-                            </span>
+                            <Link
+                                href="/"
+                                aria-label={`${siteName} home`}
+                                onClick={() => setOpen(false)}
+                            >
+                                {logo}
+                            </Link>
                             <button
                                 onClick={() => setOpen(false)}
                                 aria-label="Close navigation"

@@ -110,16 +110,25 @@ export async function Footer() {
                     <div>
                         <h3 className="kicker text-muted-foreground">More</h3>
                         <ul className="mt-4 space-y-2.5 text-sm">
-                            {links.map((page) => (
-                                <li key={page.id}>
-                                    <Link
-                                        href={page.href}
-                                        className="text-muted-foreground transition-colors hover:text-foreground"
-                                    >
-                                        {page.title}
-                                    </Link>
-                                </li>
-                            ))}
+                            {links
+                                .filter(
+                                    (page) =>
+                                        ![
+                                            "/contact",
+                                            "/search",
+                                            "/account",
+                                        ].includes(page.href)
+                                )
+                                .map((page) => (
+                                    <li key={page.id}>
+                                        <Link
+                                            href={page.href}
+                                            className="text-muted-foreground transition-colors hover:text-foreground"
+                                        >
+                                            {page.title}
+                                        </Link>
+                                    </li>
+                                ))}
                             <li>
                                 <Link
                                     href="/contact"
@@ -134,6 +143,14 @@ export async function Footer() {
                                     className="text-muted-foreground transition-colors hover:text-foreground"
                                 >
                                     Search
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/account"
+                                    className="text-muted-foreground transition-colors hover:text-foreground"
+                                >
+                                    Log in / Sign up
                                 </Link>
                             </li>
                         </ul>
