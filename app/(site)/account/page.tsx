@@ -83,9 +83,7 @@ export default function AccountPage() {
                       ? "Welcome back"
                       : mode === "register"
                         ? "Join the conversation"
-                        : mode === "setup"
-                          ? "Set up the owner account"
-                          : "Reset your password"}
+                        : "Reset your password"}
             </h1>
             <p className="mt-3 text-muted-foreground">
                 Read, subscribe, and manage your work from one account.
@@ -99,7 +97,7 @@ export default function AccountPage() {
                 <p>Loading account…</p>
             ) : (
                 <form key={mode} onSubmit={submit} className="mt-7 space-y-5">
-                    {(user || ["register", "setup"].includes(mode)) && (
+                    {(user || mode === "register") && (
                         <label className="block">
                             Name
                             <input
@@ -171,18 +169,7 @@ export default function AccountPage() {
                             />
                         </label>
                     )}
-                    {mode === "setup" && (
-                        <label className="block">
-                            Owner setup token
-                            <input
-                                className="cms-input"
-                                name="setupToken"
-                                type="password"
-                                required
-                            />
-                        </label>
-                    )}
-                    {(user || ["register", "setup"].includes(mode)) && (
+                    {(user || mode === "register") && (
                         <label className="flex items-center gap-3">
                             <input
                                 name="subscribed"
@@ -229,7 +216,6 @@ export default function AccountPage() {
                         ["login", "Log in"],
                         ["register", "Sign up"],
                         ["forgot", "Forgot password?"],
-                        ["setup", "Owner setup"],
                     ].map(([value, label]) => (
                         <button
                             key={value}

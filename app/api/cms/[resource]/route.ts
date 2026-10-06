@@ -107,8 +107,7 @@ export async function POST(request: Request, { params }: Context) {
             const previous = await getRecord<User>("users", id)
             if (
                 previous?.role === "owner" ||
-                body.role === "owner" ||
-                email === process.env.OWNER_EMAIL?.toLowerCase()
+                body.role === "owner"
             )
                 return fail(
                     "The owner account is protected. Use Account to edit your own profile.",

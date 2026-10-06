@@ -3,13 +3,24 @@ import { spawn } from "node:child_process"
 import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { randomBytes, createHash } from "node:crypto"
+import { randomBytes, createHash, scryptSync } from "node:crypto"
 
 const temporary = await mkdtemp(path.join(os.tmpdir(), "techhub-cms-test-"))
 await mkdir(path.join(temporary, "content"))
 const port = 3137
 const base = `http://localhost:${port}`
-const setupToken = randomBytes(32).toString("hex")
+const ownerId = createHash("sha256").update("owner@example.test").digest("hex")
+const ownerSalt = randomBytes(16).toString("hex")
+await mkdir(path.join(temporary, "private"), { recursive: true })
+await writeFile(
+    path.join(temporary, "private", `drafts.platform.users.${ownerId}.json`),
+    JSON.stringify({
+        id: ownerId, email: "owner@example.test", name: "Test Owner",
+        role: "owner", status: "active", sessionVersion: 1,
+        subscribed: false, createdAt: new Date().toISOString(),
+        passwordHash: `${ownerSalt}:${scryptSync("Test-password-long!", ownerSalt, 64).toString("hex")}`,
+    })
+)
 const server = spawn(
     process.execPath,
     ["node_modules/next/dist/bin/next", "dev", "-p", String(port)],
@@ -18,8 +29,8 @@ const server = spawn(
             ...process.env,
             WATCHPACK_POLLING: "true",
             ADMIN_SESSION_SECRET: randomBytes(32).toString("hex"),
-            OWNER_EMAIL: "owner@example.test",
-            OWNER_SETUP_TOKEN: setupToken,
+            OWNER_EMAIL: "reader@example.test",
+            OWNER_SETUP_TOKEN: "retired-test-token-not-a-public-bootstrap",
             CMS_TEST_DATA_DIR: path.join(temporary, "private"),
             CMS_TEST_CONTENT_DIR: path.join(temporary, "content"),
             NEXT_PUBLIC_SANITY_PROJECT_ID: "",
@@ -29,6 +40,9 @@ const server = spawn(
             SUPABASE_SECRET_KEY: "",
             RESEND_API_KEY: "",
             RESEND_FROM_EMAIL: "",
+            MAIL_PROVIDER: "",
+            SMTP_USER: "",
+            SMTP_PASSWORD: "",
         },
         stdio: ["ignore", "pipe", "pipe"],
     }
@@ -94,7 +108,7 @@ try {
             setupToken: "invalid",
         },
         "",
-        403
+        404
     )
     await post(
         "/api/auth/register",
@@ -102,14 +116,24 @@ try {
         "",
         400
     )
-    const owner = await post("/api/auth/setup", {
-        email: "owner@example.test",
+    const owner = await post("/api/auth/login", {
+        email: " OWNER@EXAMPLE.TEST ",
         password: "Test-password-long!",
-        setupToken,
-        name: "Test Owner",
     })
     assert.equal(owner.data.user.role, "owner")
     assert.equal(owner.data.redirect, "/admin")
+    const accountScreen = await call("/account")
+    assert(!/Owner setup|Owner Setup|Set up owner account|setupToken/.test(accountScreen.data))
+    await post("/api/auth/setup", {
+        email: "new-owner@example.test", password: "Test-password-long!",
+        setupToken: "retired-test-token-not-a-public-bootstrap",
+    }, "", 404)
+    await post("/api/auth/login", { email: "owner@example.test", password: "incorrect" }, "", 401)
+    await post("/api/auth/login", { email: "missing@example.test", password: "Test-password-long!" }, "", 401)
+    const ownerInfo = await call("/api/auth/me", { cookie: owner.cookie })
+    assert(ownerInfo.data.permissions.includes("users.manage"))
+    assert(ownerInfo.data.permissions.includes("articles.publish"))
+    assert(ownerInfo.data.permissions.includes("ads.settings"))
     const reader = await post("/api/auth/register", {
         email: "reader@example.test",
         password: "Test-password-long!",
@@ -231,6 +255,58 @@ try {
         owner.cookie,
         403
     )
+    await post("/api/auth/login", {
+        email: "author@example.test", password: "Test-password-long!",
+    }, "", 401)
+    for (const role of ["administrator", "editor", "contributor"]) {
+        const email = `${role}@example.test`
+        await post("/api/cms/users", {
+            email, name: `Test ${role}`, role, status: "active",
+            password: "Test-password-long!",
+        }, owner.cookie)
+        const login = await post("/api/auth/login", { email, password: "Test-password-long!" })
+        assert.equal(login.data.user.role, role)
+        assert.equal(login.data.redirect, "/admin")
+        assert(!Object.hasOwn(login.data.user, "passwordHash"))
+        await call("/api/cms/users", { cookie: login.cookie, status: 403 })
+        await post("/api/cms/users", {
+            email: "privileged@example.test", role: "administrator", password: "Test-password-long!",
+        }, login.cookie, 403)
+        await post("/api/cms/roles", { reader: ["users.manage"] }, login.cookie, 403)
+        const draftByRole = await post("/api/articles", {
+            title: `${role} private draft`, section: "news", status: "draft", content: "Draft content",
+        }, login.cookie, 201)
+        if (role === "contributor") {
+            await call(`/api/articles/${draftByRole.data.id}`, {
+                method: "PUT", body: { title: "Contributor updated draft" }, cookie: login.cookie,
+            })
+            await call(`/api/articles/${draftByRole.data.id}`, {
+                method: "PUT", body: { status: "published" }, cookie: login.cookie, status: 403,
+            })
+            await call("/api/media", { method: "POST", cookie: login.cookie, body: {}, status: 403 })
+            await post("/api/cms/users", {
+                email, name: "Test Contributor", role, status: "active",
+                permissions: ["media.manage"], deniedPermissions: ["articles.create"],
+            }, owner.cookie)
+            assert.equal((await call("/api/auth/me", { cookie: login.cookie })).data.user, null)
+            const restrictedLogin = await post("/api/auth/login", { email, password: "Test-password-long!" })
+            const restrictedInfo = await call("/api/auth/me", { cookie: restrictedLogin.cookie })
+            assert(restrictedInfo.data.permissions.includes("media.manage"))
+            assert(!restrictedInfo.data.permissions.includes("articles.create"))
+            await post("/api/articles", { title: "Blocked by owner override" }, restrictedLogin.cookie, 403)
+        } else {
+            await call(`/api/articles/${draftByRole.data.id}`, {
+                method: "PUT", body: { status: "published" }, cookie: login.cookie,
+            })
+            await call(`/api/articles/${draftByRole.data.id}`, {
+                method: "PUT", body: { status: "draft" }, cookie: login.cookie,
+            })
+            await call(`/api/articles/${draftByRole.data.id}`, { status: 404 })
+        }
+    }
+    const rolesSaved = await post("/api/cms/roles", { owner: [], reader: [] }, owner.cookie)
+    assert(rolesSaved.data.owner.includes("users.manage"))
+    assert((await call("/api/auth/me", { cookie: owner.cookie })).data.permissions.includes("settings.manage"))
     const pages = await call("/api/pages", { cookie: owner.cookie })
     assert(pages.data.some((p) => p.slug === "advertise"))
     assert.equal(pages.data.filter((p) => p.slug === "news").length, 1)

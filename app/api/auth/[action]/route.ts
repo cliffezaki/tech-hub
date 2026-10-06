@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { timingSafeEqual } from "node:crypto"
 import {
     resetConfigured,
     requestReset,
@@ -16,6 +15,7 @@ import {
 } from "@/lib/accounts"
 import { getRecord, saveRecord, platformReady } from "@/lib/platform-store"
 import { safeUser, type User } from "@/lib/permissions"
+import { EmailDeliveryUnavailable } from "@/lib/email"
 import {
     createSessionToken,
     isAuthConfigured,
@@ -137,36 +137,13 @@ export async function POST(request: Request) {
             })
         }
         let user = await getRecord<User>("users", id)
-        if (action === "register" || action === "setup") {
-            const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase()
+        if (action === "register") {
             const config = await getRecord<{ registration?: boolean }>(
                 "config",
                 "publishing"
             )
-            if (
-                action === "register" &&
-                (config?.registration === false || email === ownerEmail)
-            )
-                throw new Error(
-                    "Registration is unavailable for this address. Use owner setup for the reserved owner account."
-                )
-            if (action === "setup") {
-                const expected = Buffer.from(
-                    process.env.OWNER_SETUP_TOKEN || ""
-                )
-                const actual = Buffer.from(String(body.setupToken || ""))
-                if (
-                    !ownerEmail ||
-                    email !== ownerEmail ||
-                    expected.length < 32 ||
-                    actual.length !== expected.length ||
-                    !timingSafeEqual(expected, actual)
-                )
-                    return NextResponse.json(
-                        { error: "Invalid owner setup details." },
-                        { status: 403 }
-                    )
-            }
+            if (config?.registration === false)
+                throw new Error("New account registration is currently unavailable.")
             if (user)
                 throw new Error(
                     "This account already exists. Sign in or contact the owner for recovery."
@@ -176,7 +153,7 @@ export async function POST(request: Request) {
                 email,
                 name: String(body.name || "Reader").slice(0, 100),
                 passwordHash: await hashPassword(String(body.password || "")),
-                role: action === "setup" ? "owner" : "reader",
+                role: "reader",
                 status: "active",
                 sessionVersion: 1,
                 createdAt: new Date().toISOString(),
@@ -226,7 +203,7 @@ export async function POST(request: Request) {
                 error:
                     e instanceof Error ? e.message : "Account request failed.",
             },
-            { status: 400 }
+            { status: e instanceof EmailDeliveryUnavailable ? 503 : 400 }
         )
     }
 }

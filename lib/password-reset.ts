@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto"
 import { emailId, hashPassword } from "@/lib/accounts"
 import { claim, getRecord, saveRecord } from "@/lib/platform-store"
 import type { User } from "@/lib/permissions"
+import { emailDeliveryConfigured, sendResetEmail, verifyEmailDelivery } from "@/lib/email"
 
 interface ResetRecord {
     userId: string
@@ -13,8 +14,7 @@ export function resetConfigured() {
     try {
         const url = new URL(process.env.NEXT_PUBLIC_SITE_URL || "")
         return Boolean(
-            process.env.RESEND_API_KEY &&
-            process.env.RESEND_FROM_EMAIL &&
+            emailDeliveryConfigured() &&
             url.protocol === "https:" &&
             !url.username &&
             !url.password
@@ -24,6 +24,7 @@ export function resetConfigured() {
     }
 }
 export async function requestReset(email: string) {
+    await verifyEmailDelivery()
     const user = await getRecord<User>("users", emailId(email))
     if (!user || user.status !== "active") return
     const token = randomBytes(32).toString("hex")
@@ -37,26 +38,11 @@ export async function requestReset(email: string) {
     const url = new URL("/account", process.env.NEXT_PUBLIC_SITE_URL)
     url.hash = `reset=${token}`
     try {
-        const response = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-                "Content-Type": "application/json",
-                "Idempotency-Key": `password-reset-${id}`,
-            },
-            body: JSON.stringify({
-                from: process.env.RESEND_FROM_EMAIL,
-                to: [user.email],
-                subject: "Reset your Tech Hub password",
-                text: `Use this link to reset your Tech Hub password within 30 minutes:\n\n${url}\n\nIf you did not request this, ignore this email. Your password has not changed.`,
-            }),
-            signal: AbortSignal.timeout(10000),
-        })
-        if (!response.ok) throw new Error("Email provider rejected request")
+        await sendResetEmail(user.email, url, id)
     } catch {
         // Never log the recipient, token, provider response, or credentials.
         console.error(
-            "Password-reset email delivery failed. Check Resend configuration and delivery logs."
+            "Password-reset email delivery failed. Check the configured email provider and delivery logs."
         )
     }
 }

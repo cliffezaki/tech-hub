@@ -21,7 +21,11 @@ export async function hashPassword(password: string) {
     return `${salt}:${((await derive(password, salt, 64)) as Buffer).toString("hex")}`
 }
 export async function checkPassword(password: string, hash: string) {
-    if (password.length > 256) return false
+    if (
+        password.length > 256 ||
+        typeof hash !== "string" ||
+        !/^[0-9a-f]{32}:[0-9a-f]{128}$/.test(hash)
+    ) return false
     const [salt, hex] = hash.split(":")
     const expected = Buffer.from(hex || "", "hex")
     const actual = (await derive(password, salt || "invalid", 64)) as Buffer
