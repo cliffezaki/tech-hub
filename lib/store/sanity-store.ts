@@ -393,18 +393,14 @@ export function createSanityStore(): ContentStore {
 
         async saveSettings(patch) {
             const client = requireWriteClient()
-            const settings = normalizeSettings({
-                ...(await this.getSettings()),
-                ...patch,
-            })
-
-            await client.createOrReplace({
+            await client.createIfNotExists({
                 _id: SETTINGS_DOC_ID,
                 _type: "siteSettings",
-                ...settings,
+                ...DEFAULT_SETTINGS,
             })
-
-            return settings
+            // Patch only submitted fields: do not overwrite unrelated settings from stale reads.
+            const saved = await client.patch(SETTINGS_DOC_ID).set(patch).commit()
+            return normalizeSettings(saved as unknown as SiteSettings)
         },
 
         async listMedia() {

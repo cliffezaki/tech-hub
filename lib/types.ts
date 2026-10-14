@@ -108,6 +108,21 @@ export interface MediaItem {
 }
 
 export interface SiteSettings {
+    logoLight: string
+    logoDark: string
+    logoSame: string
+    logoWidth: string
+    iconSource: string
+    icon16: string
+    icon32: string
+    icon180: string
+    icon192: string
+    icon512: string
+    iconIco: string
+    identityVersion: string
+    socialImage: string
+    socialTitle: string
+    socialDescription: string
     siteName: string
     tagline: string
     heroEyebrow: string
@@ -125,6 +140,9 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
+    logoLight: "", logoDark: "", logoSame: "true", logoWidth: "150",
+    iconSource: "", icon16: "", icon32: "", icon180: "", icon192: "", icon512: "", iconIco: "",
+    identityVersion: "", socialImage: "", socialTitle: "", socialDescription: "",
     siteName: "Tech Hub",
     tagline: "Technology news, reviews, and guides",
     heroEyebrow: "Today's lead story",

@@ -37,7 +37,7 @@ export default function AdminSettingsPage() {
             const response = await fetch("/api/settings", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(settings),
+                body: JSON.stringify(Object.fromEntries(["siteName", "tagline", "contactEmail", "newsletterTitle", "newsletterText", "footerText", "twitterUrl", "linkedinUrl", "youtubeUrl"].map(key => [key, settings[key as keyof SiteSettings]]))),
             })
 
             if (!response.ok) {
@@ -48,6 +48,8 @@ export default function AdminSettingsPage() {
 
             setMessage("Settings saved.")
             setTimeout(() => setMessage(""), 3000)
+        } catch {
+            setError("Could not save settings. Check your connection and try again.")
         } finally {
             setSaving(false)
         }
@@ -81,6 +83,10 @@ export default function AdminSettingsPage() {
 
     return (
         <div className="space-y-6">
+            <Link href="/admin/settings/identity" className="block rounded-xl border bg-card p-5 transition-colors hover:border-brand-red">
+                <h2 className="text-xl font-semibold">Site Identity →</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Manage your logo, light and dark variants, favicon, site name and social sharing previews.</p>
+            </Link>
             <div className="rounded-xl border bg-background p-5">
                 <Link
                     href="/admin/publishing"

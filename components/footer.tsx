@@ -4,6 +4,7 @@ import { Linkedin, Mail, Twitter, Youtube } from "lucide-react"
 import { getSiteSettings } from "@/lib/content"
 import { readNavigation } from "@/lib/navigation"
 import { publicItems } from "@/lib/menu-layout"
+import { SiteLogo } from "@/components/site-logo"
 
 export async function Footer() {
     const [settings, navigation] = await Promise.all([
@@ -26,15 +27,7 @@ export async function Footer() {
                 <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                     <div className="lg:col-span-2">
                         <Link href="/" className="flex items-baseline gap-0.5">
-                            <span className="text-lg font-black uppercase leading-none">
-                                {settings.siteName.split(" ")[0]}
-                            </span>
-                            <span className="bg-foreground px-1.5 py-1 text-lg font-black uppercase leading-none text-background">
-                                {settings.siteName
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ") || "Hub"}
-                            </span>
+                            <SiteLogo settings={settings} small />
                         </Link>
                         <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
                             {settings.footerText}

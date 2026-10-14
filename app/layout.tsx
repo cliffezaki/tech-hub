@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { getSiteSettings } from "@/lib/content"
 import { getSiteUrl } from "@/lib/site"
 import { publishingConfig } from "@/lib/advertising"
+import { siteIcon, versionedIcon } from "@/lib/site-identity"
 
 const playfair = Playfair_Display({
     subsets: ["latin"],
@@ -33,18 +34,28 @@ export async function generateMetadata(): Promise<Metadata> {
         robots: publishing?.noIndex
             ? { index: false, follow: false }
             : undefined,
-        icons: publishing?.favicon
-            ? { icon: String(publishing.favicon) }
-            : undefined,
+        icons: {
+            icon: [
+                { url: siteIcon(settings, 16), sizes: "16x16" },
+                { url: siteIcon(settings, 32), sizes: "32x32" },
+                { url: versionedIcon("/favicon.ico", settings.identityVersion), sizes: "any" },
+            ],
+            apple: [{ url: siteIcon(settings, 180), sizes: "180x180" }],
+        },
         openGraph: {
             siteName: settings.siteName,
             type: "website",
-            images: publishing?.socialImage
-                ? [String(publishing.socialImage)]
+            title: settings.socialTitle || settings.siteName,
+            description: settings.socialDescription || settings.tagline,
+            images: settings.socialImage || publishing?.socialImage
+                ? [String(settings.socialImage || publishing?.socialImage)]
                 : undefined,
         },
         twitter: {
             card: "summary_large_image",
+            title: settings.socialTitle || settings.siteName,
+            description: settings.socialDescription || settings.tagline,
+            images: settings.socialImage || publishing?.socialImage ? [String(settings.socialImage || publishing?.socialImage)] : undefined,
         },
     }
 }

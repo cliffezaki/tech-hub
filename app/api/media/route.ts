@@ -7,6 +7,7 @@ import {
     revalidateSite,
 } from "@/lib/api"
 import { getStore } from "@/lib/store"
+import { IDENTITY_IMAGES } from "@/lib/site-identity"
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 const ALLOWED_TYPES = new Set([
@@ -95,6 +96,8 @@ export async function DELETE(request: Request) {
         const store = getStore()
         const asset = (await store.listMedia()).find((item) => item.id === id)
         if (asset) {
+            const identity = await store.getSettings()
+            if (IDENTITY_IMAGES.some(key => identity[key] === asset.url)) return NextResponse.json({ error: "This image is used by Site Identity. Replace or remove it in Settings first." }, { status: 409 })
             const [articles, pages] = await Promise.all([store.listArticles(), store.listPages()])
             if (articles.some((a) => a.imageUrl?.startsWith(asset.url) || a.content.includes(asset.url)) ||
                 pages.some((p) => p.content.includes(asset.url))) {

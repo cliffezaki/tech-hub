@@ -20,7 +20,7 @@ export default async function SiteLayout({
             >
                 Skip to content
             </a>
-            <Navbar siteName={settings.siteName} />
+            <Navbar siteName={settings.siteName} identity={settings} />
             <AdSlot slot="header" />
             <main id="main-content" className="flex-1">
                 {children}

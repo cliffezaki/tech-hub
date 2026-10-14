@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X, Search } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { SiteLogo, type LogoSettings } from "@/components/site-logo"
 import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 type Item = {
     id: string
@@ -29,7 +30,7 @@ const defaults: Item[] = [
         menu: "main",
     },
 ]
-export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
+export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string; identity?: LogoSettings }) {
     const [open, setOpen] = useState(false)
     const [closing, setClosing] = useState(false)
     const [items, setItems] = useState(defaults)
@@ -37,18 +38,8 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
     const path = usePathname()
     const trigger = useRef<HTMLButtonElement>(null)
     const drawer = useRef<HTMLDivElement>(null)
-    const [firstWord, ...restWords] = siteName.trim().split(/\s+/)
     const primaryHrefs = new Set(["/", ...ARTICLE_SECTIONS.map((s) => `/${s}`)])
-    const logo = (
-        <span className="flex items-baseline gap-0.5 text-xl font-black uppercase leading-none tracking-tight md:text-2xl">
-            <span>{firstWord}</span>
-            {restWords.length > 0 && (
-                <span className="bg-foreground px-1.5 py-1 text-background">
-                    {restWords.join(" ")}
-                </span>
-            )}
-        </span>
-    )
+    const logo = <SiteLogo settings={identity || { siteName, logoLight: "", logoDark: "", logoSame: "true", logoWidth: "150" }} />
     useEffect(() => {
         fetch("/api/public/navigation")
             .then((r) => r.json())

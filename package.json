@@ -42,6 +42,8 @@
     "remark-gfm": "4.0.1",
     "remark-parse": "11.0.0",
     "sanity": "^5.1.0",
+    "saxes": "6.0.0",
+    "sharp": "0.35.5",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
