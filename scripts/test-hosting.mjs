@@ -48,4 +48,8 @@ assert.equal(load(platformSource, { NETLIFY: "true", NODE_ENV: "production" }, r
 const demoSource = await readFile("lib/demo-seed.ts", "utf8")
 const demoImports = { "@/lib/store/normalize": {}, "@/lib/demo-artwork": {}, "@/lib/demo-content": {} }
 assert.equal(load(demoSource, { NETLIFY: "true", VERCEL_ENV: "preview", NEXT_PUBLIC_SANITY_PROJECT_ID: "test", NEXT_PUBLIC_SANITY_DATASET: "staging" }, demoImports).demoSeedEnabled(), false)
-console.log("PASS: canonical deployment URLs, hosted session security, fail-closed private storage and disabled live demo import.")
+
+const nextConfig = load(await readFile("next.config.ts", "utf8"), {}).default
+assert.equal(nextConfig.experimental.turbopackFileSystemCacheForBuild, false)
+assert.equal(nextConfig.env, undefined, "Server secrets must not be inlined through Next.js env config")
+console.log("PASS: canonical deployment URLs, hosted session security, fail-closed private storage, disabled live demo import and no persistent compiler cache.")
