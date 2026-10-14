@@ -7,6 +7,8 @@ import { DEMO_AUTHOR, DEMO_BATCH, DEMO_STORIES } from "@/lib/demo-content"
 export const demoId = (index: number) => `demo-${DEMO_BATCH}-${index}`
 
 export function demoSeedEnabled() {
+    // Importing samples is never available on the Netlify live-hosting path.
+    if (process.env.NETLIFY) return false
     if (process.env.VERCEL_ENV === "production") return false
     if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID)
         return process.env.NEXT_PUBLIC_SANITY_DATASET === "staging" &&

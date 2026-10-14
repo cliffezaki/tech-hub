@@ -4,7 +4,8 @@ export const isAuthConfigured = () =>
     (process.env.ADMIN_SESSION_SECRET || "").length >= 32
 export const isAdminAccessOpen = () => false
 export const isProductionLikeEnvironment = () =>
-    process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL)
+    process.env.NODE_ENV === "production" ||
+    Boolean(process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME)
 async function sign(value: string) {
     if (!isAuthConfigured())
         throw new Error(

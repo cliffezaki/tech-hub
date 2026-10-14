@@ -22,7 +22,9 @@ export function platformReady() {
         remote() ||
         (!supabaseAttempted() &&
             process.env.NODE_ENV !== "production" &&
-            !process.env.VERCEL)
+            !process.env.VERCEL &&
+            !process.env.NETLIFY &&
+            !process.env.AWS_LAMBDA_FUNCTION_NAME)
     )
 }
 function check() {
