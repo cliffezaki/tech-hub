@@ -276,7 +276,7 @@
 }
 /* Shared controls for accounts and publishing tools. */
 .cms-input { display:block; width:100%; margin-top:.4rem; border:1px solid var(--border, #d4d4d8); border-radius:.5rem; padding:.65rem .8rem; background:var(--background, white); color:inherit; }
-.identity-settings .cms-input { border-color:hsl(var(--input)); background:hsl(var(--background)); color:hsl(var(--foreground)); }
+.identity-settings .cms-input { border:1px solid hsl(var(--input)); background:hsl(var(--background)); color:hsl(var(--foreground)); }
 .identity-settings .cms-secondary { display:inline-flex; align-items:center; justify-content:center; min-height:40px; border:1px solid hsl(var(--input)); background:hsl(var(--card)); color:hsl(var(--foreground)); padding:.5rem .8rem; border-radius:.5rem; font-size:.875rem; font-weight:600; }
 .identity-settings .cms-secondary:hover { background:hsl(var(--muted)); }
 .identity-settings button:focus-visible, .identity-settings input:focus-visible { outline:2px solid hsl(var(--ring)); outline-offset:3px; }
