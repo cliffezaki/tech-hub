@@ -36,7 +36,7 @@
     min-height: 3rem;
     margin-top: .375rem;
     padding: .6875rem .875rem;
-    border: 1px solid hsl(var(--muted-foreground) / .55);
+    border: 1px solid hsl(var(--input));
     border-radius: .5rem;
     background: hsl(var(--card));
     color: hsl(var(--foreground));
@@ -46,7 +46,7 @@
 }
 
 .form input[aria-invalid="true"] {
-    border-color: #c62936;
+    border-color: hsl(var(--brand-red));
 }
 
 .primary {
@@ -55,15 +55,15 @@
     margin-top: .25rem;
     padding: .75rem 1.25rem;
     border-radius: .5rem;
-    background: #c62936;
-    color: white;
+    background: hsl(var(--brand-solid));
+    color: hsl(var(--brand-on-solid));
     font-size: 1rem;
     line-height: 1.5;
     font-weight: 600;
     cursor: pointer;
 }
 
-.primary:hover:not(:disabled) { background: #ad2330; }
+.primary:hover:not(:disabled) { background: hsl(var(--brand-solid-hover)); }
 .primary:disabled, .textLink:disabled { opacity: .6; cursor: wait; }
 
 .switchMode {
@@ -86,7 +86,7 @@
 
 .textLink:hover:not(:disabled) { text-decoration-thickness: 2px; }
 .account input:focus-visible, .account button:focus-visible, .account a:focus-visible {
-    outline: 2px solid #c62936;
+    outline: 2px solid hsl(var(--ring));
     outline-offset: 3px;
 }
 

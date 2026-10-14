@@ -69,7 +69,7 @@ export default async function Home() {
 
                                 <div className="mt-6">
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <span className="kicker rounded-full bg-brand-red px-2.5 py-1 text-white">
+                                        <span className="kicker rounded-full bg-brand-solid px-2.5 py-1 text-brand-on-solid">
                                             {settings.heroEyebrow}
                                         </span>
                                         <span className="kicker text-muted-foreground">

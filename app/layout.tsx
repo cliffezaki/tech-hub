@@ -66,8 +66,9 @@ export default async function RootLayout({
             <body suppressHydrationWarning>
                 <ThemeProvider
                     attribute="class"
-                    defaultTheme="light"
-                    disableTransitionOnChange
+                    defaultTheme="system"
+                    enableSystem
+                    enableColorScheme
                 >
                     {children}
                 </ThemeProvider>

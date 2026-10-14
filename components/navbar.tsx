@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useTheme } from "next-themes"
-import { Menu, X, Search, Sun, Moon } from "lucide-react"
+import { Menu, X, Search } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 type Item = {
     id: string
@@ -35,7 +35,6 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
     const [items, setItems] = useState(defaults)
     const [signedIn, setSignedIn] = useState(false)
     const path = usePathname()
-    const { theme, setTheme } = useTheme()
     const trigger = useRef<HTMLButtonElement>(null)
     const drawer = useRef<HTMLDivElement>(null)
     const [firstWord, ...restWords] = siteName.trim().split(/\s+/)
@@ -156,15 +155,7 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                         <Link href="/search" aria-label="Search">
                             <Search size={19} />
                         </Link>
-                        <button
-                            onClick={() =>
-                                setTheme(theme === "dark" ? "light" : "dark")
-                            }
-                            aria-label="Toggle color theme"
-                        >
-                            <Sun className="hidden dark:block" size={19} />
-                            <Moon className="dark:hidden" size={19} />
-                        </button>
+                        <ThemeToggle />
                     </div>
                 </div>
             </header>
@@ -180,7 +171,7 @@ export function Navbar({ siteName = "Tech Hub" }: { siteName?: string }) {
                         role="dialog"
                         aria-modal="true"
                         aria-label="Site navigation"
-                        className="navigation-drawer absolute inset-y-0 left-0 w-[min(88vw,380px)] overflow-y-auto border-r bg-background p-7 shadow-xl"
+                        className="navigation-drawer absolute inset-y-0 left-0 w-[min(88vw,380px)] overflow-y-auto border-r bg-card p-7 shadow-xl"
                         onAnimationEnd={(event) => {
                             if (closing && event.target === event.currentTarget) {
                                 setOpen(false)

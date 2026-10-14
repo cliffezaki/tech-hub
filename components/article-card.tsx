@@ -52,7 +52,7 @@ export function ArticleCard({ article, variant = "default", priority = false, cl
         // No `h-full` here: as a grid item the card already stretches to the row height,
         // while inside a flex column `height: 100%` resolves against the whole column and
         // makes every card as tall as the container, overlapping whatever follows it.
-        <Link href={article.href} className={cn("group flex flex-col", className)}>
+        <Link href={article.href} className={cn("group flex flex-col", !isFeature && "rounded-lg bg-card text-card-foreground", className)}>
             <div
                 className={cn(
                     "relative overflow-hidden rounded-lg bg-muted",
@@ -73,7 +73,7 @@ export function ArticleCard({ article, variant = "default", priority = false, cl
                 )}
             </div>
 
-            <div className={cn("flex flex-1 flex-col", isFeature ? "mt-5" : "mt-4")}>
+            <div className={cn("flex flex-1 flex-col", isFeature ? "mt-5" : "mt-4 px-4 pb-4")}>
                 <span className="kicker text-brand-red">{article.category}</span>
 
                 <h3
