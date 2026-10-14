@@ -7,20 +7,44 @@ export class EmailDeliveryUnavailable extends Error {
     }
 }
 
-function gmailCredentials() {
+function mailProvider() {
+    return (process.env.MAIL_PROVIDER || "resend").trim().toLowerCase()
+}
+
+function gmailValues() {
     const user = (process.env.SMTP_USER || "").trim().toLowerCase()
-    // Google displays app passwords in groups separated by spaces.
-    const pass = (process.env.SMTP_PASSWORD || "").replace(/ /g, "")
+    // Google's grouped display and clipboard can contain non-breaking spaces
+    // or line breaks. Only whitespace is removed; the actual key stays strict.
+    const pass = (process.env.SMTP_PASSWORD || "").replace(/\s/g, "")
+    return { user, pass }
+}
+
+function gmailCredentials() {
+    const { user, pass } = gmailValues()
     if (!/^[a-z0-9._%+-]+@gmail\.com$/.test(user) || !/^[a-zA-Z0-9]{16}$/.test(pass))
         return null
     return { user, pass }
 }
 
+// Static codes only: these diagnostics must never contain addresses or secrets.
+export function emailConfigurationIssues(): string[] {
+    const provider = mailProvider()
+    if (provider === "gmail") {
+        const { user, pass } = gmailValues()
+        const issues: string[] = []
+        if (!/^[a-z0-9._%+-]+@gmail\.com$/.test(user)) issues.push("SMTP_USER_INVALID")
+        if (!/^[a-zA-Z0-9]{16}$/.test(pass)) issues.push("SMTP_PASSWORD_INVALID")
+        return issues
+    }
+    if (provider !== "resend") return ["EMAIL_PROVIDER_INVALID"]
+    const issues: string[] = []
+    if (!process.env.RESEND_API_KEY) issues.push("RESEND_API_KEY_MISSING")
+    if (!process.env.RESEND_FROM_EMAIL) issues.push("RESEND_FROM_EMAIL_MISSING")
+    return issues
+}
+
 export function emailDeliveryConfigured() {
-    const provider = process.env.MAIL_PROVIDER || "resend"
-    if (provider === "gmail") return Boolean(gmailCredentials())
-    if (provider !== "resend") return false
-    return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL)
+    return emailConfigurationIssues().length === 0
 }
 
 function gmailTransport() {
@@ -45,7 +69,7 @@ function gmailTransport() {
 
 export async function verifyEmailDelivery() {
     if (!emailDeliveryConfigured()) throw new EmailDeliveryUnavailable()
-    if (process.env.MAIL_PROVIDER !== "gmail") return
+    if (mailProvider() !== "gmail") return
     try {
         // Check credentials for every address, including unknown accounts, so a
         // broken sender produces the same error without revealing membership.
@@ -60,7 +84,7 @@ export async function sendResetEmail(to: string, resetUrl: URL, requestId: strin
     const subject = "Reset your Tech Hub password"
     const text = `Use this link to reset your Tech Hub password within 30 minutes:\n\n${resetUrl}\n\nIf you did not request this, ignore this email. Your password has not changed.`
     try {
-        if (process.env.MAIL_PROVIDER === "gmail") {
+        if (mailProvider() === "gmail") {
             const auth = gmailCredentials()!
             const result = await gmailTransport().sendMail({
                 from: { name: "Tech Hub", address: auth.user },

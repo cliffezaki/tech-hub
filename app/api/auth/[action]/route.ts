@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import {
     resetConfigured,
+    resetConfigurationIssues,
     requestReset,
     redeemReset,
 } from "@/lib/password-reset"
@@ -124,12 +125,17 @@ export async function POST(request: Request) {
             )
         if (action === "forgot") {
             if (!resetConfigured())
+            {
+                // Hosting logs receive only static issue codes, never submitted
+                // addresses, passwords, API keys or reset tokens.
+                console.error("Password-reset configuration issues:", resetConfigurationIssues().join(","))
                 return NextResponse.json(
                     {
                         error: "Password-reset email delivery is not configured. Contact the site owner for account recovery.",
                     },
                     { status: 503 }
                 )
+            }
             await requestReset(email)
             return NextResponse.json({
                 message:

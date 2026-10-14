@@ -3,25 +3,26 @@ import { randomBytes } from "node:crypto"
 import { emailId, hashPassword } from "@/lib/accounts"
 import { claim, getRecord, saveRecord } from "@/lib/platform-store"
 import type { User } from "@/lib/permissions"
-import { emailDeliveryConfigured, sendResetEmail, verifyEmailDelivery } from "@/lib/email"
+import { emailConfigurationIssues, sendResetEmail, verifyEmailDelivery } from "@/lib/email"
 
 interface ResetRecord {
     userId: string
     sessionVersion: number
     expiresAt: number
 }
-export function resetConfigured() {
+export function resetConfigurationIssues(): string[] {
+    const issues = emailConfigurationIssues()
     try {
         const url = new URL(process.env.NEXT_PUBLIC_SITE_URL || "")
-        return Boolean(
-            emailDeliveryConfigured() &&
-            url.protocol === "https:" &&
-            !url.username &&
-            !url.password
-        )
+        if (url.protocol !== "https:" || url.username || url.password)
+            issues.push("SITE_URL_INVALID")
     } catch {
-        return false
+        issues.push("SITE_URL_INVALID")
     }
+    return issues
+}
+export function resetConfigured() {
+    return resetConfigurationIssues().length === 0
 }
 export async function requestReset(email: string) {
     await verifyEmailDelivery()

@@ -135,8 +135,23 @@ assert.equal(api.resetConfigured(), false)
 env.SMTP_USER = "Tech.Hub.Test@gmail.com"
 env.SMTP_PASSWORD = "abcd efgh ijkl mnop"
 assert.equal(api.resetConfigured(), true)
+for (const formatted of ["\n abcd\u00a0efgh\tijkl\r\nmnop \n", "abcdefghijklmnop"]) {
+    env.SMTP_PASSWORD = formatted
+    assert.equal(api.resetConfigured(), true)
+}
+env.SMTP_PASSWORD = "private-invalid-credential"
+assert.equal(api.resetConfigured(), false)
+assert.deepEqual(Array.from(api.resetConfigurationIssues()), ["SMTP_PASSWORD_INVALID"])
+assert(!JSON.stringify(api.resetConfigurationIssues()).includes(env.SMTP_PASSWORD))
+env.SMTP_PASSWORD = "abcd efgh ijkl mnop"
+env.NEXT_PUBLIC_SITE_URL = "http://example.test"
+assert.deepEqual(Array.from(api.resetConfigurationIssues()), ["SITE_URL_INVALID"])
+env.NEXT_PUBLIC_SITE_URL = "https://example.test"
+env.MAIL_PROVIDER = " Gmail \n"
+assert.equal(api.resetConfigured(), true)
 env.SMTP_USER = "not-gmail@example.test"
 assert.equal(api.resetConfigured(), false)
+assert.deepEqual(Array.from(api.resetConfigurationIssues()), ["SMTP_USER_INVALID"])
 env.SMTP_USER = "Tech.Hub.Test@gmail.com"
 const beforeUnknown = smtpChecks
 await api.requestReset("absent@example.test")
