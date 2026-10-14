@@ -12,7 +12,13 @@ export type ArticleSection = (typeof ARTICLE_SECTIONS)[number]
 
 export const SECTION_META: Record<
     ArticleSection,
-    { label: string; navLabel: string; title: string; subtitle: string; defaultCategory: string }
+    {
+        label: string
+        navLabel: string
+        title: string
+        subtitle: string
+        defaultCategory: string
+    }
 > = {
     news: {
         label: "News",
@@ -25,7 +31,7 @@ export const SECTION_META: Record<
         label: "Reviews",
         navLabel: "Reviews",
         title: "Reviews",
-        subtitle: "Hands-on verdicts on the hardware worth your money",
+        subtitle: "Independent assessments of hardware and software",
         defaultCategory: "Review",
     },
     "how-to": {
@@ -54,6 +60,16 @@ export const SECTION_META: Record<
 export type ArticleStatus = "draft" | "published"
 
 export interface Article {
+    scheduledAt?: string
+    seoTitle?: string
+    metaDescription?: string
+    tags?: string[]
+    demo?: boolean
+    demoBatch?: string
+    ownerId?: string
+    pinnedAreas?: string[]
+    manualOrder?: number
+    sponsorship?: string
     id: string
     title: string
     slug: string
@@ -92,6 +108,21 @@ export interface MediaItem {
 }
 
 export interface SiteSettings {
+    logoLight: string
+    logoDark: string
+    logoSame: string
+    logoWidth: string
+    iconSource: string
+    icon16: string
+    icon32: string
+    icon180: string
+    icon192: string
+    icon512: string
+    iconIco: string
+    identityVersion: string
+    socialImage: string
+    socialTitle: string
+    socialDescription: string
     siteName: string
     tagline: string
     heroEyebrow: string
@@ -109,6 +140,9 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
+    logoLight: "", logoDark: "", logoSame: "true", logoWidth: "150",
+    iconSource: "", icon16: "", icon32: "", icon180: "", icon192: "", icon512: "", iconIco: "",
+    identityVersion: "", socialImage: "", socialTitle: "", socialDescription: "",
     siteName: "Tech Hub",
     tagline: "Technology news, reviews, and guides",
     heroEyebrow: "Today's lead story",
@@ -125,6 +159,11 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 }
 
 export interface ArticleSummary {
+    seoTitle?: string
+    metaDescription?: string
+    tags?: string[]
+    demo?: boolean
+    sponsorship?: string
     id: string
     title: string
     slug: string
@@ -141,6 +180,8 @@ export interface ArticleSummary {
 }
 
 export interface SanityArticle {
+    demo?: boolean
+    demoBatch?: string
     _id: string
     title?: string
     slug?: string

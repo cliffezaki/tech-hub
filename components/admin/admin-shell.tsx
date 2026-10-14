@@ -19,6 +19,7 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { ADMIN_NAV, type Permission } from "@/lib/permissions"
 
 interface StoreStatus {
     mode: "sanity" | "file"
@@ -37,8 +38,15 @@ const NAV_ITEMS = [
     { href: "/admin/settings", label: "Settings", icon: Settings },
 ]
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+    children,
+    permissions,
+}: {
+    children: React.ReactNode
+    permissions: Permission[]
+}) {
     const pathname = usePathname()
+    const writing = /^\/admin\/articles\/[^/]+$/.test(pathname)
     const router = useRouter()
     const [status, setStatus] = useState<StoreStatus | null>(null)
     const [menuOpen, setMenuOpen] = useState(false)
@@ -58,9 +66,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
     const nav = (
         <nav className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => {
-                const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
-                const Icon = item.icon
+            {ADMIN_NAV.filter(
+                (item) =>
+                    !item.permission || permissions.includes(item.permission)
+            ).map((item) => {
+                const active =
+                    item.href === "/admin"
+                        ? pathname === item.href
+                        : pathname.startsWith(item.href)
+                const Icon =
+                    NAV_ITEMS.find((n) => n.href === item.href)?.icon ||
+                    FileText
 
                 return (
                     <Link
@@ -89,20 +105,28 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="lg:hidden"
+                        className={writing ? "" : "lg:hidden"}
                         onClick={() => setMenuOpen((open) => !open)}
                         aria-label="Toggle dashboard menu"
                     >
-                        {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        {menuOpen ? (
+                            <X className="h-5 w-5" />
+                        ) : (
+                            <Menu className="h-5 w-5" />
+                        )}
                     </Button>
 
                     <Link href="/admin" className="flex items-baseline gap-0.5">
-                        <span className="text-sm font-black uppercase leading-none">TECH</span>
+                        <span className="text-sm font-black uppercase leading-none">
+                            TECH
+                        </span>
                         <span className="bg-foreground px-1.5 py-1 text-sm font-black uppercase leading-none text-background">
                             HUB
                         </span>
                     </Link>
-                    <span className="hidden text-sm text-muted-foreground sm:inline">Content dashboard</span>
+                    <span className="hidden text-sm text-muted-foreground sm:inline">
+                        Publishing workspace
+                    </span>
 
                     <div className="ml-auto flex items-center gap-2">
                         <Link href="/" target="_blank">
@@ -112,7 +136,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                             </Button>
                         </Link>
                         {status?.authConfigured && (
-                            <Button variant="ghost" size="sm" onClick={handleLogout}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleLogout}
+                            >
                                 <LogOut className="mr-2 h-4 w-4" />
                                 Sign out
                             </Button>
@@ -121,13 +149,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 </div>
             </header>
 
-            <div className="mx-auto flex w-full max-w-7xl gap-8 px-4 py-6">
-                <aside className="hidden w-56 shrink-0 lg:block">
+            <div className={writing ? "mx-auto flex w-full max-w-[1600px] px-4 py-4" : "mx-auto flex w-full max-w-7xl gap-8 px-4 py-6"}>
+                <aside className={writing ? "hidden" : "hidden w-56 shrink-0 lg:block"}>
                     <div className="sticky top-20">{nav}</div>
                 </aside>
 
                 {menuOpen && (
-                    <div className="fixed inset-0 top-14 z-30 bg-background p-4 lg:hidden">{nav}</div>
+                    <div className={cn("fixed inset-0 top-14 z-30 bg-background p-4", !writing && "lg:hidden")}>
+                        {nav}
+                    </div>
                 )}
 
                 <main className="min-w-0 flex-1 space-y-6">
@@ -135,15 +165,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         <div className="flex gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100">
                             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                             <div>
-                                <p className="font-semibold">Saving is disabled in this environment</p>
-                                <p className="mt-1 opacity-90">{status.reason}</p>
+                                <p className="font-semibold">
+                                    Saving is disabled in this environment
+                                </p>
+                                <p className="mt-1 opacity-90">
+                                    {status.reason}
+                                </p>
                             </div>
                         </div>
                     )}
 
                     {status?.openAccess && (
                         <div className="rounded-lg border border-dashed bg-background p-3 text-xs text-muted-foreground">
-                            Local development mode — no password required. Set <code className="font-mono">ADMIN_PASSWORD</code>{" "}
+                            Local development mode — no password required. Set{" "}
+                            <code className="font-mono">ADMIN_PASSWORD</code>{" "}
                             before deploying so the live dashboard is protected.
                         </div>
                     )}

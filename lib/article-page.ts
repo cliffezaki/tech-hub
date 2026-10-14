@@ -2,7 +2,7 @@ import "server-only"
 
 import type { Metadata } from "next"
 
-import { getArticleDetail, getSectionArticles } from "@/lib/content"
+import { getArticleDetail, getSectionArticles, getSiteSettings } from "@/lib/content"
 import type { ArticleSection } from "@/lib/types"
 
 /**
@@ -26,23 +26,26 @@ export async function buildArticleMetadata(section: ArticleSection, slug: string
         return { title: "Article not found" }
     }
 
+    const settings = await getSiteSettings()
+    const image = article.imageUrl || settings.socialImage
     return {
-        title: article.title,
-        description: article.excerpt,
+        title: article.seoTitle || article.title,
+        description: article.metaDescription || article.excerpt,
+        keywords: article.tags,
         alternates: { canonical: article.href },
         openGraph: {
             type: "article",
-            title: article.title,
-            description: article.excerpt,
+            title: article.seoTitle || article.title,
+            description: article.metaDescription || article.excerpt,
             publishedTime: article.publishedAt,
             authors: [article.author],
-            images: article.imageUrl ? [{ url: article.imageUrl }] : undefined,
+            images: image ? [{ url: image }] : undefined,
         },
         twitter: {
             card: "summary_large_image",
-            title: article.title,
-            description: article.excerpt,
-            images: article.imageUrl ? [article.imageUrl] : undefined,
+            title: article.seoTitle || article.title,
+            description: article.metaDescription || article.excerpt,
+            images: image ? [image] : undefined,
         },
     }
 }

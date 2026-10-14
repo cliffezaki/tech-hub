@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Netlify automatically installs its maintained Next.js adapter.
+# Keep private database, session and SMTP credentials in the hosting dashboard.

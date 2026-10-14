@@ -1,23 +1,33 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getSiteSettings } from "@/lib/content"
+import { TrackingConsent } from "@/components/tracking"
+import { AdSlot } from "@/components/ad-slot"
+export const dynamic = "force-dynamic"
 
-export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
     const settings = await getSiteSettings()
 
     return (
-        <div className="flex min-h-screen flex-col">
+        <div className="public-site flex min-h-screen flex-col">
             <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"
             >
                 Skip to content
             </a>
-            <Navbar siteName={settings.siteName} />
+            <Navbar siteName={settings.siteName} identity={settings} />
+            <AdSlot slot="header" />
             <main id="main-content" className="flex-1">
                 {children}
             </main>
+            <AdSlot slot="footer" />
             <Footer />
+            <TrackingConsent />
         </div>
     )
 }

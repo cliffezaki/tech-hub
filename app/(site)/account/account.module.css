@@ -1,0 +1,104 @@
+.account {
+    width: 100%;
+    max-width: 32rem;
+    margin-inline: auto;
+    padding: clamp(2.5rem, 6vw, 4rem) 1.25rem;
+}
+
+.heading {
+    margin-top: .75rem;
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    line-height: 1.15;
+    font-weight: 700;
+}
+
+.intro {
+    margin-top: .875rem;
+    color: hsl(var(--muted-foreground));
+    line-height: 1.6;
+}
+
+.form {
+    display: grid;
+    gap: 1.125rem;
+    margin-top: 1.75rem;
+}
+
+.form > label {
+    font-size: .9375rem;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.form input:not([type="checkbox"]) {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    margin-top: .375rem;
+    padding: .6875rem .875rem;
+    border: 1px solid hsl(var(--input));
+    border-radius: .5rem;
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.form input[aria-invalid="true"] {
+    border-color: hsl(var(--brand-red));
+}
+
+.primary {
+    width: 100%;
+    min-height: 3rem;
+    margin-top: .25rem;
+    padding: .75rem 1.25rem;
+    border-radius: .5rem;
+    background: hsl(var(--brand-solid));
+    color: hsl(var(--brand-on-solid));
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary:hover:not(:disabled) { background: hsl(var(--brand-solid-hover)); }
+.primary:disabled, .textLink:disabled { opacity: .6; cursor: wait; }
+
+.switchMode {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: .875rem;
+    line-height: 1.6;
+    color: hsl(var(--muted-foreground));
+}
+
+.textLink {
+    color: hsl(var(--brand-red));
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.textLink:hover:not(:disabled) { text-decoration-thickness: 2px; }
+.account input:focus-visible, .account button:focus-visible, .account a:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+}
+
+.notice {
+    margin-top: 1.25rem;
+    padding: .875rem 1rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: .5rem;
+    background: hsl(var(--muted));
+    font-size: .875rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.notice .textLink { display: inline-block; margin-top: .5rem; }
