@@ -1,4 +1,5 @@
 import "server-only"
+import { articleVisible } from "@/lib/article-visibility"
 
 import { getStore } from "@/lib/store"
 import { BUILTIN_PAGES, mergeBuiltinPages } from "@/lib/builtin-pages"
@@ -19,6 +20,9 @@ export interface ArticleDetail extends ArticleSummary {
 function toSummary(article: Article): ArticleSummary {
     return {
         demo: article.demo,
+        seoTitle: article.seoTitle,
+        metaDescription: article.metaDescription,
+        tags: article.tags,
         id: article.id,
         title: article.title,
         slug: article.slug,
@@ -37,7 +41,7 @@ function toSummary(article: Article): ArticleSummary {
 }
 
 function isPublished(article: Article) {
-    return article.status === "published"
+    return articleVisible(article)
 }
 
 /** Every public read goes through here, so drafts can never leak onto the live site. */

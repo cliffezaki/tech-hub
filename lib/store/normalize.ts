@@ -1,4 +1,5 @@
 import { ARTICLE_SECTIONS, DEFAULT_SETTINGS, SECTION_META } from "@/lib/types"
+import { documentText } from "@/lib/rich-content"
 import type {
     Article,
     ArticleSection,
@@ -44,7 +45,7 @@ function asDate(value: unknown): string {
 
 /** Roughly 200 words per minute, which is the usual reading-speed assumption for news copy. */
 export function estimateReadTime(content: string) {
-    const words = String(content || "")
+    const words = documentText(String(content || ""))
         .trim()
         .split(/\s+/)
         .filter(Boolean).length
@@ -69,6 +70,10 @@ export function normalizeArticle(input: unknown): Article {
         slug: slugify(String(raw.slug || title)) || generateId(),
         excerpt: String(raw.excerpt || ""),
         content,
+        seoTitle: typeof raw.seoTitle === "string" ? raw.seoTitle : "",
+        scheduledAt: typeof raw.scheduledAt === "string" ? raw.scheduledAt : "",
+        metaDescription: typeof raw.metaDescription === "string" ? raw.metaDescription : "",
+        tags: Array.isArray(raw.tags) ? raw.tags.filter((v): v is string => typeof v === "string") : [],
         category: String(raw.category || SECTION_META[section].defaultCategory),
         section,
         author: String(raw.author || "Tech Hub Staff"),

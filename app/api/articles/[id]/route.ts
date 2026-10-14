@@ -11,6 +11,10 @@ import { estimateReadTime } from "@/lib/store/normalize"
 import { ARTICLE_SECTIONS } from "@/lib/types"
 import type { Article } from "@/lib/types"
 import { currentUser, userPermissions } from "@/lib/accounts"
+import { editorFields } from "@/lib/editor-fields"
+import { saveRecord } from "@/lib/platform-store"
+import { randomUUID } from "node:crypto"
+import { articleVisible } from "@/lib/article-visibility"
 
 interface Props {
     params: Promise<{ id: string }>
@@ -25,7 +29,7 @@ export async function GET(request: Request, { params }: Props) {
         const permissions = user ? await userPermissions(user) : []
         if (
             !article ||
-            (article.status !== "published" &&
+            (!articleVisible(article) &&
                 !permissions.includes("articles.editAll") &&
                 !(
                     user &&
@@ -55,6 +59,9 @@ export async function PUT(request: Request, { params }: Props) {
     try {
         const { id } = await params
         const body = await request.json()
+        if (body.status !== undefined && !["draft", "published"].includes(body.status)) return NextResponse.json({ error: "Invalid article status." }, { status: 400 })
+        let editorData
+        try { editorData = editorFields(body) } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 400 }) }
         const current = await getStore().getArticle(id)
         const user = (await currentUser())!
         const permissions = await userPermissions(user)
@@ -69,10 +76,12 @@ export async function PUT(request: Request, { params }: Props) {
                 { status: 403 }
             )
         const changesContent = [
+            "scheduledAt",
             "title",
             "slug",
             "excerpt",
             "content",
+            "seoTitle", "metaDescription", "tags", "imageAlt", "imageCredit",
             "category",
             "section",
             "author",
@@ -81,9 +90,9 @@ export async function PUT(request: Request, { params }: Props) {
             "publishedAt",
         ].some((key) => body[key] !== undefined)
         if (
-            ((body.status === "published" && current.status !== "published") ||
+            (body.scheduledAt || (body.status === "published" && current.status !== "published") ||
                 (changesContent &&
-                    current.status === "published" &&
+                    (current.status === "published" || !!current.scheduledAt) &&
                     body.status !== "draft")) &&
             !permissions.includes("articles.publish")
         )
@@ -94,8 +103,8 @@ export async function PUT(request: Request, { params }: Props) {
                 { status: 403 }
             )
         if (
-            current.status === "published" &&
-            body.status === "draft" &&
+            (current.status === "published" || !!current.scheduledAt) &&
+            (body.status === "draft" || body.scheduledAt) &&
             !permissions.includes("articles.unpublish")
         )
             return NextResponse.json(
@@ -114,7 +123,10 @@ export async function PUT(request: Request, { params }: Props) {
                 { status: 403 }
             )
 
-        const patch: Partial<Article> = {}
+        const patch: Partial<Article> = { ...editorData }
+        if (body.scheduledAt && (!Number.isFinite(Date.parse(body.scheduledAt)) || Date.parse(body.scheduledAt) <= Date.now())) return NextResponse.json({ error: "Choose a future schedule date." }, { status: 400 })
+        if (body.scheduledAt !== undefined) patch.scheduledAt = body.scheduledAt ? new Date(body.scheduledAt).toISOString() : ""
+        else if (body.status !== undefined) patch.scheduledAt = ""
         if (permissions.includes("articles.feature")) {
             if (Array.isArray(body.pinnedAreas))
                 patch.pinnedAreas = body.pinnedAreas
@@ -151,7 +163,8 @@ export async function PUT(request: Request, { params }: Props) {
         if (body.imageCredit !== undefined)
             patch.imageCredit = body.imageCredit || undefined
         if (body.status !== undefined)
-            patch.status = body.status === "draft" ? "draft" : "published"
+            patch.status = body.scheduledAt || body.status === "draft" ? "draft" : "published"
+        if (body.scheduledAt) patch.status = "draft"
         if (body.featured !== undefined) patch.featured = body.featured === true
 
         // An empty read time means "recalculate from the body" rather than "blank it".
@@ -161,6 +174,8 @@ export async function PUT(request: Request, { params }: Props) {
             patch.readTime = estimateReadTime(body.content)
         }
 
+        const revisionId = randomUUID()
+        await saveRecord("article-revisions", revisionId, { id: revisionId, articleId: id, userId: user.id, savedAt: new Date().toISOString(), data: current }, true)
         const updated = await getStore().updateArticle(id, patch)
 
         if (!updated) {
@@ -199,7 +214,7 @@ export async function DELETE(request: Request, { params }: Props) {
                 { status: 403 }
             )
         if (
-            current?.status === "published" &&
+            current && (current.status === "published" || !!current.scheduledAt) &&
             !permissions.includes("articles.unpublish")
         )
             return NextResponse.json(

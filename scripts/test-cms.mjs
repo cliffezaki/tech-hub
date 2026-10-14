@@ -192,6 +192,42 @@ try {
         201
     )
     assert.equal(draft.data.author, "Test Author")
+    const richBody = "TECHHUB_DOCUMENT_V1\n" + JSON.stringify({ type: "doc", content: [
+        { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Visual heading" }] },
+        { type: "paragraph", content: [{ type: "text", text: "Formatted content", marks: [{ type: "bold" }, { type: "underline" }] }] },
+        { type: "image", attrs: { src: "https://example.test/image.png", alt: "Accessible image", caption: "Caption", width: 50 } },
+        { type: "table", content: [{ type: "tableRow", content: [{ type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Cell" }] }] }] }] },
+    ] })
+    const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"] }, owner.cookie, 201)
+    assert.equal(rich.data.content, richBody)
+    assert.equal(rich.data.seoTitle, "Search title")
+    await call(`/api/articles/${rich.data.id}`, { status: 404 })
+    await call(`/api/articles/${rich.data.id}/workspace`, { status: 404 })
+    await call(`/api/articles/${rich.data.id}/workspace`, { cookie: author.cookie, status: 404 })
+    await call(`/api/articles/${rich.data.id}/workspace`, { method: "PUT", cookie: owner.cookie, body: { title: "Private working copy", content: richBody, checkpoint: true } })
+    assert.equal((await call(`/api/articles/${rich.data.id}/workspace`, { cookie: owner.cookie })).data.workspace.data.title, "Private working copy")
+    assert.equal((await call(`/api/articles/${rich.data.id}`, { cookie: owner.cookie })).data.title, "Visual editor test")
+    await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { status: "published", content: richBody } })
+    const rendered = await call(`/news/${rich.data.slug}`)
+    assert(rendered.data.includes("Visual heading"))
+    assert(rendered.data.includes("<strong>"))
+    assert(rendered.data.includes("<u>"))
+    assert(!rendered.data.includes("TECHHUB_DOCUMENT_V1\\n"), "No serialized document shown as article copy")
+    const history = await call(`/api/articles/${rich.data.id}/workspace`, { cookie: owner.cookie })
+    assert(history.data.revisions.length >= 2)
+    await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { content: "TECHHUB_DOCUMENT_V1\n" + JSON.stringify({ type: "doc", content: [{ type: "script" }] }) }, status: 400 })
+    const scheduledAt = new Date(Date.now() + 3600000).toISOString()
+    await post("/api/articles", { title: "Denied schedule", status: "draft", scheduledAt }, author.cookie, 403)
+    const scheduled = await post("/api/articles", { title: "Scheduled privacy test", status: "published", content: richBody, scheduledAt, publishedAt: scheduledAt }, owner.cookie, 201)
+    assert.equal(scheduled.data.status, "draft")
+    await call(`/api/articles/${scheduled.data.id}`, { status: 404 })
+    await call(`/news/${scheduled.data.slug}`, { status: 404 })
+    const scheduledFile = path.join(temporary, "content", "articles", `${scheduled.data.id}.json`)
+    const scheduledRecord = JSON.parse(await readFile(scheduledFile, "utf8"))
+    scheduledRecord.scheduledAt = new Date(Date.now() - 1000).toISOString()
+    await writeFile(scheduledFile, JSON.stringify(scheduledRecord))
+    await call(`/api/articles/${scheduled.data.id}`)
+    await call(`/news/${scheduled.data.slug}`)
     const publicArticles = await call("/api/articles")
     assert(!publicArticles.data.some((a) => a.id === draft.data.id))
     await call(`/api/articles/${draft.data.id}`, { status: 404 })
@@ -580,5 +616,6 @@ try {
     console.error(logs)
     throw e
 } finally {
-    server.kill("SIGTERM")
+    if (process.env.CMS_EDITOR_DEMO) console.log(`Editor test workspace available at ${base}; stop this process when finished.`)
+    else server.kill("SIGTERM")
 }

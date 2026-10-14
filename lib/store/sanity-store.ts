@@ -1,6 +1,7 @@
 import { createClient } from "next-sanity"
 import type { SanityClient } from "next-sanity"
 import { randomUUID } from "node:crypto"
+import { articleVisible } from "@/lib/article-visibility"
 import { unstable_rethrow } from "next/navigation"
 
 import { apiVersion, dataset, projectId, writeToken } from "@/sanity/env"
@@ -19,7 +20,7 @@ import type { ContentStore, UploadInput } from "./types"
 const SETTINGS_DOC_ID = "siteSettings"
 
 const ARTICLE_PROJECTION = `{
-    demo, demoBatch,
+    demo, demoBatch, seoTitle, metaDescription, tags, scheduledAt,
     ownerId, pinnedAreas, manualOrder, sponsorship,
     _id,
     title,
@@ -125,6 +126,10 @@ function toDocFields(input: Partial<Article>) {
     assign("title", input.title)
     assign("excerpt", input.excerpt)
     assign("content", input.content)
+    assign("seoTitle", input.seoTitle)
+    assign("metaDescription", input.metaDescription)
+    assign("tags", input.tags)
+    assign("scheduledAt", input.scheduledAt)
     assign("category", input.category)
     assign("section", input.section)
     assign("author", input.author)
@@ -239,30 +244,32 @@ export function createSanityStore(): ContentStore {
 
         async listArticles(includeDrafts = true) {
             return safeRead("listArticles", [], async () => {
-                const docs = await (includeDrafts ? privateRead : readClient).fetch<SanityArticleDoc[]>(
+                const docs = await privateRead.fetch<SanityArticleDoc[]>(
                     `*[_type == "article" && !(_id in path("versions.**"))] | order(publishedAt desc) ${ARTICLE_PROJECTION}`
                 )
-                return deduplicate(docs).map(toArticle)
+                return deduplicate(docs).map(toArticle).filter(a => includeDrafts || articleVisible(a))
             })
         },
 
         async getArticle(id, includeDrafts = true) {
             return safeRead("getArticle", null, async () => {
-                const doc = await (includeDrafts ? privateRead : readClient).fetch<SanityArticleDoc | null>(
+                const doc = await privateRead.fetch<SanityArticleDoc | null>(
                     `*[_type == "article" && (_id == $id || _id == $draftId)] | order((_id == $draftId) desc) [0] ${ARTICLE_PROJECTION}`,
                     { id: logicalId(id), draftId: `drafts.${logicalId(id)}` }
                 )
-                return doc ? toArticle(doc) : null
+                const article = doc ? toArticle(doc) : null
+                return article && (includeDrafts || articleVisible(article)) ? article : null
             })
         },
 
         async getArticleBySlug(slug, includeDrafts = true) {
             return safeRead("getArticleBySlug", null, async () => {
-                const doc = await (includeDrafts ? privateRead : readClient).fetch<SanityArticleDoc | null>(
+                const doc = await privateRead.fetch<SanityArticleDoc | null>(
                     `*[_type == "article" && !(_id in path("versions.**")) && slug.current == $slug] | order((_id in path("drafts.**")) desc) [0] ${ARTICLE_PROJECTION}`,
                     { slug }
                 )
-                return doc ? toArticle(doc) : null
+                const article = doc ? toArticle(doc) : null
+                return article && (includeDrafts || articleVisible(article)) ? article : null
             })
         },
 
@@ -431,7 +438,7 @@ export function createSanityStore(): ContentStore {
         }: UploadInput): Promise<MediaItem> {
             const client = requireWriteClient()
             const asset = await client.assets.upload(
-                contentType === "application/pdf" ? "file" : "image",
+                contentType.startsWith("image/") ? "image" : "file",
                 data,
                 {
                     filename: filename || `${generateId()}.jpg`,

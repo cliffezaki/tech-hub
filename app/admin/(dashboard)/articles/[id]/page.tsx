@@ -18,7 +18,7 @@ export default async function EditArticlePage({ params }: PageProps) {
     if (
         !user ||
         (!permissions.includes("articles.editAll") &&
-            article?.ownerId !== user.id)
+            (article?.ownerId !== user.id || !permissions.includes("articles.editOwn")))
     )
         return <p>You do not have permission to edit this article.</p>
 
@@ -38,5 +38,5 @@ export default async function EditArticlePage({ params }: PageProps) {
         )
     }
 
-    return <ArticleForm initialData={article} isEditing />
+    return <ArticleForm initialData={article} isEditing permissions={permissions} />
 }

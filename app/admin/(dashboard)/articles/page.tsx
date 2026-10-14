@@ -217,7 +217,7 @@ export default function AdminArticlesPage() {
                                     </Link>
                                     {article.status === "draft" && (
                                         <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                                            Draft
+                                            {article.scheduledAt ? "Scheduled" : "Draft"}
                                         </span>
                                     )}
                                     {article.demo && (

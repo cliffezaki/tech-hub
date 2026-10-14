@@ -11,6 +11,8 @@ import { estimateReadTime } from "@/lib/store/normalize"
 import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 import type { ArticleSection } from "@/lib/types"
 import { currentUser, userPermissions } from "@/lib/accounts"
+import { editorFields } from "@/lib/editor-fields"
+import { articleVisible } from "@/lib/article-visibility"
 
 export async function GET() {
     try {
@@ -22,7 +24,7 @@ export async function GET() {
         return NextResponse.json(
             articles.filter(
                 (a) =>
-                    a.status === "published" ||
+                    articleVisible(a) ||
                     permissions.includes("articles.editAll") ||
                     (user &&
                         a.ownerId === user.id &&
@@ -43,10 +45,13 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json()
+        if (body.status !== undefined && !["draft", "published"].includes(body.status)) return NextResponse.json({ error: "Invalid article status." }, { status: 400 })
+        let editorData
+        try { editorData = editorFields(body) } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 400 }) }
         const user = (await currentUser())!
         const permissions = await userPermissions(user)
         if (
-            body.status === "published" &&
+            (body.status === "published" || body.scheduledAt) &&
             !permissions.includes("articles.publish")
         )
             return NextResponse.json(
@@ -60,6 +65,8 @@ export async function POST(request: Request) {
                 { error: "Featuring requires permission." },
                 { status: 403 }
             )
+
+        if (body.scheduledAt && (!Number.isFinite(Date.parse(body.scheduledAt)) || Date.parse(body.scheduledAt) <= Date.now())) return NextResponse.json({ error: "Choose a future schedule date." }, { status: 400 })
 
         if (!body.title?.trim()) {
             return NextResponse.json(
@@ -78,6 +85,8 @@ export async function POST(request: Request) {
             slug: body.slug || body.title,
             excerpt: body.excerpt || "",
             content: body.content || "",
+            ...editorData,
+            scheduledAt: body.scheduledAt ? new Date(body.scheduledAt).toISOString() : "",
             category: body.category || SECTION_META[section].defaultCategory,
             section,
             author: permissions.includes("articles.editAll")
@@ -88,7 +97,7 @@ export async function POST(request: Request) {
             imageUrl: body.imageUrl || undefined,
             imageAlt: body.imageAlt || undefined,
             imageCredit: body.imageCredit || undefined,
-            status: body.status === "published" ? "published" : "draft",
+            status: body.scheduledAt ? "draft" : body.status === "published" ? "published" : "draft",
             featured: body.featured === true,
         })
 

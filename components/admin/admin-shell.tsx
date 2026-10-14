@@ -46,6 +46,7 @@ export function AdminShell({
     permissions: Permission[]
 }) {
     const pathname = usePathname()
+    const writing = /^\/admin\/articles\/[^/]+$/.test(pathname)
     const router = useRouter()
     const [status, setStatus] = useState<StoreStatus | null>(null)
     const [menuOpen, setMenuOpen] = useState(false)
@@ -104,7 +105,7 @@ export function AdminShell({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="lg:hidden"
+                        className={writing ? "" : "lg:hidden"}
                         onClick={() => setMenuOpen((open) => !open)}
                         aria-label="Toggle dashboard menu"
                     >
@@ -148,13 +149,13 @@ export function AdminShell({
                 </div>
             </header>
 
-            <div className="mx-auto flex w-full max-w-7xl gap-8 px-4 py-6">
-                <aside className="hidden w-56 shrink-0 lg:block">
+            <div className={writing ? "mx-auto flex w-full max-w-[1600px] px-4 py-4" : "mx-auto flex w-full max-w-7xl gap-8 px-4 py-6"}>
+                <aside className={writing ? "hidden" : "hidden w-56 shrink-0 lg:block"}>
                     <div className="sticky top-20">{nav}</div>
                 </aside>
 
                 {menuOpen && (
-                    <div className="fixed inset-0 top-14 z-30 bg-background p-4 lg:hidden">
+                    <div className={cn("fixed inset-0 top-14 z-30 bg-background p-4", !writing && "lg:hidden")}>
                         {nav}
                     </div>
                 )}

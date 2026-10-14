@@ -60,6 +60,10 @@ export const SECTION_META: Record<
 export type ArticleStatus = "draft" | "published"
 
 export interface Article {
+    scheduledAt?: string
+    seoTitle?: string
+    metaDescription?: string
+    tags?: string[]
     demo?: boolean
     demoBatch?: string
     ownerId?: string
@@ -137,6 +141,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 }
 
 export interface ArticleSummary {
+    seoTitle?: string
+    metaDescription?: string
+    tags?: string[]
     demo?: boolean
     sponsorship?: string
     id: string

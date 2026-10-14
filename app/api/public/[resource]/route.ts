@@ -133,7 +133,7 @@ export async function POST(request: Request, { params }: Context) {
             const article = await getStore().getArticle(
                 String(body.articleId || ""), false
             )
-            if (!article || article.status !== "published")
+            if (!article || !articleVisible(article))
                 return NextResponse.json(
                     { error: "Article not found" },
                     { status: 404 }
@@ -240,3 +240,4 @@ export async function POST(request: Request, { params }: Context) {
         )
     }
 }
+import { articleVisible } from "@/lib/article-visibility"

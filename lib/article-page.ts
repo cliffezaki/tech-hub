@@ -27,21 +27,22 @@ export async function buildArticleMetadata(section: ArticleSection, slug: string
     }
 
     return {
-        title: article.title,
-        description: article.excerpt,
+        title: article.seoTitle || article.title,
+        description: article.metaDescription || article.excerpt,
+        keywords: article.tags,
         alternates: { canonical: article.href },
         openGraph: {
             type: "article",
-            title: article.title,
-            description: article.excerpt,
+            title: article.seoTitle || article.title,
+            description: article.metaDescription || article.excerpt,
             publishedTime: article.publishedAt,
             authors: [article.author],
             images: article.imageUrl ? [{ url: article.imageUrl }] : undefined,
         },
         twitter: {
             card: "summary_large_image",
-            title: article.title,
-            description: article.excerpt,
+            title: article.seoTitle || article.title,
+            description: article.metaDescription || article.excerpt,
             images: article.imageUrl ? [article.imageUrl] : undefined,
         },
     }

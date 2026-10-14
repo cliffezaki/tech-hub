@@ -3,6 +3,7 @@ import { Footer } from "@/components/footer"
 import { getSiteSettings } from "@/lib/content"
 import { TrackingConsent } from "@/components/tracking"
 import { AdSlot } from "@/components/ad-slot"
+export const dynamic = "force-dynamic"
 
 export default async function SiteLayout({
     children,

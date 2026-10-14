@@ -8,7 +8,7 @@ import {
 } from "@/lib/api"
 import { getStore } from "@/lib/store"
 
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 const ALLOWED_TYPES = new Set([
     "image/jpeg",
     "image/png",
@@ -16,6 +16,7 @@ const ALLOWED_TYPES = new Set([
     "image/gif",
     "image/avif",
     "application/pdf",
+    "video/mp4", "video/webm", "audio/mpeg",
 ])
 
 export async function GET() {
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
         if (!ALLOWED_TYPES.has(file.type)) {
             return NextResponse.json(
                 {
-                    error: "Unsupported file type. Upload a JPG, PNG, WebP, AVIF, GIF, or PDF. Active SVG uploads are not supported.",
+                    error: "Upload JPG, PNG, WebP, AVIF, GIF, PDF, MP4, WebM or MP3. Active SVG uploads are not supported.",
                 },
                 { status: 400 }
             )
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
 
         if (file.size > MAX_UPLOAD_BYTES) {
             return NextResponse.json(
-                { error: "Images must be 8MB or smaller." },
+                { error: "Files must be 4MB or smaller. Embed larger videos using YouTube or Vimeo." },
                 { status: 400 }
             )
         }

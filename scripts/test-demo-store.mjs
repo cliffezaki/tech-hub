@@ -18,7 +18,9 @@ function load(source, imports, env = {}) {
     return exports
 }
 const types = load(await readFile("lib/types.ts", "utf8"), {})
-const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types })
+const richContent = load(await readFile("lib/rich-content.ts", "utf8"), {})
+const visibility = load(await readFile("lib/article-visibility.ts", "utf8"), {})
+const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types, "@/lib/rich-content": richContent })
 const documents = new Map()
 let uuid = 0
 function makeClient(perspective = "published") { return {
@@ -61,6 +63,7 @@ function makeClient(perspective = "published") { return {
 } }
 const client = makeClient()
 const adapter = load(await readFile("lib/store/sanity-store.ts", "utf8"), {
+    "@/lib/article-visibility": visibility,
     "next-sanity": { createClient: () => client },
     "node:crypto": { randomUUID: () => `generated-${++uuid}` },
     "next/navigation": { unstable_rethrow: () => {} },
