@@ -23,7 +23,7 @@ await writeFile(
 )
 const server = spawn(
     process.execPath,
-    ["node_modules/next/dist/bin/next", "dev", "-p", String(port)],
+    ["node_modules/next/dist/bin/next", "dev", "-H", "127.0.0.1", "-p", String(port)],
     {
         env: {
             ...process.env,
@@ -83,6 +83,7 @@ async function call(
             ? JSON.parse(text)
             : text,
         cookie: response.headers.get("set-cookie")?.split(";")[0] || cookie,
+        headers: response.headers,
     }
 }
 try {
@@ -120,6 +121,11 @@ try {
         email: " OWNER@EXAMPLE.TEST ",
         password: "Test-password-long!",
     })
+    // Exercise the existing persistent login throttle without locking a real account.
+    const limitEmail = "rate-limit-probe@example.test"
+    for (let i = 0; i < 8; i++) await post("/api/auth/login", { email: limitEmail, password: "wrong" }, "", 401)
+    const limited = await post("/api/auth/login", { email: limitEmail, password: "wrong" }, "", 429)
+    assert.equal(limited.headers.get("retry-after"), "900")
     assert.equal(owner.data.user.role, "owner")
     assert.equal(owner.data.redirect, "/admin")
     const accountScreen = await call("/account")
@@ -229,8 +235,13 @@ try {
     await call(`/api/articles/${scheduled.data.id}`)
     await call(`/news/${scheduled.data.slug}`)
     const publicArticles = await call("/api/articles")
+    assert.equal(publicArticles.headers.get("cache-control"), "private, no-store")
+    assert(publicArticles.headers.get("vary").split(",").some(value => value.trim().toLowerCase() === "cookie"))
     assert(!publicArticles.data.some((a) => a.id === draft.data.id))
     await call(`/api/articles/${draft.data.id}`, { status: 404 })
+    const privateArticle = await call(`/api/articles/${draft.data.id}`, { cookie: owner.cookie })
+    assert.equal(privateArticle.headers.get("cache-control"), "private, no-store")
+    assert.equal(privateArticle.data.id, draft.data.id)
     await post(
         "/api/cms/users",
         {
@@ -364,6 +375,11 @@ try {
         cookie: owner.cookie,
     })
     const pagesAfter = await call("/api/pages", { cookie: owner.cookie })
+    assert.equal(pagesAfter.headers.get("cache-control"), "private, no-store")
+    const secretPage = await post("/api/pages", { title: "Private security fixture", slug: "private-security-fixture", status: "draft", content: "UNPUBLISHED_PAGE_MARKER" }, owner.cookie, 201)
+    assert(!(await call("/api/pages")).data.some(p => p.id === secretPage.data.id))
+    await call(`/api/pages/${secretPage.data.id}`, { status: 404 })
+    assert.equal((await call(`/api/pages/${secretPage.data.id}`, { cookie: owner.cookie })).headers.get("cache-control"), "private, no-store")
     assert.equal(pagesAfter.data.filter((p) => p.slug === "news").length, 1)
     const advertiser = await post(
         "/api/cms/advertisers",

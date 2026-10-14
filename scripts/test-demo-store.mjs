@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 import vm from "node:vm"
 import ts from "typescript"
+import { randomUUID } from "node:crypto"
 
 function load(source, imports, env = {}) {
     const exports = {}
@@ -20,7 +21,7 @@ function load(source, imports, env = {}) {
 const types = load(await readFile("lib/types.ts", "utf8"), {})
 const richContent = load(await readFile("lib/rich-content.ts", "utf8"), {})
 const visibility = load(await readFile("lib/article-visibility.ts", "utf8"), {})
-const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types, "@/lib/rich-content": richContent })
+const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types, "@/lib/rich-content": richContent, "node:crypto": { randomUUID } })
 const documents = new Map()
 let uuid = 0
 function makeClient(perspective = "published") { return {

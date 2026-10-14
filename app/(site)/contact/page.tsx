@@ -86,8 +86,7 @@ export default async function ContactPage() {
                 <Card className="p-6 lg:col-span-3">
                     <h2 className="text-xl font-bold">Send a message</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                        This opens your email app with the message ready to
-                        send.
+                        Send your message directly to the Tech Hub team.
                     </p>
                     <ContactForm contactEmail={settings.contactEmail} />
                 </Card>

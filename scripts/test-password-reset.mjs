@@ -186,6 +186,21 @@ await api.requestReset(user.email)
 assert.equal(logs.length, 2)
 assert(!logs.at(-1).includes("secret credentials"))
 assert(!logs.at(-1).includes(user.email))
+fail = false
+const contact = { name: "Test reader", email: "visitor@example.test", subject: "A story tip", message: "Message body for isolated testing." }
+await emailContext.exports.sendContactEmail("team@example.test", contact, "test-contact-gmail")
+assert.equal(smtpSent.at(-1).to.address, "team@example.test")
+assert.equal(smtpSent.at(-1).from.address, "tech.hub.test@gmail.com")
+assert.equal(smtpSent.at(-1).replyTo.address, "visitor@example.test")
+assert.equal(smtpSent.at(-1).subject, "Tech Hub contact: A story tip")
+env.MAIL_PROVIDER = "resend"
+await emailContext.exports.sendContactEmail("team@example.test", contact, "test-contact-resend")
+const contactPayload = JSON.parse(sent.at(-1).options.body)
+assert.equal(contactPayload.to[0], "team@example.test")
+assert.equal(contactPayload.reply_to, "visitor@example.test")
+assert.equal(sent.at(-1).options.headers["Idempotency-Key"], "contact-test-contact-resend")
+fail = true
+await assert.rejects(emailContext.exports.sendContactEmail("team@example.test", contact, "failed-contact"), e => e instanceof emailContext.exports.EmailDeliveryUnavailable && !e.message.includes("secret credentials") && !e.message.includes("Password-reset"))
 console.log(
     "PASS: mocked Gmail TLS delivery and credential checks, Resend compatibility, private hashed tokens, canonical HTTPS URL, unknown-address privacy, concurrent redemption, and sanitized provider failures; no real email sent."
 )

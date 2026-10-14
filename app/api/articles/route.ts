@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import {
     handleError,
+    PRIVATE_RESPONSE_HEADERS,
     requireAdmin,
     requireWritableStore,
     revalidateSite,
@@ -29,7 +30,8 @@ export async function GET() {
                     (user &&
                         a.ownerId === user.id &&
                         permissions.includes("articles.editOwn"))
-            )
+            ),
+            { headers: PRIVATE_RESPONSE_HEADERS }
         )
     } catch (error) {
         return handleError(error, "Failed to fetch articles")

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import {
     handleError,
+    PRIVATE_RESPONSE_HEADERS,
     requireAdmin,
     requireWritableStore,
     revalidateSite,
@@ -30,11 +31,11 @@ export async function GET(request: Request, { params }: Props) {
         ) {
             return NextResponse.json(
                 { error: "Page not found" },
-                { status: 404 }
+                { status: 404, headers: PRIVATE_RESPONSE_HEADERS }
             )
         }
 
-        return NextResponse.json(page)
+        return NextResponse.json(page, { headers: PRIVATE_RESPONSE_HEADERS })
     } catch (error) {
         return handleError(error, "Failed to fetch page")
     }

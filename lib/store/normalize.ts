@@ -1,5 +1,6 @@
 import { ARTICLE_SECTIONS, DEFAULT_SETTINGS, SECTION_META } from "@/lib/types"
 import { documentText } from "@/lib/rich-content"
+import { randomUUID } from "node:crypto"
 import type {
     Article,
     ArticleSection,
@@ -19,7 +20,7 @@ export function slugify(text: string) {
 }
 
 export function generateId() {
-    return Math.random().toString(36).slice(2, 10)
+    return randomUUID()
 }
 
 function asSection(value: unknown): ArticleSection {

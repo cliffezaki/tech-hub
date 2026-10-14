@@ -6,6 +6,7 @@ import { DEFAULT_SETTINGS } from "@/lib/types"
 import type { SiteSettings } from "@/lib/types"
 import { randomUUID } from "node:crypto"
 import { IDENTITY_IMAGES, ICON_FIELDS } from "@/lib/site-identity"
+import { validEmail } from "@/lib/contact"
 
 export async function GET() {
     try {
@@ -34,6 +35,10 @@ export async function PUT(request: Request) {
         }
 
         if (patch.siteName !== undefined && (!patch.siteName.trim() || patch.siteName.length > 80)) return NextResponse.json({ error: "Site name must contain 1–80 characters." }, { status: 400 })
+        if (patch.contactEmail !== undefined) {
+            patch.contactEmail = patch.contactEmail.trim()
+            if (patch.contactEmail && !validEmail(patch.contactEmail)) return NextResponse.json({ error: "Enter a valid contact email address." }, { status: 400 })
+        }
         if (patch.logoSame !== undefined && !["true", "false"].includes(patch.logoSame)) return NextResponse.json({ error: "Invalid logo mode." }, { status: 400 })
         if (patch.logoWidth !== undefined && (!Number.isFinite(Number(patch.logoWidth)) || Number(patch.logoWidth) < 80 || Number(patch.logoWidth) > 180)) return NextResponse.json({ error: "Logo display width must be 80–180 pixels." }, { status: 400 })
         const store = getStore()

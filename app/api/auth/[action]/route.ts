@@ -121,7 +121,7 @@ export async function POST(request: Request) {
         if (!(await throttle(`${action}:${id}`)))
             return NextResponse.json(
                 { error: "Too many attempts. Try again in 15 minutes." },
-                { status: 429 }
+                { status: 429, headers: { "Retry-After": "900", "Cache-Control": "no-store" } }
             )
         if (action === "forgot") {
             if (!resetConfigured())

@@ -7,6 +7,12 @@ import { authorized, sameOrigin } from "@/lib/accounts"
 import type { Permission } from "@/lib/permissions"
 import { getStore } from "@/lib/store"
 
+/** These endpoints can return unpublished content to authorized users. */
+export const PRIVATE_RESPONSE_HEADERS = {
+    "Cache-Control": "private, no-store",
+    Vary: "Cookie",
+}
+
 /**
  * Middleware already blocks unauthenticated writes; this repeats the check inside the
  * handler so a route is never left open if the matcher config changes.
@@ -55,6 +61,5 @@ export function revalidateSite() {
 
 export function handleError(error: unknown, fallback: string) {
     console.error(fallback, error)
-    const message = error instanceof Error ? error.message : fallback
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: fallback }, { status: 500, headers: PRIVATE_RESPONSE_HEADERS })
 }

@@ -2,8 +2,10 @@ import "server-only"
 import nodemailer from "nodemailer"
 
 export class EmailDeliveryUnavailable extends Error {
-    constructor() {
-        super("Password-reset email delivery is temporarily unavailable. Please try again later or contact the site owner.")
+    constructor(context: "reset" | "contact" = "reset") {
+        super(context === "contact"
+            ? "Your message could not be sent right now. Please try again later or use the email address on this page."
+            : "Password-reset email delivery is temporarily unavailable. Please try again later or contact the site owner.")
     }
 }
 
@@ -80,9 +82,23 @@ export async function verifyEmailDelivery() {
 }
 
 export async function sendResetEmail(to: string, resetUrl: URL, requestId: string) {
-    if (!emailDeliveryConfigured()) throw new EmailDeliveryUnavailable()
     const subject = "Reset your Tech Hub password"
     const text = `Use this link to reset your Tech Hub password within 30 minutes:\n\n${resetUrl}\n\nIf you did not request this, ignore this email. Your password has not changed.`
+    return sendSiteEmail({ to, subject, text, requestId, context: "reset" })
+}
+
+export async function sendContactEmail(to: string, input: { name: string; email: string; subject: string; message: string }, requestId: string) {
+    return sendSiteEmail({
+        to, requestId, context: "contact", replyTo: input.email,
+        subject: `Tech Hub contact: ${input.subject || "Message from a reader"}`,
+        text: `Name: ${input.name}\nReply email: ${input.email}\n\n${input.message}`,
+    })
+}
+
+async function sendSiteEmail({ to, subject, text, requestId, context, replyTo }: {
+    to: string; subject: string; text: string; requestId: string; context: "reset" | "contact"; replyTo?: string
+}) {
+    if (!emailDeliveryConfigured()) throw new EmailDeliveryUnavailable(context)
     try {
         if (mailProvider() === "gmail") {
             const auth = gmailCredentials()!
@@ -91,6 +107,7 @@ export async function sendResetEmail(to: string, resetUrl: URL, requestId: strin
                 to: { address: to, name: "" },
                 subject,
                 text,
+                ...(replyTo ? { replyTo: { address: replyTo, name: "" } } : {}),
             })
             if (!result.accepted?.some((recipient) => String(recipient).toLowerCase() === to.toLowerCase()))
                 throw new EmailDeliveryUnavailable()
@@ -101,19 +118,20 @@ export async function sendResetEmail(to: string, resetUrl: URL, requestId: strin
             headers: {
                 Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
                 "Content-Type": "application/json",
-                "Idempotency-Key": `password-reset-${requestId}`,
+                "Idempotency-Key": `${context === "reset" ? "password-reset" : "contact"}-${requestId}`,
             },
             body: JSON.stringify({
                 from: process.env.RESEND_FROM_EMAIL,
                 to: [to],
                 subject,
                 text,
+                ...(replyTo ? { reply_to: replyTo } : {}),
             }),
             signal: AbortSignal.timeout(10000),
         })
         if (!response.ok) throw new EmailDeliveryUnavailable()
     } catch {
         // Provider exceptions can contain recipient addresses or SMTP credentials.
-        throw new EmailDeliveryUnavailable()
+        throw new EmailDeliveryUnavailable(context)
     }
 }
