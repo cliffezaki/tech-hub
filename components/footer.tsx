@@ -1,37 +1,18 @@
 import Link from "next/link"
 import { Linkedin, Mail, Twitter, Youtube } from "lucide-react"
 
-import { getPublishedPages, getSiteSettings } from "@/lib/content"
-import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
-import { listRecords, platformReady } from "@/lib/platform-store"
-import type { RecordData } from "@/lib/modules"
+import { getSiteSettings } from "@/lib/content"
+import { readNavigation } from "@/lib/navigation"
+import { publicItems } from "@/lib/menu-layout"
 
 export async function Footer() {
-    const [settings, pages] = await Promise.all([
+    const [settings, navigation] = await Promise.all([
         getSiteSettings(),
-        getPublishedPages(),
+        readNavigation(),
     ])
-    const menu = platformReady()
-        ? (await listRecords<RecordData>("navigation"))
-              .filter((i) => i.menu === "footer")
-              .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
-        : []
-    const links = menu.length
-        ? menu
-              .filter((i) => !i.hidden)
-              .map((i) => ({
-                  id: i.id,
-                  href: String(i.href),
-                  title: String(i.name),
-              }))
-        : pages
-              .filter(
-                  (p) =>
-                      !ARTICLE_SECTIONS.includes(
-                          p.slug as (typeof ARTICLE_SECTIONS)[number]
-                      ) && p.slug !== "contact"
-              )
-              .map((p) => ({ id: p.id, href: `/${p.slug}`, title: p.title }))
+    const items = publicItems(navigation.layout,navigation.pages).filter(i => !i.hidden)
+    const links = items.filter(i => i.menu === "footer")
+    const sections = items.filter(i => i.menu === "sections")
 
     const socials = [
         { href: settings.twitterUrl, label: "X", icon: Twitter },
@@ -94,13 +75,13 @@ export async function Footer() {
                             Sections
                         </h3>
                         <ul className="mt-4 space-y-2.5 text-sm">
-                            {ARTICLE_SECTIONS.map((section) => (
-                                <li key={section}>
+                            {sections.map((section) => (
+                                <li key={section.id}>
                                     <Link
-                                        href={`/${section}`}
+                                        href={section.href}
                                         className="text-muted-foreground transition-colors hover:text-foreground"
                                     >
-                                        {SECTION_META[section].label}
+                                        {section.name}
                                     </Link>
                                 </li>
                             ))}
@@ -110,49 +91,16 @@ export async function Footer() {
                     <div>
                         <h3 className="kicker text-muted-foreground">More</h3>
                         <ul className="mt-4 space-y-2.5 text-sm">
-                            {links
-                                .filter(
-                                    (page) =>
-                                        ![
-                                            "/contact",
-                                            "/search",
-                                            "/account",
-                                        ].includes(page.href)
-                                )
-                                .map((page) => (
+                            {links.map((page) => (
                                     <li key={page.id}>
                                         <Link
                                             href={page.href}
                                             className="text-muted-foreground transition-colors hover:text-foreground"
                                         >
-                                            {page.title}
+                                            {page.name}
                                         </Link>
                                     </li>
                                 ))}
-                            <li>
-                                <Link
-                                    href="/contact"
-                                    className="text-muted-foreground transition-colors hover:text-foreground"
-                                >
-                                    Contact
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href="/search"
-                                    className="text-muted-foreground transition-colors hover:text-foreground"
-                                >
-                                    Search
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href="/account"
-                                    className="text-muted-foreground transition-colors hover:text-foreground"
-                                >
-                                    Log in / Sign up
-                                </Link>
-                            </li>
                         </ul>
                     </div>
                 </div>

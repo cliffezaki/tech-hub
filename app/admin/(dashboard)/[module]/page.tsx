@@ -4,6 +4,7 @@ import { MODULES } from "@/lib/modules"
 import { RecordManager } from "@/components/admin/record-manager"
 import { UserManager } from "@/components/admin/user-manager"
 import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard"
+import { NavigationManager } from "@/components/admin/navigation-manager"
 export default async function ModulePage({
     params,
 }: {
@@ -24,5 +25,6 @@ export default async function ModulePage({
     if (module === "users" || module === "subscribers")
         return <UserManager subscribersOnly={module === "subscribers"} />
     if (module === "analytics") return <AnalyticsDashboard />
+    if (module === "navigation") return <NavigationManager />
     return <RecordManager resource={module} />
 }

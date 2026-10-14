@@ -10,11 +10,15 @@ import { getStore } from "@/lib/store"
 import { authorized } from "@/lib/accounts"
 import { mergeBuiltinPages, BUILTIN_PAGES } from "@/lib/builtin-pages"
 import { slugify } from "@/lib/store/normalize"
+import { readNavigation } from "@/lib/navigation"
+import { orderedPages } from "@/lib/menu-layout"
 
 export async function GET() {
     try {
         const manager = await authorized("pages.manage")
-        const pages = mergeBuiltinPages(await getStore().listPages(Boolean(manager)))
+        const merged = mergeBuiltinPages(await getStore().listPages(Boolean(manager)))
+        const { layout } = await readNavigation(merged)
+        const pages = orderedPages(merged, layout.pageOrder)
         return NextResponse.json(
             manager
                 ? pages

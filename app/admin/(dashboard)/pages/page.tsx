@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Eye, FileText, Loader2, Pencil, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, Eye, FileText, Loader2, Pencil, Plus } from "lucide-react"
+import { orderedPages, type MenuLayout } from "@/lib/menu-layout"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -12,15 +13,32 @@ import type { PageContent } from "@/lib/types"
 export default function AdminPagesPage() {
     const [pages, setPages] = useState<PageContent[]>([])
     const [loading, setLoading] = useState(true)
+    const [layout, setLayout] = useState<MenuLayout | null>(null)
+    const [moving, setMoving] = useState(false)
+    const [message, setMessage] = useState("")
 
     useEffect(() => {
+        fetch("/api/navigation").then(r => r.json()).then(d => { if (d.items) setLayout(d) }).catch(() => setMessage("Could not load ordering controls. Refresh to retry."))
         fetch("/api/pages")
             .then((response) => response.json())
             .then((data) => {
                 if (Array.isArray(data)) setPages(data)
             })
+            .catch(() => setMessage("Could not load pages. Refresh to retry."))
             .finally(() => setLoading(false))
     }, [])
+
+    async function move(page: PageContent, direction: number) {
+        if (!layout) return
+        setMoving(true); setMessage("")
+        try {
+            const r = await fetch("/api/navigation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"movePage",slug:page.slug,direction,revision:layout.revision})})
+            const data = await r.json()
+            if (!r.ok) throw new Error(data.error || "Could not reorder pages.")
+            setLayout(data); setPages(current => orderedPages(current,data.pageOrder))
+            setMessage("Order saved. Published page links now use this order on the website.")
+        } catch(e) { setMessage((e as Error).message) } finally { setMoving(false) }
+    }
 
     return (
         <div className="space-y-6">
@@ -30,7 +48,7 @@ export default function AdminPagesPage() {
                         Pages
                     </h1>
                     <p className="text-muted-foreground">
-                        Existing sections and standalone pages, together.{" "}
+                        Move pages up or down to reorder their website links. Draft pages remain unpublished.{" "}
                         <Link className="underline" href="/admin/navigation">
                             Control menu visibility and ordering
                         </Link>
@@ -44,6 +62,7 @@ export default function AdminPagesPage() {
                     </Button>
                 </Link>
             </div>
+            {message && <p role="status" className="rounded-lg border bg-background p-4 text-sm">{message}</p>}
 
             {loading ? (
                 <div className="flex h-40 items-center justify-center">
@@ -60,7 +79,7 @@ export default function AdminPagesPage() {
                 </Card>
             ) : (
                 <Card className="divide-y">
-                    {pages.map((page) => (
+                    {pages.map((page,index) => (
                         <div
                             key={page.id}
                             className="flex flex-wrap items-center gap-4 p-4"
@@ -92,6 +111,8 @@ export default function AdminPagesPage() {
                             </div>
 
                             <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" disabled={!layout || moving || index === 0} onClick={() => move(page,-1)} aria-label={`Move ${page.title} up`} title="Move up"><ArrowUp className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" disabled={!layout || moving || index === pages.length - 1} onClick={() => move(page,1)} aria-label={`Move ${page.title} down`} title="Move down"><ArrowDown className="h-4 w-4" /></Button>
                                 {page.status === "published" && (
                                     <Link
                                         href={`/${page.slug}`}

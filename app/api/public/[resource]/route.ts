@@ -11,21 +11,21 @@ import { cleanRecord, MODULES, type RecordData } from "@/lib/modules"
 import { currentUser, sameOrigin, throttle } from "@/lib/accounts"
 import { activeAds, publishingConfig } from "@/lib/advertising"
 import { getStore } from "@/lib/store"
+import { readNavigation } from "@/lib/navigation"
+import { publicItems } from "@/lib/menu-layout"
 type Context = { params: Promise<{ resource: string }> }
 export async function GET(request: Request, { params }: Context) {
     const { resource } = await params
     const url = new URL(request.url)
-    if (!platformReady())
+    if (!platformReady() && resource !== "navigation")
         return NextResponse.json(
             resource === "config" ? { analytics: false, comments: false } : []
         )
     try {
-        if (resource === "navigation")
-            return NextResponse.json(
-                (await listRecords<RecordData>("navigation")).sort(
-                    (a, b) => Number(a.order || 0) - Number(b.order || 0)
-                )
-            )
+        if (resource === "navigation") {
+            const { layout, pages } = await readNavigation()
+            return NextResponse.json(publicItems(layout, pages), {headers:{"Cache-Control":"no-store"}})
+        }
         if (resource === "config") {
             const config = await publishingConfig()
             return NextResponse.json({
