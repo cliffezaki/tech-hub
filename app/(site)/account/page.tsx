@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { User } from "@/lib/permissions"
+import styles from "./account.module.css"
 export default function AccountPage() {
     const [user, setUser] = useState<Omit<User, "passwordHash"> | null>(null)
     const [staff, setStaff] = useState(false)
@@ -10,6 +11,12 @@ export default function AccountPage() {
     const [busy, setBusy] = useState(false)
     const [ready, setReady] = useState(false)
     const [resetToken, setResetToken] = useState("")
+    const [invalidCredentials, setInvalidCredentials] = useState(false)
+    function changeMode(nextMode: string) {
+        setMode(nextMode)
+        setMessage("")
+        setInvalidCredentials(false)
+    }
     useEffect(() => {
         const token = new URLSearchParams(location.hash.slice(1)).get("reset")
         if (token) {
@@ -37,6 +44,7 @@ export default function AccountPage() {
         event.preventDefault()
         setBusy(true)
         setMessage("")
+        setInvalidCredentials(false)
         const form = new FormData(event.currentTarget)
         try {
             if (
@@ -57,7 +65,12 @@ export default function AccountPage() {
                 }
             )
             const result = await response.json()
-            if (!response.ok) throw new Error(result.error)
+            if (!response.ok) {
+                // Only the login endpoint's credential rejection reveals recovery.
+                // Network errors, rate limits and profile errors must not do so.
+                setInvalidCredentials(!user && mode === "login" && response.status === 401)
+                throw new Error(result.error)
+            }
             if (result.redirect) location.assign(result.redirect)
             else {
                 setMessage(result.message)
@@ -74,9 +87,9 @@ export default function AccountPage() {
         }
     }
     return (
-        <div className="mx-auto max-w-xl px-5 py-16">
+        <div className={styles.account}>
             <p className="kicker text-brand-red">Your Tech Hub</p>
-            <h1 className="mt-3 text-4xl font-bold">
+            <h1 className={styles.heading}>
                 {user
                     ? "Your account"
                     : mode === "login"
@@ -85,18 +98,23 @@ export default function AccountPage() {
                         ? "Join the conversation"
                         : "Reset your password"}
             </h1>
-            <p className="mt-3 text-muted-foreground">
+            <p className={styles.intro}>
                 Read, subscribe, and manage your work from one account.
             </p>
             {message && (
-                <p role="status" className="my-5 rounded border p-4">
-                    {message}
-                </p>
+                <div className={styles.notice}>
+                    <p id="account-message" role={invalidCredentials ? "alert" : "status"}>{message}</p>
+                    {!user && mode === "login" && invalidCredentials && (
+                        <button type="button" className={styles.textLink} disabled={busy} onClick={() => changeMode("forgot")}>
+                            Forgot password?
+                        </button>
+                    )}
+                </div>
             )}
             {!ready ? (
                 <p>Loading account…</p>
             ) : (
-                <form key={mode} onSubmit={submit} className="mt-7 space-y-5">
+                <form key={mode} onSubmit={submit} className={styles.form} aria-busy={busy}>
                     {(user || mode === "register") && (
                         <label className="block">
                             Name
@@ -117,6 +135,8 @@ export default function AccountPage() {
                                 name="email"
                                 type="email"
                                 autoComplete="email"
+                                aria-invalid={invalidCredentials || undefined}
+                                aria-describedby={invalidCredentials ? "account-message" : undefined}
                                 required
                             />
                         </label>
@@ -144,6 +164,8 @@ export default function AccountPage() {
                                 className="cms-input"
                                 name="password"
                                 type="password"
+                                aria-invalid={invalidCredentials || undefined}
+                                aria-describedby={invalidCredentials ? "account-message" : undefined}
                                 autoComplete={
                                     mode === "login"
                                         ? "current-password"
@@ -179,7 +201,7 @@ export default function AccountPage() {
                             I want to subscribe to Tech Hub updates.
                         </label>
                     )}
-                    <button className="cms-primary" disabled={busy}>
+                    <button type="submit" className={styles.primary} disabled={busy}>
                         {busy
                             ? "Working…"
                             : user
@@ -211,24 +233,13 @@ export default function AccountPage() {
                     </button>
                 </div>
             ) : (
-                <div className="mt-7 flex flex-wrap gap-4 text-sm">
-                    {[
-                        ["login", "Log in"],
-                        ["register", "Sign up"],
-                        ["forgot", "Forgot password?"],
-                    ].map(([value, label]) => (
-                        <button
-                            key={value}
-                            className="underline"
-                            onClick={() => {
-                                setMode(value)
-                                setMessage("")
-                            }}
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
+                ready && <p className={styles.switchMode}>
+                    {mode === "login" ? (
+                        <>Don&apos;t have an account?{" "}<button type="button" className={styles.textLink} disabled={busy} onClick={() => changeMode("register")}>Sign up</button></>
+                    ) : (
+                        <>{mode === "register" ? "Already have an account? " : "Remember your password? "}<button type="button" className={styles.textLink} disabled={busy} onClick={() => changeMode("login")}>Back to log in</button></>
+                    )}
+                </p>
             )}
         </div>
     )
