@@ -222,7 +222,7 @@ export const MODULES: Record<string, Module> = {
     publishing: {
         title: "Publishing & privacy settings",
         description:
-            "These settings control account registration, comments, tracking consent, and publication defaults. Email and external analytics remain unconfigured until connected.",
+            "These settings control account registration, comments, anonymous measurement, and publication defaults. Email and external analytics remain unconfigured until connected.",
         permission: "settings.manage",
         fields: [
             f("name", "Configuration label"),
@@ -230,7 +230,7 @@ export const MODULES: Record<string, Module> = {
             f("comments", "Enable moderated comments", "checkbox"),
             f(
                 "analytics",
-                "Enable consent-based first-party analytics",
+                "Enable anonymous first-party analytics",
                 "checkbox"
             ),
             f("language", "Language"),

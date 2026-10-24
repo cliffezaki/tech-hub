@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { randomUUID } from "node:crypto"
+import { allowMeasurement, measurementGeography, measurementReferrer } from "@/lib/anonymous-analytics"
 import {
     listRecords,
     getRecord,
@@ -163,12 +164,16 @@ export async function POST(request: Request, { params }: Context) {
             })
         }
         if (resource === "event") {
-            if (!body.consent || !(await publishingConfig())?.analytics)
+            if (
+                (body.mode !== "anonymous" && !body.consent) ||
+                request.headers.get("sec-gpc") === "1" ||
+                request.headers.get("dnt") === "1" ||
+                !(await publishingConfig())?.analytics
+            )
                 return NextResponse.json({ ok: true })
             if (
                 !["view", "impression", "click"].includes(body.kind) ||
-                !/^[a-f0-9-]{36}$/.test(body.eventId) ||
-                !/^[a-f0-9-]{36}$/.test(body.visitor)
+                !/^[a-f0-9-]{36}$/.test(body.eventId)
             )
                 throw new Error("Invalid event")
             const pathname = String(body.path || "")
@@ -196,21 +201,17 @@ export async function POST(request: Request, { params }: Context) {
                 )
                     throw new Error("Inactive campaign")
             }
-            if (!(await throttle(`event:${body.visitor}`, 150)))
+            if (!allowMeasurement(request))
                 return NextResponse.json({ ok: true })
             const ua = request.headers.get("user-agent") || ""
             if (/bot|crawler|spider/i.test(ua))
                 return NextResponse.json({ ok: true })
-            let referrer = "Direct"
-            try {
-                referrer = new URL(String(body.referrer)).hostname
-            } catch {
-                /* no referrer */
-            }
+            const referrer = measurementReferrer(body.referrer)
             const event = {
                 id: body.eventId,
                 kind: body.kind,
-                visitor: body.visitor,
+                mode: "anonymous",
+                ...measurementGeography(request),
                 path: pathname,
                 campaign: String(body.campaign || ""),
                 placement: String(body.placement || ""),
@@ -227,7 +228,7 @@ export async function POST(request: Request, { params }: Context) {
                           ? "Safari"
                           : "Other",
                 referrer,
-                at: new Date().toISOString(),
+                at: new Date().toISOString().slice(0, 10),
             }
             await claim("events", body.eventId, event)
             return NextResponse.json({ ok: true })

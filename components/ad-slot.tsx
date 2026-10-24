@@ -39,8 +39,7 @@ export function AdSlot({ slot }: { slot: string }) {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (
-                    entries[0]?.isIntersecting &&
-                    localStorage.getItem("techhub-consent") === "accepted"
+                    entries[0]?.isIntersecting
                 )
                     for (const ad of ads)
                         if (!seen.has(ad.id)) {

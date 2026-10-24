@@ -3,9 +3,11 @@ import { useEffect, useState } from "react"
 type Row = { name: string; count: number }
 type Report = {
     total: number
-    visitors: number
-    newVisitors: number
-    returning: number
+    visitors: null
+    newVisitors: null
+    returning: null
+    countries: Row[]
+    regions: Row[]
     impressions: number
     clicks: number
     ctr: number
@@ -18,6 +20,12 @@ type Report = {
     authors: Row[]
     subscriberGrowth: number | null
     campaigns: { name: string; impressions: number; clicks: number }[]
+}
+function geographyLabel(title: string, name: string) {
+    if (title.startsWith("Countries") && /^[A-Z]{2}$/.test(name)) {
+        try { return new Intl.DisplayNames(["en"], { type: "region" }).of(name) || name } catch { return name }
+    }
+    return name
 }
 export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
     const [start, setStart] = useState(() =>
@@ -56,9 +64,10 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
                     {ads ? "Advertising reports" : "Audience analytics"}
                 </h1>
                 <p className="mt-2 text-muted-foreground">
-                    Consent-based first-party measurements. Ad blockers and
-                    declined consent reduce coverage. These are not audited
-                    billing figures.
+                    Anonymous first-party page views without tracking cookies or
+                    persistent browser IDs. Page views include repeat visits;
+                    they are not unique people. Ad blockers and privacy preferences
+                    can reduce coverage. These are not audited billing figures.
                 </p>
             </div>
             <div className="flex flex-wrap items-end gap-4">
@@ -135,9 +144,9 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
                               ]
                             : [
                                   ["Page views", report.total],
-                                  ["Unique browsers", report.visitors],
-                                  ["New browsers", report.newVisitors],
-                                  ["Returning browsers", report.returning],
+                                  ["Pages read", report.pages.length],
+                                  ["Countries", report.countries.filter(r => r.name !== "Unknown").length],
+                                  ["Traffic sources", report.referrers.length],
                               ]
                         ).map(([label, value]) => (
                             <div
@@ -155,9 +164,9 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
                     </div>
                     {!report.total && (
                         <p className="rounded-xl border border-dashed p-8 text-center">
-                            No recorded activity in this period. Enable
-                            analytics in Publishing & privacy settings; data
-                            appears after visitors consent.
+                            No recorded activity in this period. Check that
+                            anonymous analytics is enabled in Publishing & privacy
+                            settings. Measurements appear after readers visit.
                         </p>
                     )}
                     <div className="grid gap-5 md:grid-cols-2">
@@ -168,6 +177,8 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
                                 ["Devices", report.devices],
                                 ["Browsers", report.browsers],
                                 ["Traffic sources", report.referrers],
+                                ["Countries (approximate)", report.countries],
+                                ["Regions (approximate)", report.regions],
                                 [
                                     ads ? "Placements" : "Author page views",
                                     ads ? report.placements : report.authors,
@@ -186,7 +197,7 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
                                             className="flex justify-between gap-3 border-t py-2 text-sm"
                                         >
                                             <span className="break-all">
-                                                {row.name}
+                                                {geographyLabel(title, row.name)}
                                             </span>
                                             <span>{row.count}</span>
                                         </div>
@@ -201,9 +212,11 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
                     </div>
                     {!ads && (
                         <p className="rounded border p-4 text-sm text-muted-foreground">
-                            Geography, demographic and engagement data are
-                            unavailable. No location or demographics are
-                            inferred.{" "}
+                            Country and region are approximate network locations,
+                            not GPS locations. VPNs and mobile networks can affect
+                            accuracy. Unknown means location was unavailable or the
+                            visit predates anonymous analytics. Unique people,
+                            returning visitors, age and gender are not measured.{" "}
                             {report.subscriberGrowth !== null &&
                                 `${report.subscriberGrowth} currently subscribed accounts were created in this period.`}
                         </p>

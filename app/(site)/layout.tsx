@@ -27,6 +27,7 @@ export default async function SiteLayout({
             </main>
             <AdSlot slot="footer" />
             <Footer />
+            <a href="/analytics-privacy" className="mx-auto mb-5 text-xs underline">Audience measurement &amp; privacy</a>
             <TrackingConsent />
         </div>
     )

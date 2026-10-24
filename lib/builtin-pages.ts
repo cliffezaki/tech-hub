@@ -48,7 +48,7 @@ export const BUILTIN_PAGES: PageContent[] = [
         excerpt:
             "How this site uses account, inquiry, and analytics information.",
         content:
-            "We store account details to provide sign-in and subscription preferences. Advertising inquiry details are used to respond to your request. Optional first-party analytics run only after you allow them. These measurements use a random browser identifier, visited page paths, referrer domains, browser and device category, and ad interactions. We do not infer age, gender or precise location. You can change your analytics choice using Privacy choices and change your subscription in Account. Contact the publisher through the Contact page for questions or requests concerning your information.",
+            "We store account details to provide sign-in and subscription preferences. Advertising inquiry details are used to respond to your request. Anonymous first-party analytics count page views and ad interactions without tracking cookies or persistent browser identifiers. They record page paths, referrer domains, broad browser and device categories, the calendar day, and approximate country and region supplied by the hosting provider. We do not store IP addresses, precise location, age or gender in these analytics records. Visit /analytics-privacy for details and an optional browser opt-out. Browser privacy signals and previous declined analytics choices are respected. Contact the publisher through the Contact page for questions or requests concerning your information.",
         status: "draft",
         updatedAt: "",
     },

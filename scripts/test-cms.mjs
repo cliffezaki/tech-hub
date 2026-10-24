@@ -59,7 +59,7 @@ server.stderr.on("data", (d) => {
 let checks = 0
 async function call(
     url,
-    { method = "GET", body, cookie = "", status = 200, origin = base } = {}
+    { method = "GET", body, cookie = "", status = 200, origin = base, requestHeaders = {} } = {}
 ) {
     const response = await fetch(`${base}${url}`, {
         method,
@@ -67,6 +67,7 @@ async function call(
             "Content-Type": "application/json",
             ...(origin ? { Origin: origin } : {}),
             ...(cookie ? { Cookie: cookie } : {}),
+            ...requestHeaders,
         },
         body: body ? JSON.stringify(body) : undefined,
         redirect: "manual",
@@ -477,7 +478,33 @@ try {
         cookie: owner.cookie,
     })
     assert.equal(report.data.total, 1)
-    assert.equal(report.data.visitors, 1)
+    assert.equal(report.data.visitors, null)
+    const anonymousId = crypto.randomUUID()
+    await post("/api/public/event", {
+        mode: "anonymous", kind: "view", eventId: anonymousId,
+        path: "/reviews/anonymous-test?private=discard", referrer: "https://example.test/story?private=discard",
+        visitor: "must-not-be-saved", country: "spoofed", region: "spoofed",
+    })
+    report = await call(`/api/analytics?start=${today}&end=${today}`, { cookie: owner.cookie })
+    assert.equal(report.data.total, 2)
+    assert.equal(report.data.measurementMode, "anonymous")
+    assert.equal(report.data.visitors, null)
+    assert.deepEqual(report.data.countries, [{ name: "Unknown", count: 2 }])
+    const savedEvent = JSON.parse(await readFile(path.join(temporary, "private", `drafts.platform.events.${anonymousId}.json`), "utf8"))
+    assert.equal(savedEvent.visitor, undefined)
+    assert.equal(savedEvent.consent, undefined)
+    assert.equal(savedEvent.path, "/reviews/anonymous-test")
+    assert.equal(savedEvent.referrer, "example.test")
+    assert.equal(savedEvent.at, today)
+    assert.equal(savedEvent.country, "Unknown")
+    for (const requestHeaders of [{ "sec-gpc": "1" }, { dnt: "1" }]) {
+        await call("/api/public/event", { method: "POST", requestHeaders, body: {
+            mode: "anonymous", kind: "view", eventId: crypto.randomUUID(), path: "/news/private-choice",
+        } })
+    }
+    report = await call(`/api/analytics?start=${today}&end=${today}`, { cookie: owner.cookie })
+    assert.equal(report.data.total, 2, "Privacy signals must suppress recording")
+
     await post(
         "/api/public/comments",
         { articleId: draft.data.id, message: "Pending test comment" },

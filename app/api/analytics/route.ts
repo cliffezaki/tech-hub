@@ -5,7 +5,9 @@ import { getStore } from "@/lib/store"
 import type { User } from "@/lib/permissions"
 type Event = {
     kind: string
-    visitor: string
+    visitor?: string
+    country?: string
+    region?: string
     path: string
     campaign: string
     placement: string
@@ -51,11 +53,6 @@ export async function GET(request: Request) {
             )
                 .map(([name, count]) => ({ name, count }))
                 .sort((a, b) => b.count - a.count)
-        const visitors = new Set(events.map((e) => e.visitor))
-        const previous = new Set(
-            all.filter((e) => e.at.slice(0, 10) < start).map((e) => e.visitor)
-        )
-        const returning = [...visitors].filter((id) => previous.has(id)).length
         const daily = Object.entries(
             events.reduce<Record<string, number>>((a, e) => {
                 const day = e.at.slice(0, 10)
@@ -121,9 +118,13 @@ export async function GET(request: Request) {
                 start,
                 end,
                 total: events.length,
-                visitors: visitors.size,
-                newVisitors: visitors.size - returning,
-                returning,
+                // Individual browsers are deliberately not identified or counted.
+                visitors: null,
+                newVisitors: null,
+                returning: null,
+                measurementMode: "anonymous",
+                countries: group("country"),
+                regions: group("region"),
                 impressions,
                 clicks,
                 ctr: impressions ? (clicks / impressions) * 100 : 0,
