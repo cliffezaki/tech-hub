@@ -4,16 +4,21 @@ import ts from "typescript"
 const source = await readFile(new URL("../lib/anonymous-analytics.ts", import.meta.url), "utf8")
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
 const { measurementGeography, measurementReferrer, allowMeasurement } = await import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`)
-const env = { NETLIFY: process.env.NETLIFY, VERCEL: process.env.VERCEL }
+const env = { NETLIFY: process.env.NETLIFY, VERCEL: process.env.VERCEL, AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME }
 try {
     delete process.env.NETLIFY
     delete process.env.VERCEL
+    delete process.env.AWS_LAMBDA_FUNCTION_NAME
     const request = headers => new Request("https://example.test/api/public/event", { headers })
     const headers = { "x-vercel-ip-country": "KE", "x-vercel-ip-country-region": "30", "x-techhub-country": "US", "x-techhub-region": "US-CA" }
     assert.deepEqual(measurementGeography(request(headers)), { country: "Unknown", region: "Unknown" })
     process.env.VERCEL = "1"
     assert.deepEqual(measurementGeography(request(headers)), { country: "KE", region: "KE-30" })
+    delete process.env.VERCEL
     process.env.NETLIFY = "true"
+    assert.deepEqual(measurementGeography(request(headers)), { country: "US", region: "US-CA" })
+    delete process.env.NETLIFY
+    process.env.AWS_LAMBDA_FUNCTION_NAME = "netlify-next-handler"
     assert.deepEqual(measurementGeography(request(headers)), { country: "US", region: "US-CA" })
     assert.deepEqual(measurementGeography(request({ "x-techhub-country": "bad", "x-techhub-region": "GPS" })), { country: "Unknown", region: "Unknown" })
     assert.equal(measurementReferrer("https://example.org/private?email=hidden#secret"), "example.org")

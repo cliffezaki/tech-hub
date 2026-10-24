@@ -15,7 +15,11 @@ export function allowMeasurement(request: Request, now = Date.now()) {
 }
 export function measurementGeography(request: Request) {
     // Read only hosting-provided coarse geography. Never use client payload location.
-    const netlify = process.env.NETLIFY === "true"
+    // NETLIFY is a build-time flag and may be absent in the serverless runtime.
+    // The live Netlify Next.js handler runs in AWS Lambda; Vercel takes precedence.
+    const netlify = process.env.VERCEL !== "1" && (
+        process.env.NETLIFY === "true" || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
+    )
     if (!netlify && process.env.VERCEL !== "1") return { country: "Unknown", region: "Unknown" }
     const country = request.headers.get(netlify ? "x-techhub-country" : "x-vercel-ip-country") || ""
     const region = request.headers.get(netlify ? "x-techhub-region" : "x-vercel-ip-country-region") || ""
