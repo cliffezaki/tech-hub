@@ -504,6 +504,22 @@ try {
     }
     report = await call(`/api/analytics?start=${today}&end=${today}`, { cookie: owner.cookie })
     assert.equal(report.data.total, 2, "Privacy signals must suppress recording")
+    const previousDay = new Date(Date.parse(today) - 86400000).toISOString().slice(0, 10)
+    await writeFile(path.join(temporary, "private", "drafts.platform.events.previous-period-test.json"), JSON.stringify({
+        id: "previous-period-test", mode: "anonymous", kind: "view", at: previousDay, path: "/news/test",
+        device: "Desktop", browser: "Other", referrer: "Direct",
+    }))
+    report = await call(`/api/analytics?start=${today}&end=${today}`, { cookie: owner.cookie })
+    assert.deepEqual(report.data.comparison.views, { current: 2, previous: 1, percent: 100 })
+    assert.equal(report.data.comparison.start, previousDay)
+    assert.deepEqual(report.data.daily, [{ name: today, count: 2 }])
+    assert.deepEqual(report.data.previousDaily, [{ name: previousDay, count: 1 }])
+    assert.equal(report.data.content.find(row => row.name === "/news/test").percent, 0)
+    assert.equal(report.data.content.find(row => row.name === "/reviews/anonymous-test").percent, null)
+    assert.equal(report.data.content[0].engagement, null)
+    await call("/api/analytics?start=2026-02-30&end=2026-03-01", { cookie: owner.cookie, status: 400 })
+    await call("/api/analytics?start=2020-01-01&end=2026-03-01", { cookie: owner.cookie, status: 400 })
+
 
     await post(
         "/api/public/comments",

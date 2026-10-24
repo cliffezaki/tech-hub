@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { authorized } from "@/lib/accounts"
 import { listRecords } from "@/lib/platform-store"
 import { getStore } from "@/lib/store"
+import { validDate, previousPeriod, percentChange, summarize } from "@/lib/analytics-report"
 import type { User } from "@/lib/permissions"
 type Event = {
     kind: string
@@ -28,15 +29,19 @@ export async function GET(request: Request) {
         const end =
             url.searchParams.get("end") || new Date().toISOString().slice(0, 10)
         if (
-            !/^\d{4}-\d{2}-\d{2}$/.test(start) ||
-            !/^\d{4}-\d{2}-\d{2}$/.test(end) ||
-            end < start
+            !validDate(start) || !validDate(end) ||
+            end < start || Date.parse(end) - Date.parse(start) > 730 * 86400000
         )
             return NextResponse.json(
                 { error: "Invalid date range" },
                 { status: 400 }
             )
         const all = await listRecords<Event>("events")
+        const period = previousPeriod(start, end)
+        const current = summarize(all, start, end, ads)
+        const previous = summarize(all, period.start, period.end, ads)
+        const change = (value: number, before: number) => ({ current: value, previous: before, percent: percentChange(value, before) })
+
         const events = all.filter(
             (e) =>
                 e.at.slice(0, 10) >= start &&
@@ -53,15 +58,6 @@ export async function GET(request: Request) {
             )
                 .map(([name, count]) => ({ name, count }))
                 .sort((a, b) => b.count - a.count)
-        const daily = Object.entries(
-            events.reduce<Record<string, number>>((a, e) => {
-                const day = e.at.slice(0, 10)
-                a[day] = (a[day] || 0) + 1
-                return a
-            }, {})
-        )
-            .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => a.name.localeCompare(b.name))
         const clicks = events.filter((e) => e.kind === "click").length
         const impressions = events.filter((e) => e.kind === "impression").length
         const campaignRows = [...new Set(events.map((e) => e.campaign))]
@@ -128,7 +124,23 @@ export async function GET(request: Request) {
                 impressions,
                 clicks,
                 ctr: impressions ? (clicks / impressions) * 100 : 0,
-                daily,
+                daily: current.daily,
+                previousDaily: previous.daily,
+                comparison: {
+                    start: period.start, end: period.end,
+                    views: change(current.total, previous.total),
+                    pages: change(current.pages.length, previous.pages.length),
+                    countries: change(current.countries.filter(r => r.name !== "Unknown").length, previous.countries.filter(r => r.name !== "Unknown").length),
+                    clicks: change(current.clicks, previous.clicks),
+                    impressions: change(current.impressions, previous.impressions),
+                },
+                content: current.pages.map(row => {
+                    const article = articles.find(a => row.name === `/${a.section}/${a.slug}`)
+                    const before = previous.pages.find(p => p.name === row.name)?.count || 0
+                    return { ...row, title: article?.title || (row.name === "/" ? "Homepage" : row.name),
+                        section: article?.section || "page", previous: before,
+                        percent: percentChange(row.count, before), engagement: null }
+                }),
                 pages: group("path"),
                 devices: group("device"),
                 browsers: group("browser"),
