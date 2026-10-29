@@ -13,3 +13,9 @@ export function contactMessage(body: unknown): ContactMessage | null {
         result.subject.length > 150 || /[\r\n\0]/.test(result.subject) || result.message.length < 10 || result.message.length > 5000 || result.message.includes("\0")) return null
     return result
 }
+
+/** Reject the multi-field random-string pattern seen in automated contact spam. */
+export function contactLooksAutomated(message:ContactMessage){
+ const randomWord=(text:string)=>/^[A-Za-z]{14,}$/.test(text)&&((text.match(/[A-Z]/g)||[]).length>=3)&&((text.match(/[a-z]/g)||[]).length>=3)&&((text.match(/[a-z][A-Z]|[A-Z][a-z]/g)||[]).length>=5)
+ return (randomWord(message.message)&&(randomWord(message.name)||randomWord(message.subject))) || (message.message.match(/https?:\/\//gi)||[]).length>8
+}

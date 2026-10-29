@@ -38,3 +38,24 @@ export function presetRange(preset: DatePreset, now = new Date()) {
     return { start: preset === "today" ? end : preset === "month" ? `${end.slice(0,7)}-01` :
         preset === "year" ? `${end.slice(0,4)}-01-01` : new Date(date-(preset === "7" ? 6 : preset === "90" ? 89 : 29)*DAY).toISOString().slice(0,10), end }
 }
+
+export type VisitorMeasurement = Measurement & { visitor?: string; browserId?: string; measurementVersion?: number; id?: string }
+const browserKey = (row:VisitorMeasurement) => row.measurementVersion === 2 && /^[a-f0-9]{64}$/.test(row.browserId || "") ? row.browserId! : null
+/** Browser estimates are never mixed with the older consent-based identifier population. */
+export function visitorSummary(all:VisitorMeasurement[], start:string, end:string) {
+    const views=all.filter(r=>r.kind==="view" && validDate(r.at?.slice(0,10)))
+    const current=views.filter(r=>r.at.slice(0,10)>=start&&r.at.slice(0,10)<=end)
+    const identified=current.filter(r=>browserKey(r))
+    const modern=views.filter(r=>browserKey(r))
+    const legacy=views.filter(r=>!browserKey(r)&&/^[a-f0-9-]{36}$/i.test(r.visitor||""))
+    const startedAt=modern.map(r=>r.at.slice(0,10)).sort()[0]||null
+    const countries = new Map<string,Set<string>>()
+    for(const row of identified){const country=row.country||"Unknown";if(!countries.has(country))countries.set(country,new Set());countries.get(country)!.add(browserKey(row)!)}
+    return {count:identified.length?new Set(identified.map(browserKey)).size:startedAt&&start>=startedAt?0:null,
+        identifiedViews:identified.length,totalViews:current.length,startedAt,
+        countries:[...countries].map(([name,ids])=>({name,count:ids.size})).sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name)),
+        audit:{totalPageViews:views.length,legacyIdentifiedViews:legacy.length,legacyUniqueBrowsers:new Set(legacy.map(r=>r.visitor)).size,
+            legacyStart:legacy.map(r=>r.at.slice(0,10)).sort()[0]||null,legacyEnd:legacy.map(r=>r.at.slice(0,10)).sort().at(-1)||null,
+            modernIdentifiedViews:modern.length,unidentifiedViews:views.length-legacy.length-modern.length,
+            firstPageView:views.map(r=>r.at.slice(0,10)).sort()[0]||null}}
+}

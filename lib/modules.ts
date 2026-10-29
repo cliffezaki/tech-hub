@@ -64,7 +64,7 @@ export const MODULES: Record<string, Module> = {
     },
     comments: {
         title: "Comments",
-        description: "Review reader comments before publication.",
+        description: "Manage reader discussions and review flagged comments.",
         permission: "comments.moderate",
         fields: [
             f("name", "Reader"),

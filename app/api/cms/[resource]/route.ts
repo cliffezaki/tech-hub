@@ -46,7 +46,7 @@ export async function GET(request: Request, { params }: Context) {
                 return fail("Not authorized", 403)
             const users = await listRecords<User>("users")
             if (resource === "subscribers") {
-                const rows = [...users.filter(u=>u.subscribed).map(u=>({id:u.id,name:u.name,email:u.email,createdAt:u.createdAt})), ...await listRecords<{id:string;name:string;email:string;createdAt:string}>("subscriptions")]
+                const rows = [...users.filter(u=>u.subscribed).map(u=>({id:u.id,name:u.name,email:u.email,createdAt:u.createdAt})), ...(await listRecords<{id:string;name:string;email:string;createdAt:string;active?:boolean}>("subscriptions")).filter(s=>s.active!==false)]
                 return NextResponse.json([...new Map(rows.map(r=>[r.email.toLowerCase(),r])).values()],{headers:{"Cache-Control":"no-store"}})
             }
 

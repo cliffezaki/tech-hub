@@ -19,12 +19,13 @@ export function AnalyticsPrivacyChoice() {
                     localStorage.setItem("techhub-analytics-opt-out", String(value))
                     localStorage.removeItem("techhub-consent")
                     localStorage.removeItem("techhub-visitor")
+                    localStorage.removeItem("techhub-measurement-v2")
                     setExcluded(value)
                 } catch { setError("Could not save your preference. Use your browser privacy settings instead.") }
             }} />
-            Exclude this browser from anonymous analytics
+            Exclude this browser from audience measurement
         </label>
-        {ready && <p role="status" className="text-sm">{excluded ? "Measurements are excluded for this browser." : "Anonymous measurements are enabled unless your browser sends a privacy opt-out signal."}</p>}
+        {ready && <p role="status" className="text-sm">{excluded ? "Measurements are excluded for this browser." : "Privacy-conscious measurements are enabled unless your browser sends a privacy opt-out signal."}</p>}
         {error && <p role="alert">{error}</p>}
     </section>
 }

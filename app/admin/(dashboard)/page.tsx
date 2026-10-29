@@ -1,7 +1,6 @@
 "use client"
 
 import { OverviewStats } from "@/components/admin/overview-stats"
-import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { FileText, Plus, Star } from "lucide-react"
@@ -44,7 +43,6 @@ export default function AdminOverviewPage() {
             </div>
 
             <OverviewStats />
-            <AnalyticsDashboard />
             <Card className="divide-y">
                 <div className="flex items-center justify-between p-4">
                     <h2 className="font-semibold">Recent articles</h2>

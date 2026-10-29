@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea"
 
 export function ContactForm({ contactEmail }: { contactEmail: string }) {
     const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", websiteTrap: "" })
+    const [formToken,setFormToken] = useState("")
+    async function refreshToken(){try{const response=await fetch("/api/contact",{cache:"no-store"});const data=await response.json();setFormToken(data.token||"")}catch{setFormToken("")}}
+    useEffect(()=>{void refreshToken()},[])
     const [sent, setSent] = useState(false)
     const [sending, setSending] = useState(false)
     const [error, setError] = useState("")
@@ -19,13 +22,13 @@ export function ContactForm({ contactEmail }: { contactEmail: string }) {
         if (sending) return
         setSending(true); setError("")
         try {
-            const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) })
+            const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({...form,formToken}) })
             const data = await response.json().catch(() => null)
             if (!response.ok) throw new Error(data?.error || "Your message could not be sent. Please try again.")
             setSent(true)
             setForm({ name: "", email: "", subject: "", message: "", websiteTrap: "" })
         } catch (e) { setError(e instanceof Error ? e.message : "Check your connection and try again.") }
-        finally { setSending(false) }
+        finally { setSending(false); void refreshToken() }
     }
 
     if (sent) {

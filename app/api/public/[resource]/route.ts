@@ -107,6 +107,8 @@ export async function POST(request: Request, { params }: Context) {
             if (!validEmail(email) || body.websiteTrap || body.consent !== true) return NextResponse.json({error:"Enter a valid email and agree to receive updates."},{status:400})
             if (!(await throttle("subscribe:site", 30)) || !(await throttle(`subscribe:${email}`, 3))) return NextResponse.json({error:"Please try again later."},{status:429})
             const id = createHash("sha256").update(email).digest("hex")
+            const existing = await getRecord<Record<string,unknown>>("subscriptions",id)
+            if(existing?.active===false) await saveRecord("subscriptions",id,{...existing,active:true,updatedAt:new Date().toISOString()})
             await claim("subscriptions",id,{id,email,name:"Newsletter reader",createdAt:new Date().toISOString(),source:"newsletter",consent:true})
             return NextResponse.json({message:"Your newsletter signup has been recorded. Thank you."})
         }
@@ -256,6 +258,10 @@ export async function POST(request: Request, { params }: Context) {
                 id: body.eventId,
                 kind: body.kind,
                 mode: "anonymous",
+                ...(/^[a-f0-9-]{36}$/i.test(String(body.browserId || "")) ? {
+                    measurementVersion: 2,
+                    browserId: createHash("sha256").update(`techhub:v2:${String(body.browserId).toLowerCase()}`).digest("hex"),
+                } : {}),
                 ...measurementGeography(request),
                 path: pathname,
                 campaign: String(body.campaign || ""),

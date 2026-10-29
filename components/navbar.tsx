@@ -34,6 +34,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
     const [open, setOpen] = useState(false)
     const [closing, setClosing] = useState(false)
     const [items, setItems] = useState(defaults)
+    const [staff, setStaff] = useState(false)
     const [signedIn, setSignedIn] = useState(false)
     const path = usePathname()
     const trigger = useRef<HTMLButtonElement>(null)
@@ -50,7 +51,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
             .catch(() => {})
         fetch("/api/auth/me")
             .then((r) => r.json())
-            .then((d) => setSignedIn(Boolean(d.user)))
+            .then((d) => { setSignedIn(Boolean(d.user)); setStaff(Boolean(d.user) && d.permissions?.length > 0) })
             .catch(() => {})
     }, [path])
     useEffect(() => {
@@ -198,8 +199,9 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                         {i.name}
                                     </Link>
                                 ))}
+                            {staff && <Link href="/admin" className="mt-6 cms-primary" onClick={() => setClosing(true)}>Publishing Dashboard</Link>}
                             <Link
-                                className="mt-6 cms-primary"
+                                className={staff ? "mt-3 rounded border px-4 py-3 font-semibold" : "mt-6 cms-primary"}
                                 href="/account"
                                 onClick={() => setClosing(true)}
                             >

@@ -91,7 +91,7 @@ export async function sendContactEmail(to: string, input: { name: string; email:
     return sendSiteEmail({
         to, requestId, context: "contact", replyTo: input.email,
         subject: `Tech Hub contact: ${input.subject || "Message from a reader"}`,
-        text: `Name: ${input.name}\nReply email: ${input.email}\n\n${input.message}`,
+        text: `Contact form submission from mytechhub.online\nThis is a reader message, not a subscription or account notification.\nReference: ${requestId}\n\nName: ${input.name}\nReply email: ${input.email}\n\n${input.message}`,
     })
 }
 

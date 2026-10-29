@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { User } from "@/lib/permissions"
+import { AccountSettings } from "./account-settings"
 import styles from "./account.module.css"
 export default function AccountPage() {
     const [user, setUser] = useState<Omit<User, "passwordHash"> | null>(null)
@@ -86,6 +87,7 @@ export default function AccountPage() {
             setBusy(false)
         }
     }
+    if (user) return <AccountSettings user={user} staff={staff} onSaved={setUser} />
     return (
         <div className={styles.account}>
             <p className="kicker text-brand-red">Your Tech Hub</p>
@@ -121,7 +123,7 @@ export default function AccountPage() {
                             <input
                                 className="cms-input"
                                 name="name"
-                                defaultValue={user?.name}
+
                                 required
                                 maxLength={100}
                             />
@@ -140,22 +142,6 @@ export default function AccountPage() {
                                 required
                             />
                         </label>
-                    )}
-                    {user && (
-                        <>
-                            <p>
-                                {user.email} · {user.role}
-                            </p>
-                            <label className="block">
-                                Current password (to change password)
-                                <input
-                                    className="cms-input"
-                                    name="currentPassword"
-                                    type="password"
-                                    autoComplete="current-password"
-                                />
-                            </label>
-                        </>
                     )}
                     {mode !== "forgot" && (
                         <label className="block">
@@ -196,7 +182,7 @@ export default function AccountPage() {
                             <input
                                 name="subscribed"
                                 type="checkbox"
-                                defaultChecked={user?.subscribed}
+
                             />
                             I want to subscribe to Tech Hub updates.
                         </label>
@@ -216,23 +202,7 @@ export default function AccountPage() {
                     </button>
                 </form>
             )}
-            {user ? (
-                <div className="mt-6 flex gap-5">
-                    {staff && (
-                        <Link href="/admin" className="underline">
-                            Open publishing dashboard
-                        </Link>
-                    )}
-                    <button
-                        onClick={async () => {
-                            await fetch("/api/auth/logout", { method: "POST" })
-                            location.assign("/account")
-                        }}
-                    >
-                        Log out
-                    </button>
-                </div>
-            ) : (
+            {
                 ready && <p className={styles.switchMode}>
                     {mode === "login" ? (
                         <>Don&apos;t have an account?{" "}<button type="button" className={styles.textLink} disabled={busy} onClick={() => changeMode("register")}>Sign up</button></>
@@ -240,7 +210,7 @@ export default function AccountPage() {
                         <>{mode === "register" ? "Already have an account? " : "Remember your password? "}<button type="button" className={styles.textLink} disabled={busy} onClick={() => changeMode("login")}>Back to log in</button></>
                     )}
                 </p>
-            )}
+            }
         </div>
     )
 }

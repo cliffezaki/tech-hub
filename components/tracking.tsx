@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useRef } from "react"
+import { browserReference, BROWSER_KEY } from "@/lib/browser-measurement"
 import { usePathname } from "next/navigation"
 
 let configuration: Promise<boolean> | undefined
@@ -20,6 +21,8 @@ export async function track(kind: string, extra: Record<string, string> = {}) {
     if (optedOut() || navigator.doNotTrack === "1" ||
         (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl) return
     if (!(await analyticsEnabled()) || optedOut()) return
+    let browserId: string | undefined
+    try { browserId = browserReference(localStorage) } catch { /* retain page-view counting without storage */ }
     let referrer = ""
     try { referrer = new URL(document.referrer).hostname } catch { /* direct visit */ }
     void fetch("/api/public/event", {
@@ -31,6 +34,7 @@ export async function track(kind: string, extra: Record<string, string> = {}) {
         body: JSON.stringify({
             mode: "anonymous",
             kind,
+            browserId,
             path: pathname,
             referrer,
             eventId: crypto.randomUUID(),
@@ -47,6 +51,7 @@ export function TrackingConsent() {
         try {
             // Remove the old tracking identifier, including for readers who opted out.
             localStorage.removeItem("techhub-visitor")
+            if (optedOut() || navigator.doNotTrack === "1" || (navigator as Navigator & {globalPrivacyControl?:boolean}).globalPrivacyControl) localStorage.removeItem(BROWSER_KEY)
         } catch { /* analytics also works when browser storage is blocked */ }
         if (lastPath.current !== path && !/^\/(admin|account|api)(\/|$)/.test(path)) {
             lastPath.current = path

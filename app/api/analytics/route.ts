@@ -3,10 +3,12 @@ import { NextResponse } from "next/server"
 import { authorized } from "@/lib/accounts"
 import { listRecords } from "@/lib/platform-store"
 import { getStore } from "@/lib/store"
-import { validDate, previousPeriod, percentChange, summarize } from "@/lib/analytics-report"
+import { visitorSummary, validDate, previousPeriod, percentChange, summarize } from "@/lib/analytics-report"
 import type { User } from "@/lib/permissions"
 type Event = {
     kind: string
+    browserId?: string
+    measurementVersion?: number
     visitor?: string
     country?: string
     region?: string
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
             )
         const all = await listRecords<Event>("events")
         const period = previousPeriod(start, end)
+        const visitorData = visitorSummary(all,start,end)
+        const previousVisitors = visitorSummary(all,period.start,period.end)
         const current = summarize(all, start, end, ads)
         const previous = summarize(all, period.start, period.end, ads)
         const change = (value: number, before: number) => ({ current: value, previous: before, percent: percentChange(value, before) })
@@ -89,7 +93,7 @@ export async function GET(request: Request) {
         let subscriberGrowth: number | null = null
         if (!ads && (await authorized("subscribers.manage"))) {
             const users = (await listRecords<User>("users")).filter(u => u.subscribed)
-            const subscriptions = await listRecords<{email:string;createdAt:string}>("subscriptions")
+            const subscriptions = (await listRecords<{email:string;createdAt:string;active?:boolean}>("subscriptions")).filter(s=>s.active!==false)
             const firstSignup = new Map<string,string>()
             for (const row of [...users, ...subscriptions]) {
                 const email = row.email.trim().toLowerCase()
@@ -128,7 +132,9 @@ export async function GET(request: Request) {
                 publishedArticles: articles.filter(articleVisible).length,
                 total: events.length,
                 // Individual browsers are deliberately not identified or counted.
-                visitors: null,
+                visitors: visitorData.count,
+                visitorData,
+                previousVisitors,
                 newVisitors: null,
                 returning: null,
                 measurementMode: "anonymous",

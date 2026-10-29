@@ -4,11 +4,16 @@ import { sameOrigin, throttle } from "@/lib/accounts"
 import { platformReady } from "@/lib/platform-store"
 import { emailDeliveryConfigured, sendContactEmail, EmailDeliveryUnavailable } from "@/lib/email"
 import { getStore } from "@/lib/store"
-import { contactMessage, validEmail } from "@/lib/contact"
+import {contactToken,validContactToken,contactNetworkKey} from "@/lib/contact-guard"
+import { contactMessage, validEmail, contactLooksAutomated } from "@/lib/contact"
 
 export const runtime = "nodejs"
 const headers = { "Cache-Control": "no-store" }
 const json = (body: object, status: number, extra: Record<string, string> = {}) => NextResponse.json(body, { status, headers: { ...headers, ...extra } })
+
+export async function GET(){
+    try{return json({token:contactToken()},200)}catch{return json({error:"The contact form is temporarily unavailable."},503)}
+}
 
 export async function POST(request: Request) {
     try {
@@ -31,6 +36,9 @@ export async function POST(request: Request) {
         try { raw = JSON.parse(Buffer.concat(chunks).toString("utf8")) } catch { return json({ error: "Complete the contact form with valid details." }, 400) }
         const input = contactMessage(raw)
         if (!input) return json({ error: "Enter your name, a valid email address and a message of 10–5,000 characters." }, 400)
+        if(contactLooksAutomated(input)) return json({error:"Please describe your request in a meaningful message. Automated submissions are not accepted."},400)
+        if(!validContactToken((raw as Record<string,unknown>).formToken)) return json({error:"Please reload the form and try again after completing your message."},400)
+        if(!(await throttle(`contact:network:${contactNetworkKey(request)}`,5)))return json({error:"Too many messages from this connection. Please try again in 15 minutes."},429,{"Retry-After":"900"})
         const recipient = (await getStore().getSettings()).contactEmail.trim()
         if (!platformReady() || !emailDeliveryConfigured() || !validEmail(recipient)) return json({ error: "The contact form is temporarily unavailable. Please use the email address on this page." }, 503)
         if (!(await throttle(`contact:${input.email.toLowerCase()}`, 3)) || !(await throttle("contact:site", 30))) return json({ error: "Too many messages. Please try again in 15 minutes." }, 429, { "Retry-After": "900" })

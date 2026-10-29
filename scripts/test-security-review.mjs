@@ -26,6 +26,7 @@ const route = load(await readFile("app/api/contact/route.ts", "utf8"), {
     "@/lib/email": { emailDeliveryConfigured: () => configured, EmailDeliveryUnavailable: DeliveryError, sendContactEmail: async (...args) => { if (failed) throw Error("smtp secret should never leak"); delivered.push(args) } },
     "@/lib/store": { getStore: () => ({ getSettings: async () => ({ contactEmail: recipient }) }) },
     "@/lib/contact": contact,
+    "@/lib/contact-guard": {contactToken:()=>"test-token",validContactToken:()=>true,contactNetworkKey:()=>"test-network"},
 })
 const request = (body = valid, options = {}) => new Request("https://example.test/api/contact", { method: "POST", headers: { "Content-Type": "application/json", ...options.headers }, body: typeof body === "string" ? body : JSON.stringify(body) })
 assert.equal((await route.POST(request())).status, 200)
@@ -43,7 +44,7 @@ failed = true; const failure = await route.POST(request()); assert.equal(failure
 
 const types = load(await readFile("lib/types.ts", "utf8"), {})
 const rich = load(await readFile("lib/rich-content.ts", "utf8"), {})
-const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types, "@/lib/rich-content": rich, "node:crypto": crypto })
+const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/demo-photos": load(await readFile("lib/demo-photos.ts", "utf8"), {}), "@/lib/types": types, "@/lib/rich-content": rich, "node:crypto": crypto })
 const ids = Array.from({ length: 100 }, () => normalize.generateId())
 assert.equal(new Set(ids).size, ids.length); assert(ids.every(id => /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(id)))
 const temp = await mkdtemp(path.join(os.tmpdir(), "techhub-security-review-"))
@@ -65,3 +66,10 @@ const expression = article.match(/__html:\s*(JSON\.stringify\(structuredData\)\.
 const escaped = vm.runInNewContext(expression, { structuredData: { headline: '</script><script>alert("x")</script>' } })
 assert(!escaped.includes("<")); assert.equal(JSON.parse(escaped).headline, '</script><script>alert("x")</script>')
 console.log("PASS: bounded contact API, validation/header injection, fixed recipient, rate limits, real-send success/failure semantics, sanitized server errors, UUID generation, local traversal rejection and JSON-LD escaping; no real email sent.")
+
+const guard=load(await readFile("lib/contact-guard.ts","utf8"),{"node:crypto":crypto},{process:{env:{ADMIN_SESSION_SECRET:"test-secret-".repeat(5)}}})
+const time=Date.now(),token=guard.contactToken(time)
+assert(!guard.validContactToken(token,time+100));assert(guard.validContactToken(token,time+2000));assert(!guard.validContactToken(token,time+7200001));assert(!guard.validContactToken(token.replace(/.$/,"z"),time+2000))
+assert(contact.contactLooksAutomated({name:"xDAkjoDmGfjspcMBBFfb",subject:"cnoldInFLOGbHwulabrN",message:"AFZvFnduqFbyBjZG"}))
+assert(!contact.contactLooksAutomated(valid))
+console.log("PASS: contact token timing, expiry, tampering and reported spam pattern")

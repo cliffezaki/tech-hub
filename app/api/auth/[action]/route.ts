@@ -25,6 +25,10 @@ import {
 } from "@/lib/auth"
 export async function GET() {
     const user = platformReady() ? await currentUser() : null
+    if (user) {
+        const subscription = await getRecord<{active?:boolean}>("subscriptions",emailId(user.email))
+        if(subscription) user.subscribed = subscription.active !== false
+    }
     return NextResponse.json(
         {
             user: user ? safeUser(user) : null,
@@ -80,7 +84,6 @@ export async function POST(request: Request) {
                     { status: 401 }
                 )
             user.name = String(body.name || user.name).slice(0, 100)
-            user.subscribed = body.subscribed === true
             if (body.password) {
                 if (
                     !(await checkPassword(
@@ -95,6 +98,12 @@ export async function POST(request: Request) {
                 user.passwordHash = await hashPassword(body.password)
                 user.sessionVersion++
             }
+            const subscriptionKey=emailId(user.email)
+            const subscription=await getRecord<Record<string,unknown>>("subscriptions",subscriptionKey)
+            if (typeof body.subscribed === "boolean") {
+                user.subscribed=body.subscribed
+                if(subscription) await saveRecord("subscriptions",subscriptionKey,{...subscription,active:body.subscribed,updatedAt:new Date().toISOString()})
+            } else if(subscription) user.subscribed=subscription.active!==false
             await saveRecord("users", user.id, user)
             const response = NextResponse.json({
                 user: safeUser(user),
