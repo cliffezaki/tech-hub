@@ -6,6 +6,7 @@ export function ArticleComments({ articleId }: { articleId: string }) {
         { id: string; name: string; message: string }[]
     >([])
     const [message, setMessage] = useState("")
+    const [busy, setBusy] = useState(false)
     useEffect(() => {
         fetch("/api/public/config")
             .then((r) => r.json())
@@ -30,22 +31,33 @@ export function ArticleComments({ articleId }: { articleId: string }) {
                 className="mt-6"
                 onSubmit={async (e) => {
                     e.preventDefault()
+                    if (busy) return
+                    setBusy(true)
                     const form = e.currentTarget
-                    const text = new FormData(form).get("message")
+                    const fields = new FormData(form)
+                    const text = fields.get("message")
                     try {
                         const r = await fetch("/api/public/comments", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ articleId, message: text }),
+                            body: JSON.stringify({ articleId, message: text, name:fields.get("name"), email:fields.get("email"), websiteTrap:fields.get("websiteTrap") }),
                         })
                         const d = await r.json()
                         setMessage(d.message || d.error)
-                        if (r.ok) form.reset()
+                        if (r.ok) {
+                            form.reset()
+                            const response = await fetch(`/api/public/comments?articleId=${encodeURIComponent(articleId)}`, {cache:"no-store"})
+                            if (response.ok) setComments(await response.json())
+                        }
                     } catch {
                         setMessage("Could not submit your comment. Try again.")
+                    } finally {
+                        setBusy(false)
                     }
                 }}
             >
+                <input name="websiteTrap" className="hidden" tabIndex={-1} aria-hidden="true" autoComplete="off" />
+                <div className="mb-4 grid gap-4 sm:grid-cols-2"><label>Display name<input name="name" className="cms-input" maxLength={80} required autoComplete="nickname" /></label><label>Email (optional, never displayed)<input name="email" type="email" className="cms-input" maxLength={254} autoComplete="email" /></label></div>
                 <label>
                     Your comment
                     <textarea
@@ -57,10 +69,9 @@ export function ArticleComments({ articleId }: { articleId: string }) {
                     />
                 </label>
                 <p className="my-3 text-sm text-muted-foreground">
-                    Sign in to comment. All comments are reviewed before
-                    publication.
+                    No account needed. Ordinary comments appear immediately; suspicious submissions may need review.
                 </p>
-                <button className="cms-primary">Submit for review</button>
+                <button className="cms-primary" disabled={busy}>{busy ? "Posting…" : "Post comment"}</button>
                 {message && (
                     <p role="status" className="mt-3">
                         {message}

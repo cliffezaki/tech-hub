@@ -2,7 +2,7 @@ import type { ArticleSection } from "@/lib/types"
 import type { ArtworkKind, DiagramKind } from "@/lib/demo-artwork"
 
 export const DEMO_BATCH = "techhub-researched-2026-10-06"
-export const DEMO_AUTHOR = "Tech Hub Demo Desk"
+export const DEMO_AUTHOR = "Tech Hub"
 export interface DemoStory {
     title: string
     slug: string

@@ -1,6 +1,7 @@
 "use client"
 /* eslint-disable @next/next/no-img-element, @next/next/no-html-link-for-pages */
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { VisualEditor } from "@/components/admin/visual-editor"
 import { ImageField } from "@/components/admin/image-field"
 import { Markdown } from "@/components/markdown"
@@ -21,6 +22,14 @@ export function ArticleForm({ initialData, defaults, permissions = [] }: { initi
     const [status, setStatus] = useState<string>(initialData?.scheduledAt ? "scheduled" : initialData?.status || "draft")
     const [sidebar, setSidebar] = useState(true)
     const [preview, setPreview] = useState<"" | "desktop" | "mobile">("")
+    useEffect(() => {
+        if (!preview) return
+        const previous = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        const close = (event: KeyboardEvent) => { if (event.key === "Escape") setPreview("") }
+        window.addEventListener("keydown", close)
+        return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", close) }
+    }, [preview])
     const [slugTouched, setSlugTouched] = useState(!!initialData)
     const [notice, setNotice] = useState("")
     const [error, setError] = useState("")
@@ -110,6 +119,6 @@ export function ArticleForm({ initialData, defaults, permissions = [] }: { initi
         {sidebar && <aside className="article-settings"><details open><summary>Article settings</summary>{input("slug", "URL slug")}<p className="text-xs break-all">/{form.section}/{form.slug || "your-story"}</p><label className="editor-setting">Excerpt<textarea rows={4} value={form.excerpt} onChange={e => update("excerpt", e.target.value)} /></label><label className="editor-setting">Section<select value={form.section} onChange={e => update("section", e.target.value as ArticleSection)}>{ARTICLE_SECTIONS.map(s => <option key={s} value={s}>{SECTION_META[s].label}</option>)}</select></label>{input("category", "Category")}{permissions.includes("articles.editAll") ? input("author", "Author") : <p>Author: {form.author}</p>}<label className="editor-setting">Tags (comma separated)<input value={form.tags.join(",")} onChange={e => update("tags", e.target.value.split(","))} /></label>{input("publishedAt", "Publication date", "datetime-local")}{input("readTime", "Read time (optional)")}{permissions.includes("articles.feature") && <label className="flex gap-2 py-3"><input type="checkbox" checked={form.featured} onChange={e => update("featured", e.target.checked)} />Feature on homepage</label>}</details>
         <details open><summary>Featured image</summary>{permissions.includes("media.manage") ? <ImageField value={form.imageUrl} onChange={v => update("imageUrl", v)} /> : input("imageUrl", "Image URL")}{input("imageAlt", "Alt text")}{input("imageCredit", "Image credit")}</details>
         <details><summary>SEO & social preview</summary>{input("seoTitle", "SEO title")}<label className="editor-setting">Meta description<textarea value={form.metaDescription} onChange={e => update("metaDescription", e.target.value)} rows={4} maxLength={320} /></label><p className="text-xs">{form.metaDescription.length} characters · aim for around 150–160.</p><div className="rounded border p-3 mt-4"><p className="text-xs">mytechhub.online/{form.section}/{form.slug}</p><h3 className="text-lg text-blue-700">{form.seoTitle || form.title || "Your article title"}</h3><p className="text-sm">{form.metaDescription || form.excerpt}</p>{form.imageUrl && <img src={form.imageUrl} alt={form.imageAlt} className="mt-3 rounded" />}</div></details></aside>}</div>
-        {preview && <div role="dialog" aria-modal="true" aria-label="Article preview" className="editor-preview"><header><button className="editor-tool" onClick={() => setPreview("desktop")}>Desktop</button><button className="editor-tool" onClick={() => setPreview("mobile")}>Mobile</button><button className="editor-tool" onClick={() => setPreview("")}>Close preview</button><span className="text-sm">Unsaved preview · not public</span></header><article style={{ maxWidth: preview === "mobile" ? 390 : 820 }}><p className="kicker text-brand-red">{form.category}</p><h1>{form.title || "Untitled article"}</h1><p className="text-xl text-muted-foreground">{form.excerpt}</p><p className="my-4 text-sm">{form.author} · {form.publishedAt.slice(0, 10)}</p>{form.imageUrl && <figure><img src={form.imageUrl} alt={form.imageAlt} /><figcaption>{form.imageCredit}</figcaption></figure>}<Markdown content={form.content} /></article></div>}
+        {preview && createPortal(<div role="dialog" aria-modal="true" aria-label="Article preview" className="editor-preview"><header><button className="editor-tool" onClick={() => setPreview("desktop")}>Desktop</button><button className="editor-tool" onClick={() => setPreview("mobile")}>Mobile</button><button className="editor-tool" onClick={() => setPreview("")}>Close preview</button><span className="text-sm">Unsaved preview · not public</span></header><article style={{ maxWidth: preview === "mobile" ? 390 : 820 }}><p className="kicker text-brand-red">{form.category}</p><h1>{form.title || "Untitled article"}</h1><p className="text-xl text-muted-foreground">{form.excerpt}</p><p className="my-4 text-sm">{form.author} · {form.publishedAt.slice(0, 10)}</p>{form.imageUrl && <figure><img src={form.imageUrl} alt={form.imageAlt} /><figcaption>{form.imageCredit}</figcaption></figure>}<Markdown content={form.content} /></article></div>, document.body)}
     </div>
 }

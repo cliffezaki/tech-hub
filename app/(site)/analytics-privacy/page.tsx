@@ -10,6 +10,7 @@ export default function AnalyticsPrivacyPage() {
         <p>Counts represent recorded page views and ad interactions, not unique people. VPNs and mobile networks can affect geography. Advertising reports are aggregate measurements and are not independently audited. Older measurements may have no geography; records collected before this change used consent-based browser identifiers.</p>
         <p>We respect browser Do Not Track and Global Privacy Control signals, previous declined analytics choices, and the preference below. Blocking scripts can also prevent measurements. Your choice here is stored only in this browser and does not create a tracking identifier.</p>
         <AnalyticsPrivacyChoice />
+        <p>Liking a story does not require an account. When you like, we save a first-party cookie for up to one year to prevent accidental repeat likes from the same browser. This identifier is used for likes, not audience tracking. Comments show your chosen name and message; optional email addresses remain private. Newsletter signups are recorded separately from contact messages.</p>
         <p>Sign-in, subscriptions, comments and advertising inquiries use information you submit for those services. For privacy questions or requests, <Link className="underline" href="/contact">contact the publisher</Link>.</p>
     </article>
 }

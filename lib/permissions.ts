@@ -99,24 +99,24 @@ export const ADMIN_NAV = [
     },
     { href: "/admin/media", label: "Media", permission: "media.manage" },
     {
-        href: "/admin/comments",
+        href: "/admin/analytics",
+        label: "Analytics",
+        permission: "analytics.view",
+    },
+    {
+        href: "/admin/analytics/comments",
         label: "Comments",
         permission: "comments.moderate",
+    },
+    {
+        href: "/admin/analytics/subscribers",
+        label: "Subscribers",
+        permission: "subscribers.manage",
     },
     {
         href: "/admin/users",
         label: "Users & roles",
         permission: "users.manage",
-    },
-    {
-        href: "/admin/subscribers",
-        label: "Subscribers",
-        permission: "subscribers.manage",
-    },
-    {
-        href: "/admin/analytics",
-        label: "Analytics",
-        permission: "analytics.view",
     },
     {
         href: "/admin/advertising",

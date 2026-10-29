@@ -1,5 +1,8 @@
+import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
-import { randomUUID } from "node:crypto"
+import { validEmail } from "@/lib/contact"
+import { commentNeedsReview } from "@/lib/comment-policy"
+import { createHash, randomUUID } from "node:crypto"
 import { allowMeasurement, measurementGeography, measurementReferrer } from "@/lib/anonymous-analytics"
 import {
     listRecords,
@@ -41,7 +44,19 @@ export async function GET(request: Request, { params }: Context) {
                     url.searchParams.get("path") || "/"
                 )
             )
-        if (resource === "comments")
+        if (resource === "likes") {
+            const articleId = url.searchParams.get("articleId") || ""
+            const article = await getStore().getArticle(articleId, false)
+            if (!article || !articleVisible(article)) return NextResponse.json({error:"Article not found"},{status:404})
+            const user = await currentUser()
+            const guest = (await cookies()).get("techhub_like")?.value
+            const identity = user?.id || (/^[a-f0-9-]{36}$/.test(guest || "") ? guest : "")
+            const rows = (await listRecords<RecordData>("likes")).filter(r => r.articleId === articleId)
+            return NextResponse.json({ count: rows.length, liked: !!identity && rows.some(r => r.userId === identity) }, {headers:{"Cache-Control":"no-store"}})
+        }
+        if (resource === "comments") {
+            const article = await getStore().getArticle(url.searchParams.get("articleId") || "", false)
+            if (!article || !articleVisible(article)) return NextResponse.json({error:"Article not found"},{status:404})
             return NextResponse.json(
                 (await listRecords<RecordData>("comments"))
                     .filter(
@@ -56,6 +71,7 @@ export async function GET(request: Request, { params }: Context) {
                         createdAt: c.createdAt,
                     }))
             )
+        }
         return NextResponse.json({ error: "Not found" }, { status: 404 })
     } catch {
         return NextResponse.json(
@@ -86,6 +102,14 @@ export async function POST(request: Request, { params }: Context) {
                 { status: 413 }
             )
         const body = JSON.parse(raw)
+        if (resource === "subscribe") {
+            const email = String(body.email || "").trim().toLowerCase()
+            if (!validEmail(email) || body.websiteTrap || body.consent !== true) return NextResponse.json({error:"Enter a valid email and agree to receive updates."},{status:400})
+            if (!(await throttle("subscribe:site", 30)) || !(await throttle(`subscribe:${email}`, 3))) return NextResponse.json({error:"Please try again later."},{status:429})
+            const id = createHash("sha256").update(email).digest("hex")
+            await claim("subscriptions",id,{id,email,name:"Newsletter reader",createdAt:new Date().toISOString(),source:"newsletter",consent:true})
+            return NextResponse.json({message:"Your newsletter signup has been recorded. Thank you."})
+        }
         if (resource === "inquiries") {
             if (
                 body.websiteTrap ||
@@ -122,12 +146,28 @@ export async function POST(request: Request, { params }: Context) {
                 message: "Thank you. Your inquiry has been saved for our team.",
             })
         }
+        if (resource === "likes") {
+            const user = await currentUser()
+            const jar = await cookies()
+            const previous = jar.get("techhub_like")?.value || ""
+            const guest = /^[a-f0-9-]{36}$/.test(previous) ? previous : randomUUID()
+            const identity = user?.id || guest
+            const article = await getStore().getArticle(String(body.articleId || ""), false)
+            if (!article || !articleVisible(article)) return NextResponse.json({error:"Article not found"},{status:404})
+            if (!(await throttle(`like:${identity}`, 30)) || !(await throttle("like:site", 300))) return NextResponse.json({error:"Please try again later."},{status:429})
+            const id = createHash("sha256").update(`${article.id}:${identity}`).digest("hex")
+            await claim("likes", id, {id, articleId:article.id, userId:identity, createdAt:new Date().toISOString()})
+            const count = (await listRecords<RecordData>("likes")).filter(r=>r.articleId===article.id).length
+            const response = NextResponse.json({count, liked:true})
+            if (!user) response.cookies.set("techhub_like",guest,{httpOnly:true,secure:new URL(request.url).protocol==="https:",sameSite:"lax",path:"/",maxAge:31536000})
+            return response
+        }
         if (resource === "comments") {
             const user = await currentUser()
-            if (!user || !(await publishingConfig())?.comments)
+            if (!(await publishingConfig())?.comments)
                 return NextResponse.json(
                     {
-                        error: "Sign in to comment. Comments must be enabled by the publisher.",
+                        error: "Comments are currently disabled.",
                     },
                     { status: 403 }
                 )
@@ -139,12 +179,16 @@ export async function POST(request: Request, { params }: Context) {
                     { error: "Article not found" },
                     { status: 404 }
                 )
+            const name = user?.name || String(body.name || "").trim()
+            const email = user?.email || String(body.email || "").trim().toLowerCase()
+            if (!name || name.length > 80 || /[<>\r\n]/.test(name) || (email && !validEmail(email)) || body.websiteTrap)
+                return NextResponse.json({error:"Enter a display name and a valid email if you provide one."},{status:400})
             const message = String(body.message || "").trim()
             if (!message || message.length > 3000)
                 throw new Error(
                     "Comments must be between 1 and 3,000 characters."
                 )
-            if (!(await throttle(`comment:${user.id}`, 10)))
+            if (!(await throttle(`comment:${user?.id || createHash("sha256").update(email || name).digest("hex")}`, 5)) || !(await throttle("comment:site", 60)))
                 return NextResponse.json(
                     { error: "Please try again later." },
                     { status: 429 }
@@ -152,15 +196,16 @@ export async function POST(request: Request, { params }: Context) {
             const id = randomUUID()
             await saveRecord("comments", id, {
                 id,
-                name: user.name,
-                userId: user.id,
+                name,
+                email,
+                userId: user?.id || "guest",
                 articleId: article.id,
                 message,
-                status: "pending",
+                status: commentNeedsReview(message) ? "pending" : "approved",
                 createdAt: new Date().toISOString(),
             })
             return NextResponse.json({
-                message: "Your comment is awaiting moderation.",
+                message: commentNeedsReview(message) ? "Your comment needs a moderator check." : "Your comment is now visible.",
             })
         }
         if (resource === "event") {

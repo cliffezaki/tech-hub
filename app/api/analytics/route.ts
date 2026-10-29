@@ -1,3 +1,4 @@
+import { articleVisible } from "@/lib/article-visibility"
 import { NextResponse } from "next/server"
 import { authorized } from "@/lib/accounts"
 import { listRecords } from "@/lib/platform-store"
@@ -72,6 +73,11 @@ export async function GET(request: Request) {
                 ).length,
             }))
         const articles = await getStore().listArticles()
+        const likes = await listRecords<{articleId:string;createdAt:string}>("likes")
+        const comments = (await listRecords<{articleId:string;status:string;createdAt:string}>("comments")).filter(c=>c.status==="approved")
+        const inPeriod = (r:{createdAt:string}) => r.createdAt?.slice(0,10)>=start && r.createdAt?.slice(0,10)<=end
+        const engagement = {likes:likes.filter(inPeriod).length,comments:comments.filter(inPeriod).length}
+
         const authors: Record<string, number> = {}
         for (const event of events) {
             const article = articles.find(
@@ -81,13 +87,16 @@ export async function GET(request: Request) {
                 authors[article.author] = (authors[article.author] || 0) + 1
         }
         let subscriberGrowth: number | null = null
-        if (!ads && (await authorized("subscribers.manage")))
-            subscriberGrowth = (await listRecords<User>("users")).filter(
-                (u) =>
-                    u.subscribed &&
-                    u.createdAt.slice(0, 10) >= start &&
-                    u.createdAt.slice(0, 10) <= end
-            ).length
+        if (!ads && (await authorized("subscribers.manage"))) {
+            const users = (await listRecords<User>("users")).filter(u => u.subscribed)
+            const subscriptions = await listRecords<{email:string;createdAt:string}>("subscriptions")
+            const firstSignup = new Map<string,string>()
+            for (const row of [...users, ...subscriptions]) {
+                const email = row.email.trim().toLowerCase()
+                if (!firstSignup.has(email) || row.createdAt < firstSignup.get(email)!) firstSignup.set(email,row.createdAt)
+            }
+            subscriberGrowth = [...firstSignup.values()].filter(createdAt => inPeriod({createdAt})).length
+        }
         if (url.searchParams.get("export") === "csv") {
             if (!ads || !(await authorized("ads.export")))
                 return NextResponse.json(
@@ -113,6 +122,10 @@ export async function GET(request: Request) {
             {
                 start,
                 end,
+                engagement,
+                engagementDaily: current.daily.map(row=>({name:row.name,count:[...likes,...comments].filter(r=>r.createdAt?.slice(0,10)===row.name).length})),
+                previousEngagementDaily: previous.daily.map(row=>({name:row.name,count:[...likes,...comments].filter(r=>r.createdAt?.slice(0,10)===row.name).length})),
+                publishedArticles: articles.filter(articleVisible).length,
                 total: events.length,
                 // Individual browsers are deliberately not identified or counted.
                 visitors: null,
@@ -139,7 +152,7 @@ export async function GET(request: Request) {
                     const before = previous.pages.find(p => p.name === row.name)?.count || 0
                     return { ...row, title: article?.title || (row.name === "/" ? "Homepage" : row.name),
                         section: article?.section || "page", previous: before,
-                        percent: percentChange(row.count, before), engagement: null }
+                        percent: percentChange(row.count, before), engagement: null, likes:likes.filter(r=>r.articleId===article?.id&&inPeriod(r)).length, comments:comments.filter(r=>r.articleId===article?.id&&inPeriod(r)).length }
                 }),
                 pages: group("path"),
                 devices: group("device"),

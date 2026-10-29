@@ -1,4 +1,6 @@
+import { ArticleLike } from "@/components/article-like"
 import Link from "next/link"
+import { ArticleSharing } from "@/components/article-sharing"
 import { AdSlot } from "@/components/ad-slot"
 import { ArticleComments } from "@/components/article-comments"
 import { notFound } from "next/navigation"
@@ -129,6 +131,8 @@ export async function ArticleDetailPage({
                     <AdSlot slot="article-middle" />
                     <Markdown content={article.content} />
                     <AdSlot slot="article-bottom" />
+                    <ArticleLike articleId={article.id} />
+                    <ArticleSharing title={article.title} url={`${getSiteUrl()}${article.href}`} image={article.imageUrl} />
                     <ArticleComments articleId={article.id} />
                 </div>
 

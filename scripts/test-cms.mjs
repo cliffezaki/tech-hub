@@ -23,7 +23,7 @@ await writeFile(
 )
 const server = spawn(
     process.execPath,
-    ["node_modules/next/dist/bin/next", "dev", "-H", "127.0.0.1", "-p", String(port)],
+    ["node_modules/next/dist/bin/next", "dev", "--webpack", "-H", "127.0.0.1", "-p", String(port)],
     {
         env: {
             ...process.env,
@@ -523,13 +523,36 @@ try {
 
     await post(
         "/api/public/comments",
-        { articleId: draft.data.id, message: "Pending test comment" },
+        { articleId: draft.data.id, message: "Ordinary test comment" },
         reader.cookie
     )
     const publicComments = await call(
         `/api/public/comments?articleId=${draft.data.id}`
     )
-    assert.equal(publicComments.data.length, 0)
+    assert.equal(publicComments.data.length, 1)
+    await post("/api/public/comments", {articleId:draft.data.id,name:"Guest reader",email:"guest@example.test",message:"Thanks for this useful story."})
+    const guests = await call(`/api/public/comments?articleId=${draft.data.id}`)
+    assert.equal(guests.data.length,2)
+    assert.equal(guests.data[1].email,undefined)
+    assert(guests.data.some(c=>c.name==="Guest reader"))
+    await post("/api/public/comments", {articleId:draft.data.id,name:"Guest",message:"<script>alert(1)</script>"})
+    assert.equal((await call(`/api/public/comments?articleId=${draft.data.id}`)).data.length,2)
+    await post("/api/public/comments", {articleId:draft.data.id,name:"",message:"Missing name"},"",400)
+    await post("/api/public/comments", {articleId:draft.data.id,name:"Bot",message:"Spam",websiteTrap:"bot"},"",400)
+    const like = await post("/api/public/likes",{articleId:draft.data.id})
+    assert.equal(like.data.count,1)
+    assert(like.cookie.includes("techhub_like="))
+    const repeatedLike = await post("/api/public/likes",{articleId:draft.data.id},like.cookie)
+    assert.equal(repeatedLike.data.count,1)
+    assert.equal((await call(`/api/public/likes?articleId=${draft.data.id}`,{cookie:like.cookie})).data.liked,true)
+    await post("/api/public/subscribe",{email:"newsletter@example.test",consent:true})
+    await post("/api/public/subscribe",{email:"NEWSLETTER@example.test",consent:true})
+    const subscribers = await call("/api/cms/subscribers",{cookie:owner.cookie})
+    assert.equal(subscribers.data.filter(r=>r.email==="newsletter@example.test").length,1)
+    await call("/api/cms/subscribers",{status:403})
+    const overview = await call("/api/overview",{cookie:owner.cookie})
+    assert.equal(overview.data.likes,1)
+    assert.equal(overview.data.comments,2)
     const demoPlan = await call("/api/cms/demo", { cookie: owner.cookie })
     assert.equal(demoPlan.data.enabled, true)
     assert.equal(demoPlan.data.count, 17)
@@ -544,7 +567,7 @@ try {
         const sample = await post("/api/cms/demo", { index }, owner.cookie, 201)
         assert.equal(sample.data.article.demo, true)
         assert.equal(sample.data.article.ownerId, ownerId)
-        assert(sample.data.article.imageUrl.startsWith("/uploads/"))
+        assert(sample.data.article.imageUrl.startsWith("/images/editorial/"))
         assert(!sample.data.article.content.includes("{{diagram}}"))
         assert(sample.data.article.content.includes("https://"))
         seeded.push(sample.data.article)
@@ -558,7 +581,7 @@ try {
     assert.equal(repeated.data.article.imageUrl, seeded[0].imageUrl)
     const media = await call("/api/media")
     assert.equal(media.data.length, 21)
-    const image = media.data.find(m => m.url === seeded[0].imageUrl)
+    const image = media.data.find(m => seeded[11].content.includes(m.url))
     await call(`/api/media?id=${encodeURIComponent(image.id)}`, {
         method: "DELETE", cookie: owner.cookie, status: 409,
     })
@@ -580,7 +603,7 @@ try {
     const storyPage = await call(`/how-stuff-works/${seeded[11].slug}`)
     assert(storyPage.data.includes("Editorial sample"))
     assert(storyPage.data.includes("Simplified sequence"))
-    const bylinePage = await call("/authors/tech-hub-demo-desk")
+    const bylinePage = await call("/authors/tech-hub")
     assert(bylinePage.data.includes("Page <!-- -->1<!-- --> of <!-- -->3") || bylinePage.data.includes("Article pagination"))
     assert(!bylinePage.data.includes("PRIVATE_TEST_MARKER"))
     await call("/authors/nonexistent-author", { status: 404 })

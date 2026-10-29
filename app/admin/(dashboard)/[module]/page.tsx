@@ -24,7 +24,7 @@ export default async function ModulePage({
         return <p>You do not have access to this section.</p>
     if (module === "users" || module === "subscribers")
         return <UserManager subscribersOnly={module === "subscribers"} />
-    if (module === "analytics") return <AnalyticsDashboard />
+    if (module === "analytics") return <><nav className="flex gap-4" aria-label="Analytics management">{await authorized("comments.moderate") && <a href="/admin/analytics/comments">Comments</a>}{await authorized("subscribers.manage") && <a href="/admin/analytics/subscribers">Subscribers</a>}</nav><AnalyticsDashboard /></>
     if (module === "navigation") return <NavigationManager />
     return <RecordManager resource={module} />
 }

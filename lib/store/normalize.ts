@@ -1,3 +1,4 @@
+import { demoPhoto } from "@/lib/demo-photos"
 import { ARTICLE_SECTIONS, DEFAULT_SETTINGS, SECTION_META } from "@/lib/types"
 import { documentText } from "@/lib/rich-content"
 import { randomUUID } from "node:crypto"
@@ -61,7 +62,8 @@ export function normalizeArticle(input: unknown): Article {
     const raw = (input || {}) as Record<string, unknown>
     const section = asSection(raw.section)
     const title = String(raw.title || "Untitled article")
-    const content = String(raw.content || "")
+    const photo = demoPhoto(raw)
+    const content = photo ? String(raw.content || "").replace("Original Tech Hub illustrations; no third-party news photographs.", "Conceptual diagrams are original Tech Hub illustrations. Cover photograph credited above.") : String(raw.content || "")
 
     return {
         demo: raw.demo === true,
@@ -77,7 +79,7 @@ export function normalizeArticle(input: unknown): Article {
         tags: Array.isArray(raw.tags) ? raw.tags.filter((v): v is string => typeof v === "string") : [],
         category: String(raw.category || SECTION_META[section].defaultCategory),
         section,
-        author: String(raw.author || "Tech Hub Staff"),
+        author: raw.demo === true && raw.author === "Tech Hub Demo Desk" ? "Tech Hub" : String(raw.author || "Tech Hub Staff"),
         publishedAt: asDate(raw.publishedAt),
         readTime: String(raw.readTime || estimateReadTime(content)),
         imageUrl:
@@ -92,6 +94,7 @@ export function normalizeArticle(input: unknown): Article {
             typeof raw.imageCredit === "string" && raw.imageCredit.trim()
                 ? raw.imageCredit.trim()
                 : undefined,
+        ...photo,
         status: asStatus(raw.status),
         featured: raw.featured === true,
         ownerId: typeof raw.ownerId === "string" ? raw.ownerId : undefined,

@@ -31,10 +31,10 @@ export function summarize(events: Measurement[], start: string, end: string, ads
         devices:group("device"), browsers:group("browser"), referrers:group("referrer"), daily:days,
         clicks:rows.filter(e=>e.kind==="click").length, impressions:rows.filter(e=>e.kind==="impression").length }
 }
-export type DatePreset = "today" | "yesterday" | "7" | "30" | "month" | "year" | "custom"
+export type DatePreset = "today" | "yesterday" | "7" | "30" | "90" | "month" | "year" | "custom"
 export function presetRange(preset: DatePreset, now = new Date()) {
     const end = now.toISOString().slice(0,10), date = Date.parse(end)
     if (preset === "yesterday") { const day = new Date(date-DAY).toISOString().slice(0,10);return {start:day,end:day} }
     return { start: preset === "today" ? end : preset === "month" ? `${end.slice(0,7)}-01` :
-        preset === "year" ? `${end.slice(0,4)}-01-01` : new Date(date-(preset === "7" ? 6 : 29)*DAY).toISOString().slice(0,10), end }
+        preset === "year" ? `${end.slice(0,4)}-01-01` : new Date(date-(preset === "7" ? 6 : preset === "90" ? 89 : 29)*DAY).toISOString().slice(0,10), end }
 }

@@ -85,6 +85,7 @@ export function AdminShell({
                         onClick={() => setMenuOpen(false)}
                         className={cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                            item.href.startsWith("/admin/analytics/") && "ml-4 text-xs",
                             active
                                 ? "bg-foreground text-background"
                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
