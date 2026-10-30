@@ -13,18 +13,26 @@ import {
 } from "./normalize"
 import type { ContentStore, UploadInput } from "./types"
 
-const CONTENT_DIR = path.join(process.cwd(), "content")
+const CONTENT_DIR =
+    process.env.CMS_TEST_CONTENT_DIR && process.env.NODE_ENV !== "production"
+        ? process.env.CMS_TEST_CONTENT_DIR
+        : path.join(process.cwd(), "content")
 const ARTICLES_DIR = path.join(CONTENT_DIR, "articles")
 const PAGES_DIR = path.join(CONTENT_DIR, "pages")
 const SETTINGS_FILE = path.join(CONTENT_DIR, "settings.json")
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads")
+const UPLOADS_DIR =
+    process.env.CMS_TEST_CONTENT_DIR && process.env.NODE_ENV !== "production"
+        ? path.join(CONTENT_DIR, "uploads")
+        : path.join(process.cwd(), "public", "uploads")
 
 /**
  * Serverless hosts ship a read-only bundle, so writing JSON to disk silently loses
  * content. The store reports itself as read-only there and the API layer turns that
  * into an explanatory error instead of a filesystem crash.
  */
-const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
+const IS_SERVERLESS = Boolean(
+    process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+)
 
 function ensureDir(dir: string) {
     if (!fs.existsSync(dir)) {
@@ -32,7 +40,10 @@ function ensureDir(dir: string) {
     }
 }
 
-function readJsonDir<T>(dir: string, normalize: (raw: Record<string, unknown>) => T): T[] {
+function readJsonDir<T>(
+    dir: string,
+    normalize: (raw: Record<string, unknown>) => T
+): T[] {
     if (!fs.existsSync(dir)) {
         return []
     }
@@ -42,7 +53,9 @@ function readJsonDir<T>(dir: string, normalize: (raw: Record<string, unknown>) =
         .filter((fileName) => fileName.endsWith(".json"))
         .flatMap((fileName) => {
             try {
-                const raw = JSON.parse(fs.readFileSync(path.join(dir, fileName), "utf8"))
+                const raw = JSON.parse(
+                    fs.readFileSync(path.join(dir, fileName), "utf8")
+                )
                 return [normalize(raw)]
             } catch {
                 // A hand-edited file with a syntax error should not take down the whole site.
@@ -57,12 +70,18 @@ function writeJson(filePath: string, value: unknown) {
     fs.writeFileSync(filePath, JSON.stringify(value, null, 2))
 }
 
-function uniqueSlug(slug: string, existing: Article[] | PageContent[], selfId?: string) {
+function uniqueSlug(
+    slug: string,
+    existing: Article[] | PageContent[],
+    selfId?: string
+) {
     const base = slug || generateId()
     let candidate = base
     let suffix = 2
 
-    while (existing.some((item) => item.slug === candidate && item.id !== selfId)) {
+    while (
+        existing.some((item) => item.slug === candidate && item.id !== selfId)
+    ) {
         candidate = `${base}-${suffix}`
         suffix += 1
     }
@@ -76,16 +95,21 @@ export function createFileStore(): ContentStore {
         writable: !IS_SERVERLESS,
 
         async listArticles() {
-            return sortByPublishedAt(readJsonDir(ARTICLES_DIR, normalizeArticle))
+            return sortByPublishedAt(
+                readJsonDir(ARTICLES_DIR, normalizeArticle)
+            )
         },
 
         async getArticle(id) {
+            if (!/^[a-zA-Z0-9_-]+$/.test(id)) return null
             const filePath = path.join(ARTICLES_DIR, `${id}.json`)
             if (!fs.existsSync(filePath)) {
                 return null
             }
 
-            return normalizeArticle(JSON.parse(fs.readFileSync(filePath, "utf8")))
+            return normalizeArticle(
+                JSON.parse(fs.readFileSync(filePath, "utf8"))
+            )
         },
 
         async getArticleBySlug(slug) {
@@ -93,9 +117,15 @@ export function createFileStore(): ContentStore {
             return articles.find((article) => article.slug === slug) || null
         },
 
-        async createArticle(input) {
+        async createArticle(input, createOnlyId) {
+            if (createOnlyId && !/^[a-zA-Z0-9_-]+$/.test(createOnlyId))
+                throw new Error("Invalid article identifier")
+            if (createOnlyId) {
+                const existing = await this.getArticle(createOnlyId)
+                if (existing) return existing
+            }
             const articles = await this.listArticles()
-            const id = generateId()
+            const id = createOnlyId || generateId()
             const article = normalizeArticle({
                 ...input,
                 id,
@@ -103,7 +133,16 @@ export function createFileStore(): ContentStore {
                 updatedAt: new Date().toISOString(),
             })
 
-            writeJson(path.join(ARTICLES_DIR, `${id}.json`), article)
+            const destination = path.join(ARTICLES_DIR, `${id}.json`)
+            if (createOnlyId) {
+                ensureDir(ARTICLES_DIR)
+                try {
+                    fs.writeFileSync(destination, JSON.stringify(article, null, 2), { flag: "wx" })
+                } catch (error) {
+                    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error
+                    return (await this.getArticle(id))!
+                }
+            } else writeJson(destination, article)
             return article
         },
 
@@ -118,7 +157,11 @@ export function createFileStore(): ContentStore {
                 ...current,
                 ...patch,
                 id,
-                slug: uniqueSlug(slugify(patch.slug || current.slug || current.title), articles, id),
+                slug: uniqueSlug(
+                    slugify(patch.slug || current.slug || current.title),
+                    articles,
+                    id
+                ),
                 updatedAt: new Date().toISOString(),
             })
 
@@ -127,6 +170,7 @@ export function createFileStore(): ContentStore {
         },
 
         async deleteArticle(id) {
+            if (!/^[a-zA-Z0-9_-]+$/.test(id)) return false
             const filePath = path.join(ARTICLES_DIR, `${id}.json`)
             if (!fs.existsSync(filePath)) {
                 return false
@@ -137,10 +181,13 @@ export function createFileStore(): ContentStore {
         },
 
         async listPages() {
-            return readJsonDir(PAGES_DIR, normalizePage).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+            return readJsonDir(PAGES_DIR, normalizePage).sort((a, b) =>
+                b.updatedAt.localeCompare(a.updatedAt)
+            )
         },
 
         async getPage(id) {
+            if (!/^[a-zA-Z0-9_-]+$/.test(id)) return null
             const filePath = path.join(PAGES_DIR, `${id}.json`)
             if (!fs.existsSync(filePath)) {
                 return null
@@ -179,7 +226,11 @@ export function createFileStore(): ContentStore {
                 ...current,
                 ...patch,
                 id,
-                slug: uniqueSlug(slugify(patch.slug || current.slug || current.title), pages, id),
+                slug: uniqueSlug(
+                    slugify(patch.slug || current.slug || current.title),
+                    pages,
+                    id
+                ),
                 updatedAt: new Date().toISOString(),
             })
 
@@ -188,6 +239,7 @@ export function createFileStore(): ContentStore {
         },
 
         async deletePage(id) {
+            if (!/^[a-zA-Z0-9_-]+$/.test(id)) return false
             const filePath = path.join(PAGES_DIR, `${id}.json`)
             if (!fs.existsSync(filePath)) {
                 return false
@@ -203,14 +255,21 @@ export function createFileStore(): ContentStore {
             }
 
             try {
-                return normalizeSettings(JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8")) as SiteSettings)
+                return normalizeSettings(
+                    JSON.parse(
+                        fs.readFileSync(SETTINGS_FILE, "utf8")
+                    ) as SiteSettings
+                )
             } catch {
                 return { ...DEFAULT_SETTINGS }
             }
         },
 
         async saveSettings(patch) {
-            const settings = normalizeSettings({ ...(await this.getSettings()), ...patch })
+            const settings = normalizeSettings({
+                ...(await this.getSettings()),
+                ...patch,
+            })
             writeJson(SETTINGS_FILE, settings)
             return settings
         },
@@ -240,7 +299,9 @@ export function createFileStore(): ContentStore {
             ensureDir(UPLOADS_DIR)
 
             const extension = path.extname(filename).toLowerCase() || ".jpg"
-            const base = slugify(path.basename(filename, path.extname(filename))) || "image"
+            const base =
+                slugify(path.basename(filename, path.extname(filename))) ||
+                "image"
             const storedName = `${base}-${generateId()}${extension}`
 
             fs.writeFileSync(path.join(UPLOADS_DIR, storedName), data)

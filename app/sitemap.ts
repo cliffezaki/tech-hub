@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next"
 import { getAllArticleSummaries, getPublishedPages } from "@/lib/content"
 import { getSiteUrl } from "@/lib/site"
 import { ARTICLE_SECTIONS } from "@/lib/types"
+import { authorHref } from "@/lib/authors"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = getSiteUrl()
@@ -19,22 +20,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]
 
     try {
-        const [articles, pages] = await Promise.all([getAllArticleSummaries(), getPublishedPages()])
+        const [articles, pages] = await Promise.all([
+            getAllArticleSummaries(),
+            getPublishedPages(),
+        ])
 
         return [
             ...staticRoutes,
+            ...[...new Set(articles.map(a => authorHref(a.author)))].map(href => ({
+                url: `${baseUrl}${href}`, changeFrequency: "weekly" as const, priority: 0.4,
+            })),
             ...articles.map((article) => ({
                 url: `${baseUrl}${article.href}`,
                 lastModified: new Date(article.publishedAt),
                 changeFrequency: "weekly" as const,
                 priority: 0.7,
             })),
-            ...pages.map((page) => ({
-                url: `${baseUrl}/${page.slug}`,
-                lastModified: new Date(page.updatedAt),
-                changeFrequency: "monthly" as const,
-                priority: 0.5,
-            })),
+            ...pages
+                .filter(
+                    (page) =>
+                        !staticRoutes.some(
+                            (route) => route.url === `${baseUrl}/${page.slug}`
+                        )
+                )
+                .map((page) => ({
+                    url: `${baseUrl}/${page.slug}`,
+                    lastModified: page.updatedAt
+                        ? new Date(page.updatedAt)
+                        : undefined,
+                    changeFrequency: "monthly" as const,
+                    priority: 0.5,
+                })),
         ]
     } catch {
         return staticRoutes

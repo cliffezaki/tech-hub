@@ -2,20 +2,13 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { Markdown } from "@/components/markdown"
-import { getPublishedPage, getPublishedPages } from "@/lib/content"
+import { getPublishedPage } from "@/lib/content"
 import { formatDate } from "@/lib/format"
+
+export const dynamic = "force-dynamic"
 
 interface PageProps {
     params: Promise<{ slug: string }>
-}
-
-export async function generateStaticParams() {
-    try {
-        const pages = await getPublishedPages()
-        return pages.map((page) => ({ slug: page.slug }))
-    } catch {
-        return []
-    }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

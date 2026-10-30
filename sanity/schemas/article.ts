@@ -6,6 +6,12 @@ export default defineType({
     type: 'document',
     fields: [
         defineField({
+            name: 'demo', title: 'Demo / sample content', type: 'boolean',
+            initialValue: false,
+            description: 'Researched editorial sample, not original reporting or hands-on testing.',
+        }),
+        defineField({ name: 'demoBatch', title: 'Sample batch', type: 'string', readOnly: true }),
+        defineField({
             name: 'title',
             title: 'Title',
             type: 'string',

@@ -1,53 +1,31 @@
 "use client"
 
+import { OverviewStats } from "@/components/admin/overview-stats"
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { FileText, ImageIcon, Loader2, Newspaper, Plus, Star } from "lucide-react"
+import { FileText, Plus, Star } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { formatDate } from "@/lib/format"
-import type { Article, MediaItem, PageContent } from "@/lib/types"
+import type { Article, PageContent } from "@/lib/types"
 
 export default function AdminOverviewPage() {
     const [articles, setArticles] = useState<Article[]>([])
     const [pages, setPages] = useState<PageContent[]>([])
-    const [media, setMedia] = useState<MediaItem[]>([])
-    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         Promise.all([
             fetch("/api/articles").then((response) => response.json()),
             fetch("/api/pages").then((response) => response.json()),
-            fetch("/api/media").then((response) => response.json()),
         ])
-            .then(([articlesData, pagesData, mediaData]) => {
+            .then(([articlesData, pagesData]) => {
                 if (Array.isArray(articlesData)) setArticles(articlesData)
                 if (Array.isArray(pagesData)) setPages(pagesData)
-                if (Array.isArray(mediaData)) setMedia(mediaData)
             })
             .catch((error) => console.error("Failed to load dashboard", error))
-            .finally(() => setLoading(false))
+
     }, [])
-
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-        )
-    }
-
-    const published = articles.filter((article) => article.status === "published")
-    const drafts = articles.filter((article) => article.status === "draft")
-    const featured = articles.filter((article) => article.featured)
-
-    const stats = [
-        { label: "Published", value: published.length, icon: Newspaper },
-        { label: "Drafts", value: drafts.length, icon: FileText },
-        { label: "Featured", value: featured.length, icon: Star },
-        { label: "Images", value: media.length, icon: ImageIcon },
-    ]
 
     return (
         <div className="space-y-6">
@@ -64,21 +42,7 @@ export default function AdminOverviewPage() {
                 </Link>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {stats.map((stat) => {
-                    const Icon = stat.icon
-                    return (
-                        <Card key={stat.label} className="p-4">
-                            <div className="flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                                <Icon className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                            <p className="mt-3 text-3xl font-bold tabular-nums">{stat.value}</p>
-                        </Card>
-                    )
-                })}
-            </div>
-
+            <OverviewStats />
             <Card className="divide-y">
                 <div className="flex items-center justify-between p-4">
                     <h2 className="font-semibold">Recent articles</h2>
