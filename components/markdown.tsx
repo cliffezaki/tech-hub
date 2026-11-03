@@ -2,12 +2,16 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
 import { cn } from "@/lib/utils"
+import { readDocument } from "@/lib/rich-content"
+import { RichDocument } from "@/components/rich-document"
 
 /**
  * Renders article and page bodies. Markdown is the one body format the dashboard reads
  * and writes, so this is the single place article typography is defined.
  */
 export function Markdown({ content, className }: { content: string; className?: string }) {
+    const document = readDocument(content || "")
+    if (document) return <div className={className}><RichDocument document={document} /></div>
     if (!content?.trim()) {
         return <p className="italic text-muted-foreground">No content has been added to this article yet.</p>
     }
