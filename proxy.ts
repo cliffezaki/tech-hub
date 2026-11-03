@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
+import { originMatches } from "@/lib/request-security"
 import { readSession, SESSION_COOKIE } from "@/lib/auth"
 export default async function proxy(request: NextRequest) {
     if (
@@ -9,7 +10,7 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL("/account", request.url))
     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
         const origin = request.headers.get("origin")
-        if (!origin || new URL(origin).host !== request.headers.get("host"))
+        if (!originMatches(origin, request.headers.get("host")))
             return NextResponse.json(
                 { error: "Request origin is not allowed." },
                 { status: 403 }

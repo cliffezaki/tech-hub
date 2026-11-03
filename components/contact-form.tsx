@@ -12,6 +12,8 @@ export function ContactForm({ contactEmail }: { contactEmail: string }) {
     const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", websiteTrap: "" })
     const [formToken,setFormToken] = useState("")
     async function refreshToken(){try{const response=await fetch("/api/contact",{cache:"no-store"});const data=await response.json();setFormToken(data.token||"")}catch{setFormToken("")}}
+    // Fetch a server-issued form token when the form mounts.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(()=>{void refreshToken()},[])
     const [sent, setSent] = useState(false)
     const [sending, setSending] = useState(false)

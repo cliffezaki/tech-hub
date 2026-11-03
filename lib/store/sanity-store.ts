@@ -168,6 +168,7 @@ export function createSanityStore(): ContentStore {
         ? readClient.withConfig({ token: writeToken, perspective: "raw" })
         : null
     const privateRead = writeClient || readClient
+    const publishedRead = writeClient?.withConfig({ perspective: "published" }) || readClient
 
     function logicalId(id: string) { return id.replace(/^drafts\./, "") }
     function storedId(id: string, status?: string) {
@@ -233,7 +234,9 @@ export function createSanityStore(): ContentStore {
             return await run()
         } catch (error) {
             unstable_rethrow(error)
-            console.error(`Sanity read failed (${label}):`, error)
+            console.error(`Sanity read failed (${label}). Check content service connectivity and credentials.`)
+            // Content outages must reach the error boundary, not masquerade as missing articles.
+            if (["listArticles", "getArticle", "getArticleBySlug", "listPages", "getPage", "getPageBySlug"].includes(label)) throw new Error("Content is temporarily unavailable. Please try again shortly.")
             return fallback
         }
     }
@@ -244,7 +247,7 @@ export function createSanityStore(): ContentStore {
 
         async listArticles(includeDrafts = true) {
             return safeRead("listArticles", [], async () => {
-                const docs = await privateRead.fetch<SanityArticleDoc[]>(
+                const docs = await (includeDrafts ? privateRead : publishedRead).fetch<SanityArticleDoc[]>(
                     `*[_type == "article" && !(_id in path("versions.**"))] | order(publishedAt desc) ${ARTICLE_PROJECTION}`
                 )
                 return deduplicate(docs).map(toArticle).filter(a => includeDrafts || articleVisible(a))
@@ -253,7 +256,7 @@ export function createSanityStore(): ContentStore {
 
         async getArticle(id, includeDrafts = true) {
             return safeRead("getArticle", null, async () => {
-                const doc = await privateRead.fetch<SanityArticleDoc | null>(
+                const doc = await (includeDrafts ? privateRead : publishedRead).fetch<SanityArticleDoc | null>(
                     `*[_type == "article" && (_id == $id || _id == $draftId)] | order((_id == $draftId) desc) [0] ${ARTICLE_PROJECTION}`,
                     { id: logicalId(id), draftId: `drafts.${logicalId(id)}` }
                 )
@@ -264,7 +267,7 @@ export function createSanityStore(): ContentStore {
 
         async getArticleBySlug(slug, includeDrafts = true) {
             return safeRead("getArticleBySlug", null, async () => {
-                const doc = await privateRead.fetch<SanityArticleDoc | null>(
+                const doc = await (includeDrafts ? privateRead : publishedRead).fetch<SanityArticleDoc | null>(
                     `*[_type == "article" && !(_id in path("versions.**")) && slug.current == $slug] | order((_id in path("drafts.**")) desc) [0] ${ARTICLE_PROJECTION}`,
                     { slug }
                 )
@@ -305,7 +308,7 @@ export function createSanityStore(): ContentStore {
 
         async listPages(includeDrafts = true) {
             return safeRead("listPages", [], async () => {
-                const docs = await (includeDrafts ? privateRead : readClient).fetch<SanityPageDoc[]>(
+                const docs = await (includeDrafts ? privateRead : publishedRead).fetch<SanityPageDoc[]>(
                     `*[_type == "page" && !(_id in path("versions.**"))] | order(_updatedAt desc) ${PAGE_PROJECTION}`
                 )
                 return deduplicate(docs).map(toPage)
@@ -324,7 +327,7 @@ export function createSanityStore(): ContentStore {
 
         async getPageBySlug(slug, includeDrafts = true) {
             return safeRead("getPageBySlug", null, async () => {
-                const doc = await (includeDrafts ? privateRead : readClient).fetch<SanityPageDoc | null>(
+                const doc = await (includeDrafts ? privateRead : publishedRead).fetch<SanityPageDoc | null>(
                     `*[_type == "page" && !(_id in path("versions.**")) && slug.current == $slug] | order((_id in path("drafts.**")) desc) [0] ${PAGE_PROJECTION}`,
                     { slug }
                 )
@@ -380,7 +383,7 @@ export function createSanityStore(): ContentStore {
                 { ...DEFAULT_SETTINGS },
                 async () => {
                     const doc =
-                        await readClient.fetch<Partial<SiteSettings> | null>(
+                        await publishedRead.fetch<Partial<SiteSettings> | null>(
                             `*[_type == "siteSettings" && _id == $id][0]`,
                             { id: SETTINGS_DOC_ID }
                         )
@@ -405,7 +408,7 @@ export function createSanityStore(): ContentStore {
 
         async listMedia() {
             return safeRead("listMedia", [], async () => {
-                const assets = await readClient.fetch<
+                const assets = await publishedRead.fetch<
                     {
                         _id: string
                         url: string

@@ -1,4 +1,5 @@
 "use client"
+import { PasswordField } from "@/components/password-field"
 import { useEffect, useState } from "react"
 import {
     PERMISSIONS,
@@ -143,19 +144,7 @@ export function UserManager({
                                 <option>suspended</option>
                             </select>
                         </label>
-                        <label className="md:col-span-2">
-                            {editing.id
-                                ? "New password (optional; resets all sessions)"
-                                : "Temporary password"}
-                            <input
-                                className="cms-input"
-                                type="password"
-                                name="password"
-                                minLength={12}
-                                required={!editing.id}
-                                autoComplete="new-password"
-                            />
-                        </label>
+                        <div className="md:col-span-2"><PasswordField label={editing.id ? "New password (optional; resets all sessions)" : "Temporary password"} name="password" minLength={12} required={!editing.id} autoComplete="new-password" strength /></div>
                     </div>
                     <details>
                         <summary className="cursor-pointer font-semibold">

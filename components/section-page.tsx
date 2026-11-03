@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { FileText } from "lucide-react"
 
-import { ArticleCollection } from "@/components/article-collection"
+import { SectionCollection } from "@/components/section-collection"
 import { Button } from "@/components/ui/button"
 import { getSectionArticles, getPublishedPage } from "@/lib/content"
 import { Markdown } from "@/components/markdown"
@@ -46,7 +46,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                <ArticleCollection articles={articles} leadLayout />
+                <SectionCollection articles={articles} section={section} />
             )}
         </div>
     )

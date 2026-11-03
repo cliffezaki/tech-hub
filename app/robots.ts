@@ -11,7 +11,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
             allow: "/",
             disallow: settings?.noIndex
                 ? ["/"]
-                : ["/admin", "/studio", "/api", "/account"],
+                : ["/admin", "/studio", "/api", "/account", "/reader"],
         },
         sitemap: `${getSiteUrl()}/sitemap.xml`,
     }

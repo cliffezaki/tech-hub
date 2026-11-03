@@ -65,6 +65,41 @@ const article = await readFile("components/article-detail-page.tsx", "utf8")
 const expression = article.match(/__html:\s*(JSON\.stringify\(structuredData\)\.replace\([\s\S]*?\)),\s*\}\}/)[1]
 const escaped = vm.runInNewContext(expression, { structuredData: { headline: '</script><script>alert("x")</script>' } })
 assert(!escaped.includes("<")); assert.equal(JSON.parse(escaped).headline, '</script><script>alert("x")</script>')
+
+const visible = load(await readFile("lib/article-visibility.ts", "utf8"), {})
+const liveArticle = { id: "live", status: "published", ownerId: "internal-owner" }
+const draftArticle = { id: "draft", status: "draft", ownerId: "internal-owner" }
+let actor = null
+let permissions = []
+const articleImports = {
+    "next/server": jsonResponse,
+    "node:crypto": crypto,
+    "@/lib/api": {},
+    "@/lib/store": { getStore: () => ({
+        listArticles: async () => [liveArticle, draftArticle],
+        getArticle: async (id) => id === "live" ? liveArticle : draftArticle,
+    }) },
+    "@/lib/store/normalize": {},
+    "@/lib/types": {},
+    "@/lib/accounts": { currentUser: async () => actor, userPermissions: async () => permissions },
+    "@/lib/editor-fields": {},
+    "@/lib/platform-store": {},
+    "@/lib/article-visibility": visible,
+}
+const articleList = load(await readFile("app/api/articles/route.ts", "utf8"), articleImports)
+const articleById = load(await readFile("app/api/articles/[id]/route.ts", "utf8"), articleImports)
+const byId = (id) => articleById.GET(null, { params: Promise.resolve({ id }) })
+const publicList = (await articleList.GET()).data
+assert.equal(publicList.length, 1)
+assert(!Object.hasOwn(publicList[0], "ownerId"))
+assert(!Object.hasOwn((await byId("live")).data, "ownerId"))
+assert.equal((await byId("draft")).status, 404)
+actor = { id: "different-author" }; permissions = ["articles.editOwn"]
+assert(!Object.hasOwn((await byId("live")).data, "ownerId"))
+assert.equal((await byId("draft")).status, 404)
+actor = { id: "internal-owner" }
+assert.equal((await byId("draft")).data.ownerId, "internal-owner")
+assert.equal((await articleList.GET()).data.length, 2)
 console.log("PASS: bounded contact API, validation/header injection, fixed recipient, rate limits, real-send success/failure semantics, sanitized server errors, UUID generation, local traversal rejection and JSON-LD escaping; no real email sent.")
 
 const guard=load(await readFile("lib/contact-guard.ts","utf8"),{"node:crypto":crypto},{process:{env:{ADMIN_SESSION_SECRET:"test-secret-".repeat(5)}}})

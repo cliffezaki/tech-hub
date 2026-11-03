@@ -1,3 +1,6 @@
+import { ReadingGuide } from "@/components/reading-guide"
+import { topicSlug } from "@/lib/topics"
+import { ReaderTools } from "@/components/reader-tools"
 import { ArticleLike } from "@/components/article-like"
 import Link from "next/link"
 import { ArticleSharing } from "@/components/article-sharing"
@@ -58,6 +61,11 @@ export async function ArticleDetailPage({
                 }}
             />
 
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Home", item: getSiteUrl() },
+                { "@type": "ListItem", position: 2, name: meta.label, item: `${getSiteUrl()}/${section}` },
+                { "@type": "ListItem", position: 3, name: article.title, item: `${getSiteUrl()}${article.href}` },
+            ] }).replace(/</g, "\\u003c") }} />
             <AdSlot slot="article-top" />
             <article className="site-container py-8 md:py-12">
                 <Link
@@ -105,6 +113,7 @@ export async function ArticleDetailPage({
                         <span aria-hidden="true">·</span>
                         <span>{article.readTime}</span>
                     </div>
+                    <ReaderTools articleId={article.id} />
                 </header>
 
                 {article.imageUrl && (
@@ -129,7 +138,9 @@ export async function ArticleDetailPage({
 
                 <div className="mx-auto mt-10 max-w-3xl">
                     <AdSlot slot="article-middle" />
-                    <Markdown content={article.content} />
+                    <ReadingGuide />
+                    <div id="article-content" className="[&_h2]:scroll-mt-24 [&_h3]:scroll-mt-24"><Markdown content={article.content} /></div>
+                    {!!article.tags?.length && <nav aria-label="Article topics" className="mt-8 flex flex-wrap gap-2">{article.tags.map(tag => <Link key={tag} href={`/topics/${topicSlug(tag)}`} className="rounded-full border px-3 py-1.5 text-sm hover:bg-muted">{tag}</Link>)}</nav>}
                     <AdSlot slot="article-bottom" />
                     <ArticleLike articleId={article.id} />
                     <ArticleSharing title={article.title} url={`${getSiteUrl()}${article.href}`} image={article.imageUrl} />

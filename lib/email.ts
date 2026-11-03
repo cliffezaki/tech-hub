@@ -2,9 +2,10 @@ import "server-only"
 import nodemailer from "nodemailer"
 
 export class EmailDeliveryUnavailable extends Error {
-    constructor(context: "reset" | "contact" = "reset") {
+    constructor(context: "reset" | "contact" | "verification" = "reset") {
         super(context === "contact"
             ? "Your message could not be sent right now. Please try again later or use the email address on this page."
+            : context === "verification" ? "Verification email delivery is temporarily unavailable. Please try again later."
             : "Password-reset email delivery is temporarily unavailable. Please try again later or contact the site owner.")
     }
 }
@@ -96,7 +97,7 @@ export async function sendContactEmail(to: string, input: { name: string; email:
 }
 
 async function sendSiteEmail({ to, subject, text, requestId, context, replyTo }: {
-    to: string; subject: string; text: string; requestId: string; context: "reset" | "contact"; replyTo?: string
+    to: string; subject: string; text: string; requestId: string; context: "reset" | "contact" | "verification"; replyTo?: string
 }) {
     if (!emailDeliveryConfigured()) throw new EmailDeliveryUnavailable(context)
     try {
@@ -118,7 +119,7 @@ async function sendSiteEmail({ to, subject, text, requestId, context, replyTo }:
             headers: {
                 Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
                 "Content-Type": "application/json",
-                "Idempotency-Key": `${context === "reset" ? "password-reset" : "contact"}-${requestId}`,
+                "Idempotency-Key": `${context}-${requestId}`,
             },
             body: JSON.stringify({
                 from: process.env.RESEND_FROM_EMAIL,
@@ -134,4 +135,14 @@ async function sendSiteEmail({ to, subject, text, requestId, context, replyTo }:
         // Provider exceptions can contain recipient addresses or SMTP credentials.
         throw new EmailDeliveryUnavailable(context)
     }
+}
+
+export async function sendVerificationEmail(to: string, url: URL, requestId: string) {
+    return sendSiteEmail({ to, requestId, context: "verification", subject: "Verify your Tech Hub email",
+        text: `Confirm your Tech Hub account within 30 minutes:\n\n${url}\n\nOpen the link and select Verify email. If you did not sign up, ignore this message. No account will be activated.` })
+}
+
+export async function sendNewsletterVerification(to: string, url: URL, requestId: string) {
+    return sendSiteEmail({ to, requestId, context: "verification", subject: "Confirm Tech Hub updates",
+        text: `Confirm your newsletter subscription within 30 minutes:\n\n${url}\n\nIf you did not request updates, ignore this email. Your preferences will not change.` })
 }

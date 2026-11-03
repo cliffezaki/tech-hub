@@ -87,6 +87,8 @@ export function AnalyticsDashboard({ ads = false }: { ads?: boolean }) {
     const query = `ads=${ads}&start=${range.start}&end=${range.end}`
     useEffect(()=>{
         const controller = new AbortController()
+        // Clear stale results when the external analytics request changes.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);setError("");setReport(null)
         fetch(`/api/analytics?${query}`,{signal:controller.signal,cache:"no-store"}).then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error||"Could not load analytics");if(!controller.signal.aborted)setReport(d)})
             .catch(e=>{if(!controller.signal.aborted)setError(e.message)}).finally(()=>{if(!controller.signal.aborted)setLoading(false)})

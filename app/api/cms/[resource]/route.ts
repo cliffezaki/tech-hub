@@ -11,6 +11,7 @@ import {
 } from "@/lib/accounts"
 import {
     claim,
+    replaceRecord,
     deleteRecord,
     getRecord,
     listRecords,
@@ -135,6 +136,7 @@ export async function POST(request: Request, { params }: Context) {
                     403
                 )
             const user: User = {
+                ...previous,
                 id,
                 email,
                 name: String(body.name || email).slice(0, 100),
@@ -153,7 +155,8 @@ export async function POST(request: Request, { params }: Context) {
                 return fail(
                     "A temporary password of at least 12 characters is required for a new user."
                 )
-            await saveRecord("users", id, user, !previous)
+            if (previous) await replaceRecord("users", id, previous, user)
+            else await saveRecord("users", id, user, true)
             await audit(actor.id, "user.save", id)
             return NextResponse.json(safeUser(user))
         }

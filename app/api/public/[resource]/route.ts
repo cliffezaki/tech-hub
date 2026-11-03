@@ -1,3 +1,5 @@
+import { requestNewsletter } from "@/lib/newsletter-verification"
+import { readJson } from "@/lib/request-security"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 import { validEmail } from "@/lib/contact"
@@ -51,23 +53,22 @@ export async function GET(request: Request, { params }: Context) {
             const user = await currentUser()
             const guest = (await cookies()).get("techhub_like")?.value
             const identity = user?.id || (/^[a-f0-9-]{36}$/.test(guest || "") ? guest : "")
-            const rows = (await listRecords<RecordData>("likes")).filter(r => r.articleId === articleId)
+            const rows = await listRecords<RecordData>("likes", { articleId: article.id })
             return NextResponse.json({ count: rows.length, liked: !!identity && rows.some(r => r.userId === identity) }, {headers:{"Cache-Control":"no-store"}})
         }
         if (resource === "comments") {
             const article = await getStore().getArticle(url.searchParams.get("articleId") || "", false)
             if (!article || !articleVisible(article)) return NextResponse.json({error:"Article not found"},{status:404})
             return NextResponse.json(
-                (await listRecords<RecordData>("comments"))
-                    .filter(
-                        (c) =>
-                            c.status === "approved" &&
-                            c.articleId === url.searchParams.get("articleId")
-                    )
+                (await listRecords<RecordData>("comments", {
+                    articleId: article.id,
+                    status: "approved",
+                }))
                     .map((c) => ({
                         id: c.id,
                         name: c.name,
                         message: c.message,
+                        parentId: c.parentId,
                         createdAt: c.createdAt,
                     }))
             )
@@ -95,29 +96,20 @@ export async function POST(request: Request, { params }: Context) {
                 { status: 503 }
             )
         const { resource } = await params
-        const raw = await request.text()
-        if (raw.length > 24000)
-            return NextResponse.json(
-                { error: "Submission is too large." },
-                { status: 413 }
-            )
-        const body = JSON.parse(raw)
+        const body = await readJson(request)
         if (resource === "subscribe") {
             const email = String(body.email || "").trim().toLowerCase()
             if (!validEmail(email) || body.websiteTrap || body.consent !== true) return NextResponse.json({error:"Enter a valid email and agree to receive updates."},{status:400})
             if (!(await throttle("subscribe:site", 30)) || !(await throttle(`subscribe:${email}`, 3))) return NextResponse.json({error:"Please try again later."},{status:429})
-            const id = createHash("sha256").update(email).digest("hex")
-            const existing = await getRecord<Record<string,unknown>>("subscriptions",id)
-            if(existing?.active===false) await saveRecord("subscriptions",id,{...existing,active:true,updatedAt:new Date().toISOString()})
-            await claim("subscriptions",id,{id,email,name:"Newsletter reader",createdAt:new Date().toISOString(),source:"newsletter",consent:true})
-            return NextResponse.json({message:"Your newsletter signup has been recorded. Thank you."})
+            await requestNewsletter(email)
+            return NextResponse.json({ message: "If confirmation is needed, an email will arrive shortly. Check your inbox to finish subscribing." })
         }
         if (resource === "inquiries") {
             if (
                 body.websiteTrap ||
                 !body.consent ||
                 !Number.isFinite(body.startedAt) ||
-                Date.now() - body.startedAt < 3000
+                Date.now() - Number(body.startedAt) < 3000
             )
                 return NextResponse.json(
                     { error: "Please complete the form and consent." },
@@ -159,7 +151,7 @@ export async function POST(request: Request, { params }: Context) {
             if (!(await throttle(`like:${identity}`, 30)) || !(await throttle("like:site", 300))) return NextResponse.json({error:"Please try again later."},{status:429})
             const id = createHash("sha256").update(`${article.id}:${identity}`).digest("hex")
             await claim("likes", id, {id, articleId:article.id, userId:identity, createdAt:new Date().toISOString()})
-            const count = (await listRecords<RecordData>("likes")).filter(r=>r.articleId===article.id).length
+            const count = (await listRecords<RecordData>("likes", { articleId: article.id })).length
             const response = NextResponse.json({count, liked:true})
             if (!user) response.cookies.set("techhub_like",guest,{httpOnly:true,secure:new URL(request.url).protocol==="https:",sameSite:"lax",path:"/",maxAge:31536000})
             return response
@@ -195,12 +187,18 @@ export async function POST(request: Request, { params }: Context) {
                     { error: "Please try again later." },
                     { status: 429 }
                 )
+            const parentId = String(body.parentId || "")
+            const parent = parentId ? await getRecord<RecordData>("comments", parentId) : null
+            if (parentId && (!parent || parent.articleId !== article.id || parent.status !== "approved"))
+                return NextResponse.json({ error: "This comment cannot receive replies." }, { status: 400 })
             const id = randomUUID()
             await saveRecord("comments", id, {
                 id,
                 name,
                 email,
                 userId: user?.id || "guest",
+                parentId: parent?.id || "",
+                replyToUserId: parent?.userId && parent.userId !== "guest" && parent.userId !== user?.id ? parent.userId : "",
                 articleId: article.id,
                 message,
                 status: commentNeedsReview(message) ? "pending" : "approved",
@@ -219,8 +217,8 @@ export async function POST(request: Request, { params }: Context) {
             )
                 return NextResponse.json({ ok: true })
             if (
-                !["view", "impression", "click"].includes(body.kind) ||
-                !/^[a-f0-9-]{36}$/.test(body.eventId)
+                !["view", "impression", "click"].includes(String(body.kind)) ||
+                !/^[a-f0-9-]{36}$/.test(String(body.eventId))
             )
                 throw new Error("Invalid event")
             const pathname = String(body.path || "")
@@ -229,7 +227,7 @@ export async function POST(request: Request, { params }: Context) {
             if (
                 !pathname.startsWith("/") ||
                 pathname.startsWith("//") ||
-                /^\/(admin|account|api)/.test(pathname)
+                /^\/(admin|account|reader|api)/.test(pathname)
             )
                 throw new Error("Invalid page")
             if (body.kind !== "view") {
@@ -281,14 +279,14 @@ export async function POST(request: Request, { params }: Context) {
                 referrer,
                 at: new Date().toISOString().slice(0, 10),
             }
-            await claim("events", body.eventId, event)
+            await claim("events", String(body.eventId), event)
             return NextResponse.json({ ok: true })
         }
         return NextResponse.json({ error: "Not found" }, { status: 404 })
     } catch (e) {
         return NextResponse.json(
             { error: e instanceof Error ? e.message : "Submission failed" },
-            { status: 400 }
+            { status: e instanceof Error && "status" in e ? Number(e.status) : 400 }
         )
     }
 }

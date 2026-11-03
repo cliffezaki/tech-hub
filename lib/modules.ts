@@ -39,6 +39,10 @@ const select = (key: string, label: string, options: string[]): Field => ({
     options,
 })
 export const MODULES: Record<string, Module> = {
+    "privacy-requests": {
+        title: "Privacy requests", description: "Review reader account deletion requests. Confirm identity, retention obligations, and backups before processing. No automatic deletion occurs.", permission: "settings.manage",
+        fields: [f("email", "Account email", "email"), f("type", "Request"), select("status", "Status", ["Requested", "In review", "Completed"]), f("notes", "Private processing notes", "textarea")],
+    },
     categories: {
         title: "Categories",
         description:

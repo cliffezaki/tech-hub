@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import Link from "next/link"
+import { PasswordField } from "@/components/password-field"
 import type { User } from "@/lib/permissions"
 import { AccountSettings } from "./account-settings"
 import styles from "./account.module.css"
@@ -19,10 +19,15 @@ export default function AccountPage() {
         setInvalidCredentials(false)
     }
     useEffect(() => {
-        const token = new URLSearchParams(location.hash.slice(1)).get("reset")
+        const params = new URLSearchParams(location.hash.slice(1))
+        const newsletter = params.get("newsletter")
+        const verify = params.get("verify") || newsletter
+        const token = verify || params.get("reset")
         if (token) {
+            // Read and immediately remove the email token from the browser fragment.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setResetToken(token)
-            setMode("reset")
+            setMode(newsletter ? "verify-newsletter" : verify ? "verify" : "reset")
             history.replaceState(null, "", location.pathname + location.search)
         }
         fetch("/api/auth/me")
@@ -49,7 +54,7 @@ export default function AccountPage() {
         const form = new FormData(event.currentTarget)
         try {
             if (
-                mode === "reset" &&
+                ["reset", "register"].includes(mode) &&
                 form.get("password") !== form.get("confirmPassword")
             )
                 throw new Error("Passwords do not match.")
@@ -76,7 +81,7 @@ export default function AccountPage() {
             else {
                 setMessage(result.message)
                 if (result.user) setUser(result.user)
-                if (mode === "reset") {
+                if (mode === "reset" || mode.startsWith("verify")) {
                     setResetToken("")
                     setMode("login")
                 }
@@ -98,7 +103,7 @@ export default function AccountPage() {
                       ? "Welcome back"
                       : mode === "register"
                         ? "Join the conversation"
-                        : "Reset your password"}
+                        : mode.startsWith("verify") ? "Confirm your email" : "Reset your password"}
             </h1>
             <p className={styles.intro}>
                 Read, subscribe, and manage your work from one account.
@@ -129,7 +134,7 @@ export default function AccountPage() {
                             />
                         </label>
                     )}
-                    {!user && mode !== "reset" && (
+                    {!user && mode !== "reset" && !mode.startsWith("verify") && (
                         <label className="block">
                             Email
                             <input
@@ -143,40 +148,8 @@ export default function AccountPage() {
                             />
                         </label>
                     )}
-                    {mode !== "forgot" && (
-                        <label className="block">
-                            {user ? "New password (optional)" : "Password"}
-                            <input
-                                className="cms-input"
-                                name="password"
-                                type="password"
-                                aria-invalid={invalidCredentials || undefined}
-                                aria-describedby={invalidCredentials ? "account-message" : undefined}
-                                autoComplete={
-                                    mode === "login"
-                                        ? "current-password"
-                                        : "new-password"
-                                }
-                                required={!user}
-                                minLength={mode === "login" ? 1 : 12}
-                                maxLength={256}
-                            />
-                        </label>
-                    )}
-                    {mode === "reset" && (
-                        <label className="block">
-                            Confirm new password
-                            <input
-                                className="cms-input"
-                                name="confirmPassword"
-                                type="password"
-                                autoComplete="new-password"
-                                required
-                                minLength={12}
-                                maxLength={256}
-                            />
-                        </label>
-                    )}
+                    {mode !== "forgot" && !mode.startsWith("verify") && <PasswordField label="Password" name="password" required minLength={mode === "login" ? 1 : 12} autoComplete={mode === "login" ? "current-password" : "new-password"} strength={mode !== "login"} />}
+                    {["reset", "register"].includes(mode) && <PasswordField label="Confirm password" name="confirmPassword" required minLength={12} autoComplete="new-password" />}
                     {(user || mode === "register") && (
                         <label className="flex items-center gap-3">
                             <input
@@ -198,7 +171,7 @@ export default function AccountPage() {
                                   ? "Request password reset"
                                   : mode === "reset"
                                     ? "Save new password"
-                                    : "Create account"}
+                                    : mode.startsWith("verify") ? "Confirm email" : "Create account"}
                     </button>
                 </form>
             )}
