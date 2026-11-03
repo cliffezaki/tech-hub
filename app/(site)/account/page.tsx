@@ -6,6 +6,30 @@ import { AccountSettings } from "./account-settings"
 import styles from "./account.module.css"
 export default function AccountPage() {
     const [user, setUser] = useState<Omit<User, "passwordHash"> | null>(null)
+    const [verification, setVerification] = useState<{challenge: string; expiresAt: number; resendAt: number} | null>(null)
+    const [clock, setClock] = useState(0)
+    useEffect(() => {
+        const timer = setInterval(() => setClock(Date.now()), 1000)
+        return () => clearInterval(timer)
+    }, [])
+    const cooldown = verification ? Math.max(0, Math.ceil((verification.resendAt - clock) / 1000)) : 0
+    async function resend() {
+        if (!verification || busy) return
+        setBusy(true)
+        setMessage("Sending another verification email…")
+        try {
+            const response = await fetch("/api/auth/resend-verification", {
+                method: "POST", signal: AbortSignal.timeout(60000), headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ challenge: verification.challenge }),
+            })
+            const result = await response.json()
+            if (!response.ok) throw new Error(result.error)
+            setVerification(result)
+            setClock(result.resendAt - 60000)
+            setMessage(result.message)
+        } catch (error) { setMessage((error as Error).name === "TimeoutError" ? "Email delivery is taking longer than expected. Check your inbox before retrying." : (error as Error).message) }
+        finally { setBusy(false) }
+    }
     const [staff, setStaff] = useState(false)
     const [mode, setMode] = useState("login")
     const [message, setMessage] = useState("")
@@ -30,7 +54,7 @@ export default function AccountPage() {
             setMode(newsletter ? "verify-newsletter" : verify ? "verify" : "reset")
             history.replaceState(null, "", location.pathname + location.search)
         }
-        fetch("/api/auth/me")
+        fetch("/api/auth/me", { signal: AbortSignal.timeout(15000) })
             .then((r) => r.json())
             .then((d) => {
                 setUser(token ? null : d.user)
@@ -67,6 +91,7 @@ export default function AccountPage() {
                     body: JSON.stringify({
                         ...Object.fromEntries(form),
                         token: resetToken,
+                        challenge: verification?.challenge,
                         subscribed: form.get("subscribed") === "on",
                     }),
                 }
@@ -82,9 +107,15 @@ export default function AccountPage() {
             else {
                 setMessage(result.message)
                 if (result.user) setUser(result.user)
+                if (mode === "register") {
+                    setVerification(result)
+                    setClock(result.resendAt - 60000)
+                    setMode("verify-code")
+                }
                 if (mode === "reset" || mode.startsWith("verify")) {
                     setResetToken("")
-                    setMode("login")
+                    setMode(mode === "verify" || mode === "verify-code" ? "complete" : "login")
+                    setVerification(null)
                 }
             }
         } catch (e) {
@@ -104,7 +135,7 @@ export default function AccountPage() {
                       ? "Welcome back"
                       : mode === "register"
                         ? "Join the conversation"
-                        : mode.startsWith("verify") ? "Confirm your email" : "Reset your password"}
+                        : mode === "complete" ? "Registration complete" : mode.startsWith("verify") ? "Confirm your email" : "Reset your password"}
             </h1>
             <p className={styles.intro}>
                 Read, subscribe, and manage your work from one account.
@@ -121,8 +152,18 @@ export default function AccountPage() {
             )}
             {!ready ? (
                 <p>Loading account…</p>
+            ) : mode === "complete" ? (
+                <button type="button" className={styles.primary} onClick={() => changeMode("login")}>Sign in to your account</button>
             ) : (
                 <form key={mode} onSubmit={submit} className={styles.form} aria-busy={busy}>
+                    {mode === "verify-code" && <>
+                        <p>Enter the six-digit code from your email, or open the confirmation link. Codes expire after 30 minutes. Verification does not sign you in automatically.</p>
+                        <label className="block">Verification code
+                            <input className="cms-input" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required aria-describedby="code-help" />
+                        </label>
+                        <p id="code-help">{verification && clock >= verification.expiresAt ? "This code has expired. Start registration again." : "Check your spam folder if the email has not arrived."}</p>
+                        <button type="button" className={styles.textLink} disabled={busy || cooldown > 0} onClick={resend}>{cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}</button>
+                    </>}
                     {(user || mode === "register") && (
                         <label className="block">
                             Name
@@ -162,8 +203,9 @@ export default function AccountPage() {
                         </label>
                     )}
                     <button type="submit" className={styles.primary} disabled={busy}>
+                        {busy && <span className={styles.spinner} aria-hidden="true" />}
                         {busy
-                            ? "Working…"
+                            ? (mode === "register" ? "Creating account and sending verification email…" : "Please wait…")
                             : user
                               ? "Save profile"
                               : mode === "login"
@@ -177,7 +219,7 @@ export default function AccountPage() {
                 </form>
             )}
             {
-                ready && <p className={styles.switchMode}>
+                ready && mode !== "complete" && <p className={styles.switchMode}>
                     {mode === "login" ? (
                         <>Don&apos;t have an account?{" "}<button type="button" className={styles.textLink} disabled={busy} onClick={() => changeMode("register")}>Sign up</button></>
                     ) : (

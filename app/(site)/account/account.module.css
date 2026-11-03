@@ -124,3 +124,7 @@
 .actions {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-top:1.25rem;padding:.25rem;}
 .feedback {font-size:.85rem;line-height:1.5;}.feedback[role=alert] {color:hsl(var(--destructive));}
 @media(max-width:480px){.settings{padding:1.5rem 1rem;}.section{padding:1rem;}}
+
+.spinner { display: inline-block; width: 1em; height: 1em; margin-right: .5em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: middle; animation: account-spin .8s linear infinite; }
+@keyframes account-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

@@ -26,7 +26,7 @@ import {
 } from "@/lib/auth"
 import { readJson } from "@/lib/request-security"
 import { contactNetworkKey } from "@/lib/contact-guard"
-import { requestVerification, verifyAccount } from "@/lib/email-verification"
+import { requestVerification, verifyAccount, verifyAccountCode, resendVerification } from "@/lib/email-verification"
 export async function GET() {
     const user = platformReady() ? await currentUser() : null
     if (user) {
@@ -64,6 +64,14 @@ export async function POST(request: Request) {
         if (action === "verify-newsletter") {
             await verifyNewsletter(String(body.token || ""))
             return NextResponse.json({ message: "Your newsletter subscription is confirmed." })
+        }
+        if (action === "verify-code") {
+            await verifyAccountCode(String(body.challenge || ""), String(body.code || ""))
+            return NextResponse.json({ message: "Registration complete. Your email is verified. Sign in to open your account." })
+        }
+        if (action === "resend-verification") {
+            const verification = await resendVerification(String(body.challenge || ""))
+            return NextResponse.json({ ...verification, message: "Verification email requested. Check your inbox and spam folder. You can also use the confirmation link." })
         }
         if (action === "verify") {
             await verifyAccount(String(body.token || ""))
@@ -186,8 +194,8 @@ export async function POST(request: Request) {
                 createdAt: new Date().toISOString(),
                 subscribed: body.subscribed === true,
             }
-            await requestVerification(user)
-            return NextResponse.json({ message: "If this email can be registered, a verification link will arrive shortly. Already registered? Sign in or recover your password." })
+            const verification = await requestVerification(user)
+            return NextResponse.json({ ...verification, message: "If this email can be registered, a verification email with a six-digit code and confirmation link has been sent. Already registered? Sign in or recover your password." })
         } else if (action === "login") {
             if (
                 !user ||

@@ -22,7 +22,7 @@ const storage = {
 async function load(file, imports) {
     const exports = {}
     vm.runInNewContext(ts.transpileModule(await readFile(file,"utf8"), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText, {
-        exports, Buffer, URL, Request, Date, Uint8Array, structuredClone, console:{error(){}}, process:{env:{NEXT_PUBLIC_SITE_URL:"https://example.test"}},
+        exports, Buffer, URL, Request, Date, Uint8Array, structuredClone, console:{error(){}}, process:{env:{NEXT_PUBLIC_SITE_URL:"https://example.test",ADMIN_SESSION_SECRET:"a-test-only-secret-with-at-least-32-characters"}},
         require(name){if(name==="server-only")return {}; if(name in imports)return imports[name]; throw Error(name)},
     })
     return exports
@@ -36,7 +36,7 @@ await assert.rejects(security.readJson(req([],"application/json")),e=>e.status==
 await assert.rejects(security.readJson(req({},"text/plain")),e=>e.status===415)
 assert.equal((await security.readJson(req({action:"test"}))).action,"test")
 const mail = {verifyEmailDelivery:async()=>{},sendVerificationEmail:async(...args)=>sent.push(args),sendNewsletterVerification:async(...args)=>sent.push(args)}
-const imports = {"node:crypto":crypto,"@/lib/accounts":{emailId:digest},"@/lib/platform-store":storage,"@/lib/email":mail,"@/lib/password-reset":{resetConfigured:()=>true}}
+const imports = {"node:crypto":crypto,"@/lib/accounts":{emailId:digest,throttle:async()=>true},"@/lib/platform-store":storage,"@/lib/email":mail,"@/lib/password-reset":{resetConfigured:()=>true}}
 const verification = await load("lib/email-verification.ts",imports)
 const user = {id:digest("reader@example.test"),email:"reader@example.test",role:"reader",passwordHash:"test-private-hash",sessionVersion:1}
 await verification.requestVerification(user)
@@ -63,6 +63,30 @@ mail.sendVerificationEmail = async () => { throw new Error("provider unavailable
 await assert.rejects(verification.requestVerification({...other,id:digest("failed@example.test"),email:"failed@example.test"}), /could not send/)
 assert.equal(await storage.getRecord("users",digest("failed@example.test")),null)
 mail.sendVerificationEmail = originalSend
+// Code verification and atomic lifetime attempt limits, without sending real mail.
+const codeUser = {...user,id:digest("code@example.test"),email:"code@example.test"}
+const receipt = await verification.requestVerification(codeUser)
+const code = sent.at(-1)[3]
+assert.match(code,/^\d{6}$/)
+assert(!JSON.stringify([...records]).includes(`"${code}"`))
+await assert.rejects(verification.resendVerification(receipt.challenge), /wait/)
+await assert.rejects(verification.verifyAccountCode(receipt.challenge, code === "000000" ? "000001" : "000000"), /incorrect/)
+await verification.verifyAccountCode(receipt.challenge,code)
+assert((await storage.getRecord("users",codeUser.id)).emailVerifiedAt)
+await assert.rejects(verification.verifyAccountCode(receipt.challenge,code))
+const locked = await verification.requestVerification({...user,id:digest("locked@example.test"),email:"locked@example.test"})
+const lockedCode = sent.at(-1)[3], lockedToken = sent.at(-1)[1].hash.slice("#verify=".length)
+await Promise.all(Array.from({length:5},()=>assert.rejects(verification.verifyAccountCode(locked.challenge,lockedCode === "000000" ? "000001" : "000000"))))
+await assert.rejects(verification.verifyAccountCode(locked.challenge,lockedCode), /Too many/)
+await verification.verifyAccount(lockedToken) // Link remains available after code attempts exhausted.
+const resendUser = {...user,id:digest("resend@example.test"),email:"resend@example.test"}
+const first = await verification.requestVerification(resendUser)
+records.get(key("pending-accounts",first.challenge)).createdAt = Date.now()-61000
+const replacement = await verification.resendVerification(first.challenge)
+assert.notEqual(replacement.challenge,first.challenge)
+await assert.rejects(verification.resendVerification(first.challenge), /wait/)
+await verification.verifyAccountCode(replacement.challenge,sent.at(-1)[3])
+assert((await storage.getRecord("users",resendUser.id)).emailVerifiedAt)
 const newsletter = await load("lib/newsletter-verification.ts",imports)
 const email="newsletter@example.test",id=digest(email)
 await newsletter.requestNewsletter(email)
