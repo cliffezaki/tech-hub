@@ -116,6 +116,7 @@ export interface HomepageContent {
         href: string
         count: number
     }[]
+    reviews: ArticleSummary[]
     ticker: ArticleSummary[]
     newsCount: number
 }
@@ -199,6 +200,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         latestNews,
         sections,
         newsCount: news.length,
+        reviews: summaries.filter(a => a.section === "reviews").sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0,4),
         ticker: summaries.filter(a => !a.demo && Date.now() - Date.parse(a.publishedAt) <= 7 * 86400000)
             .sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 6),
     }

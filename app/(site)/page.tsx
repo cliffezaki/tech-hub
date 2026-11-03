@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { EditorialGrid, ReviewStrip } from "@/components/editorial-stories"
 import { ArticleRow } from "@/components/article-row"
 import { NewsTicker } from "@/components/news-ticker"
 import { ArrowRight, PenLine } from "lucide-react"
@@ -22,6 +23,7 @@ export default async function Home() {
         sections,
         newsCount,
         ticker,
+        reviews,
     } = await getHomepageContent()
 
     if (!lead) {
@@ -111,9 +113,9 @@ export default async function Home() {
                                 <h2 className="kicker border-b pb-3 text-muted-foreground">
                                     Also worth reading
                                 </h2>
-                                <div className="mt-2 flex flex-col">
+                                <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
                                     {secondary.map((article) => (
-                                        <ArticleRow key={article.id} article={article} compact />
+                                        <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3 [&_h3]:min-h-[3.75em]" />
                                     ))}
                                 </div>
                             </div>
@@ -129,13 +131,11 @@ export default async function Home() {
                         title="Featured"
                         subtitle="Worth your time, from across Tech Hub"
                     />
-                    <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-                        {featured.map((article) => (
-                            <ArticleCard key={article.id} article={article} />
-                        ))}
-                    </div>
+                    <EditorialGrid articles={featured} />
                 </section>
             )}
+
+            {reviews.length > 0 && <section className="site-container pb-12 md:pb-16" aria-label="Reviews"><SectionHeading title="Reviews" href="/reviews" linkLabel="View All Reviews" /><ReviewStrip articles={reviews} /></section>}
 
             {/* The main news feed */}
             {latestNews.length > 0 && (
@@ -154,7 +154,7 @@ export default async function Home() {
                             linkLabel="All news"
                         />
                         <div className="max-w-5xl">
-                            {latestNews.map(article => <ArticleRow key={article.id} article={article} />)}
+                            {latestNews.map(article => <ArticleRow key={article.id} article={article} extended />)}
                         </div>
                     </div>
                 </section>
@@ -163,12 +163,9 @@ export default async function Home() {
             {/* Sections are linked, not unpacked — each has its own page */}
             <AdSlot slot="homepage-middle" />
             <section className="site-container py-12 md:py-16">
-                <div className="grid gap-10 lg:grid-cols-12">
-                    <div className="lg:col-span-8">
-                        <SectionHeading
-                            title="More from Tech Hub"
-                            subtitle="Browse the rest of the site by section"
-                        />
+                <SectionHeading title="More from Tech Hub" subtitle="Browse the rest of the site by section" />
+                <div className="grid items-start gap-6 lg:grid-cols-12">
+                    <div className="min-w-0 lg:col-span-8">
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             {sections.map((item) => (

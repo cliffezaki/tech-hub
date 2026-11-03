@@ -1,4 +1,6 @@
 import Link from "next/link"
+import { ArticleCollection } from "@/components/article-collection"
+import { ReviewCollection } from "@/components/review-collection"
 import { FileText } from "lucide-react"
 
 import { SectionCollection } from "@/components/section-collection"
@@ -46,7 +48,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                <SectionCollection articles={articles} section={section} />
+                section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
             )}
         </div>
     )
