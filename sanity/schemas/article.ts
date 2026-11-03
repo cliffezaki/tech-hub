@@ -35,6 +35,14 @@ export default defineType({
             description: 'Short summary shown on cards and in search results',
         }),
         defineField({
+            name: 'quickFacts',
+            title: 'Quick Facts',
+            description: 'Up to four concise, editor-verified facts from this article. Shown when this is the homepage lead; leave empty to hide.',
+            type: 'array',
+            of: [{ type: 'string', validation: rule => rule.max(240) }],
+            validation: rule => rule.max(4).unique(),
+        }),
+        defineField({
             name: 'author',
             title: 'Author',
             type: 'string',

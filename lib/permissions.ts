@@ -58,6 +58,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     reader: [],
 }
 export interface User {
+    recordVersion?: number
+    emailVerifiedAt?: string
     id: string
     name: string
     email: string
@@ -132,6 +134,11 @@ export const ADMIN_NAV = [
         href: "/admin/homepage",
         label: "Homepage",
         permission: "homepage.manage",
+    },
+    {
+        href: "/admin/privacy-requests",
+        label: "Privacy requests",
+        permission: "settings.manage",
     },
     {
         href: "/admin/settings",

@@ -18,6 +18,8 @@ export function IdentityImageField({ label, value, kind, onChange, onPending }: 
     useEffect(() => {
         if (!file || file.name.toLowerCase().endsWith(".svg")) return
         const url = URL.createObjectURL(file)
+        // Synchronize a temporary browser object URL, revoked on cleanup.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPreview(url)
         return () => URL.revokeObjectURL(url)
     }, [file])

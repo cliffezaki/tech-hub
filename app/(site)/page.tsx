@@ -1,4 +1,7 @@
 import Link from "next/link"
+import { EditorialGrid, ReviewStrip } from "@/components/editorial-stories"
+import { ArticleRow } from "@/components/article-row"
+import { NewsTicker } from "@/components/news-ticker"
 import { ArrowRight, PenLine } from "lucide-react"
 
 import { ArticleCard } from "@/components/article-card"
@@ -18,7 +21,9 @@ export default async function Home() {
         featured,
         latestNews,
         sections,
-        totalArticles,
+        newsCount,
+        ticker,
+        reviews,
     } = await getHomepageContent()
 
     if (!lead) {
@@ -47,6 +52,7 @@ export default async function Home() {
 
     return (
         <div>
+            <div className="site-container"><NewsTicker articles={ticker} /></div>
             <AdSlot slot="homepage-top" />
             {/* Lead story with two supporting highlights */}
             <section className="border-b bg-muted/20">
@@ -100,19 +106,17 @@ export default async function Home() {
                                     </div>
                                 </div>
                             </Link>
+                            {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.map((fact, i) => <li key={i} className="border-b py-3 text-sm leading-relaxed break-words list-disc ml-4">{fact}</li>)}</ul></section>}
                         </div>
 
                         {secondary.length > 0 && (
                             <div className="lg:col-span-4">
                                 <h2 className="kicker border-b pb-3 text-muted-foreground">
-                                    Also this week
+                                    Also worth reading
                                 </h2>
-                                <div className="mt-6 flex flex-col gap-8">
+                                <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
                                     {secondary.map((article) => (
-                                        <ArticleCard
-                                            key={article.id}
-                                            article={article}
-                                        />
+                                        <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3 [&_h3]:min-h-[3.75em]" />
                                     ))}
                                 </div>
                             </div>
@@ -126,15 +130,13 @@ export default async function Home() {
                 <section className="site-container py-12 md:py-16">
                     <SectionHeading
                         title="Featured"
-                        subtitle="Hand-picked reading from across the site"
+                        subtitle="Worth your time, from across Tech Hub"
                     />
-                    <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-                        {featured.map((article) => (
-                            <ArticleCard key={article.id} article={article} />
-                        ))}
-                    </div>
+                    <EditorialGrid articles={featured} />
                 </section>
             )}
+
+            {reviews.length > 0 && <section className="site-container pb-12 md:pb-16" aria-label="Reviews"><SectionHeading title="Reviews" href="/reviews" linkLabel="View All Reviews" /><ReviewStrip articles={reviews} /></section>}
 
             {/* The main news feed */}
             {latestNews.length > 0 && (
@@ -148,17 +150,12 @@ export default async function Home() {
                     <div className="site-container py-12 md:py-16">
                         <SectionHeading
                             title="Latest news"
-                            subtitle={`${totalArticles} article${totalArticles === 1 ? "" : "s"} published`}
+                            subtitle={`${newsCount} article${newsCount === 1 ? "" : "s"} published`}
                             href="/news"
                             linkLabel="All news"
                         />
-                        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-                            {latestNews.map((article) => (
-                                <ArticleCard
-                                    key={article.id}
-                                    article={article}
-                                />
-                            ))}
+                        <div className="max-w-5xl">
+                            {latestNews.map(article => <ArticleRow key={article.id} article={article} extended />)}
                         </div>
                     </div>
                 </section>
@@ -167,12 +164,9 @@ export default async function Home() {
             {/* Sections are linked, not unpacked — each has its own page */}
             <AdSlot slot="homepage-middle" />
             <section className="site-container py-12 md:py-16">
-                <div className="grid gap-10 lg:grid-cols-12">
-                    <div className="lg:col-span-8">
-                        <SectionHeading
-                            title="More from Tech Hub"
-                            subtitle="Browse the rest of the site by section"
-                        />
+                <SectionHeading title="More from Tech Hub" subtitle="Browse the rest of the site by section" />
+                <div className="grid items-start gap-6 lg:grid-cols-12">
+                    <div className="min-w-0 lg:col-span-8">
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             {sections.map((item) => (

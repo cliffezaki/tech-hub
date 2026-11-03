@@ -1,3 +1,4 @@
+import { verifyNewsletter } from "@/lib/newsletter-verification"
 import { NextResponse } from "next/server"
 import {
     resetConfigured,
@@ -14,7 +15,7 @@ import {
     sameOrigin,
     throttle,
 } from "@/lib/accounts"
-import { getRecord, saveRecord, platformReady } from "@/lib/platform-store"
+import { getRecord, replaceRecord, platformReady } from "@/lib/platform-store"
 import { safeUser, type User } from "@/lib/permissions"
 import { EmailDeliveryUnavailable } from "@/lib/email"
 import {
@@ -23,6 +24,9 @@ import {
     SESSION_COOKIE,
     SESSION_MAX_AGE_SECONDS,
 } from "@/lib/auth"
+import { readJson } from "@/lib/request-security"
+import { contactNetworkKey } from "@/lib/contact-guard"
+import { requestVerification, verifyAccount } from "@/lib/email-verification"
 export async function GET() {
     const user = platformReady() ? await currentUser() : null
     if (user) {
@@ -54,7 +58,17 @@ export async function POST(request: Request) {
                 { status: 503 }
             )
         const action = new URL(request.url).pathname.split("/").pop()
-        const body = await request.json()
+        if (!await throttle(`auth-network:${contactNetworkKey(request)}`, 60))
+            return NextResponse.json({ error: "Too many attempts. Try again in 15 minutes." }, { status: 429, headers: { "Retry-After": "900" } })
+        const body = await readJson(request)
+        if (action === "verify-newsletter") {
+            await verifyNewsletter(String(body.token || ""))
+            return NextResponse.json({ message: "Your newsletter subscription is confirmed." })
+        }
+        if (action === "verify") {
+            await verifyAccount(String(body.token || ""))
+            return NextResponse.json({ message: "Email verified. Sign in to open your reading list." })
+        }
         const email = String(body.email || "")
             .trim()
             .toLowerCase()
@@ -77,12 +91,13 @@ export async function POST(request: Request) {
             return response
         }
         if (action === "profile") {
-            const user = await currentUser()
+            let user = await currentUser()
             if (!user)
                 return NextResponse.json(
                     { error: "Sign in first." },
                     { status: 401 }
                 )
+            const previous = { ...user }
             user.name = String(body.name || user.name).slice(0, 100)
             if (body.password) {
                 if (
@@ -95,16 +110,16 @@ export async function POST(request: Request) {
                         { error: "Current password is incorrect." },
                         { status: 400 }
                     )
-                user.passwordHash = await hashPassword(body.password)
+                user.passwordHash = await hashPassword(String(body.password))
                 user.sessionVersion++
             }
             const subscriptionKey=emailId(user.email)
-            const subscription=await getRecord<Record<string,unknown>>("subscriptions",subscriptionKey)
+            const subscription=await getRecord<Record<string,unknown> & {recordVersion?:number}>("subscriptions",subscriptionKey)
             if (typeof body.subscribed === "boolean") {
                 user.subscribed=body.subscribed
-                if(subscription) await saveRecord("subscriptions",subscriptionKey,{...subscription,active:body.subscribed,updatedAt:new Date().toISOString()})
+                if(subscription) await replaceRecord("subscriptions",subscriptionKey,subscription,{...subscription,active:body.subscribed,updatedAt:new Date().toISOString()})
             } else if(subscription) user.subscribed=subscription.active!==false
-            await saveRecord("users", user.id, user)
+            user = await replaceRecord("users", user.id, previous, user)
             const response = NextResponse.json({
                 user: safeUser(user),
                 message: "Profile saved.",
@@ -159,10 +174,7 @@ export async function POST(request: Request) {
             )
             if (config?.registration === false)
                 throw new Error("New account registration is currently unavailable.")
-            if (user)
-                throw new Error(
-                    "This account already exists. Sign in or contact the owner for recovery."
-                )
+            if (body.password !== body.confirmPassword) throw new Error("Passwords do not match.")
             user = {
                 id,
                 email,
@@ -174,7 +186,8 @@ export async function POST(request: Request) {
                 createdAt: new Date().toISOString(),
                 subscribed: body.subscribed === true,
             }
-            await saveRecord("users", id, user, true)
+            await requestVerification(user)
+            return NextResponse.json({ message: "If this email can be registered, a verification link will arrive shortly. Already registered? Sign in or recover your password." })
         } else if (action === "login") {
             if (
                 !user ||
@@ -198,7 +211,7 @@ export async function POST(request: Request) {
         const permissions = await userPermissions(user!)
         const response = NextResponse.json({
             user: safeUser(user!),
-            redirect: permissions.length ? "/admin" : "/account",
+            redirect: permissions.length ? "/admin" : "/reader",
         })
         response.cookies.set(
             SESSION_COOKIE,
@@ -218,7 +231,7 @@ export async function POST(request: Request) {
                 error:
                     e instanceof Error ? e.message : "Account request failed.",
             },
-            { status: e instanceof EmailDeliveryUnavailable ? 503 : 400 }
+            { status: e instanceof EmailDeliveryUnavailable ? 503 : e instanceof Error && "status" in e ? Number(e.status) : 400 }
         )
     }
 }

@@ -85,6 +85,14 @@ const context = {
                     records.get(`${collection}:${id}`),
                 saveRecord: async (collection, id, value) =>
                     records.set(`${collection}:${id}`, value),
+                replaceRecord: async (collection, id, previous, value) => {
+                    const key = `${collection}:${id}`
+                    const current = records.get(key)
+                    if (!current || current.recordVersion !== previous.recordVersion) throw Error("Record changed")
+                    const updated = {...value, recordVersion: (previous.recordVersion || 0) + 1}
+                    records.set(key, updated)
+                    return updated
+                },
                 claim: async (collection, id, value) => {
                     const key = `${collection}:${id}`
                     if (records.has(key)) return false

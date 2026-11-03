@@ -1,4 +1,5 @@
 import "server-only"
+import { originMatches } from "@/lib/request-security"
 import { scrypt, randomBytes, createHash, timingSafeEqual } from "node:crypto"
 import { promisify } from "node:util"
 import { cookies, headers } from "next/headers"
@@ -69,7 +70,7 @@ export async function authorized(permission?: Permission) {
 export async function sameOrigin() {
     const h = await headers()
     const origin = h.get("origin")
-    return Boolean(origin && new URL(origin).host === h.get("host"))
+    return originMatches(origin, h.get("host"))
 }
 export async function throttle(scope: string, limit = 8) {
     const key = emailId(`${scope}:${Math.floor(Date.now() / 900000)}`)

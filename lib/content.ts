@@ -1,4 +1,5 @@
 import "server-only"
+import { cache } from "react"
 import { articleVisible } from "@/lib/article-visibility"
 
 import { getStore } from "@/lib/store"
@@ -17,12 +18,26 @@ export interface ArticleDetail extends ArticleSummary {
     imageCredit?: string
 }
 
+// Reviewed excerpts from the existing published article, used until CMS facts are supplied.
+// Only retain a fact while its supporting wording remains in the article.
+function reviewedLeadFacts(article: Article): string[] {
+    if (article.slug !== "apple-m6-macbook-pro-worth-it") return []
+    const facts = [
+        ["12-core CPU and a 12-core GPU", "The article lists a 12-core CPU and a 12-core GPU."],
+        ["Wi-Fi 7 only helps when your router supports it", "Wi-Fi 7 needs a compatible router to deliver its benefits."],
+        ["three Thunderbolt 4 ports", "The port selection includes three Thunderbolt 4 ports, HDMI and an SD card slot."],
+        ["screen, camera and speakers are the same", "The screen, camera and speakers remain unchanged from the previous model."],
+    ]
+    return facts.filter(([source]) => article.content.includes(source)).map(([, fact]) => fact)
+}
+
 function toSummary(article: Article): ArticleSummary {
     return {
         demo: article.demo,
         seoTitle: article.seoTitle,
         metaDescription: article.metaDescription,
         tags: article.tags,
+        quickFacts: article.quickFacts?.length ? article.quickFacts : reviewedLeadFacts(article),
         id: article.id,
         title: article.title,
         slug: article.slug,
@@ -45,10 +60,10 @@ function isPublished(article: Article) {
 }
 
 /** Every public read goes through here, so drafts can never leak onto the live site. */
-async function getPublishedArticles(): Promise<Article[]> {
+const getPublishedArticles = cache(async (): Promise<Article[]> => {
     const articles = await getStore().listArticles(false)
-    return articles.filter(isPublished)
-}
+    return articles.filter(isPublished).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+})
 
 export async function getSectionArticles(
     section: ArticleSection
@@ -115,7 +130,9 @@ export interface HomepageContent {
         href: string
         count: number
     }[]
-    totalArticles: number
+    reviews: ArticleSummary[]
+    ticker: ArticleSummary[]
+    newsCount: number
 }
 
 export async function getHomepageContent(): Promise<HomepageContent> {
@@ -164,15 +181,17 @@ export async function getHomepageContent(): Promise<HomepageContent> {
 
     secondary.forEach((article) => used.add(article.id))
 
-    const featured = featuredAll
-        .filter((article) => !used.has(article.id))
-        .slice(0, 3)
+    const featureSeen = new Set(used)
+    const featured = [...featuredAll, ...summaries].filter(article => {
+        if (featureSeen.has(article.id)) return false
+        featureSeen.add(article.id)
+        return true
+    }).slice(0, 4)
     featured.forEach((article) => used.add(article.id))
 
-    const latestNews = summaries
-        .filter(
-            (article) => article.section === "news" && !used.has(article.id)
-        )
+    const news = summaries.filter((article) => article.section === "news")
+    const latestNews = news
+        .filter((article) => !used.has(article.id))
         .slice(0, 6)
 
     const sections = (Object.keys(SECTION_META) as ArticleSection[])
@@ -194,7 +213,10 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         featured,
         latestNews,
         sections,
-        totalArticles: summaries.length,
+        newsCount: news.length,
+        reviews: summaries.filter(a => a.section === "reviews").sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0,4),
+        ticker: summaries.filter(a => !a.demo && Date.now() - Date.parse(a.publishedAt) <= 7 * 86400000)
+            .sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 6),
     }
 }
 
@@ -207,12 +229,9 @@ export async function getRelatedArticles(
         .map(toSummary)
         .filter((item) => item.id !== article.id)
 
-    const sameSection = summaries.filter(
-        (item) => item.section === article.section
-    )
-    const others = summaries.filter((item) => item.section !== article.section)
-
-    return [...sameSection, ...others].slice(0, limit)
+    const tags = new Set((article.tags || []).map(tag => tag.toLowerCase()))
+    const score = (item: ArticleSummary) => (item.tags || []).reduce((n, tag) => n + (tags.has(tag.toLowerCase()) ? 4 : 0), 0) + (item.category === article.category ? 3 : 0) + (item.section === article.section ? 1 : 0)
+    return summaries.filter(item => score(item) > 0).sort((a,b) => score(b) - score(a) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, limit)
 }
 
 export async function getPublishedPage(

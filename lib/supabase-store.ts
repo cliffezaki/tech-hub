@@ -77,7 +77,10 @@ async function request(query: Record<string, string>, init: RequestInit = {}) {
     }
     return response
 }
-export async function listSupabaseRecords<T>(collection: string): Promise<T[]> {
+export async function listSupabaseRecords<T>(
+    collection: string,
+    matches?: Record<string, string>
+): Promise<T[]> {
     identifiers(collection)
     const result: T[] = []
     let offset = 0
@@ -85,6 +88,7 @@ export async function listSupabaseRecords<T>(collection: string): Promise<T[]> {
     for (;;) {
         const response = await request({
             collection: `eq.${collection}`,
+            ...(matches ? { payload: `cs.${JSON.stringify(matches)}` } : {}),
             select: "payload",
             order: "id.asc",
             limit: "500",
@@ -136,4 +140,24 @@ export async function deleteSupabaseRecord(collection: string, id: string) {
         { collection: `eq.${collection}`, id: `eq.${id}` },
         { method: "DELETE" }
     )
+}
+
+/** Compare-and-swap protects concurrent updates, including records created before versioning. */
+export async function replaceSupabaseRecord<T extends { recordVersion?: number }>(
+    collection: string, id: string, previous: T, next: T
+): Promise<T | null> {
+    identifiers(collection, id)
+    const value = { ...next, recordVersion: (previous.recordVersion || 0) + 1 }
+    const response = await request({
+        collection: `eq.${collection}`,
+        id: `eq.${id}`,
+        "payload->>recordVersion": previous.recordVersion === undefined ? "is.null" : `eq.${previous.recordVersion}`,
+        select: "payload",
+    }, {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ payload: value }),
+    })
+    const rows = await response.json() as { payload: T }[]
+    return rows[0]?.payload || null
 }

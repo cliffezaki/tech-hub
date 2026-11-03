@@ -1,7 +1,10 @@
 import Link from "next/link"
+import { ArticleCollection } from "@/components/article-collection"
+import { ExplainerCollection } from "@/components/explainer-collection"
+import { ReviewCollection } from "@/components/review-collection"
 import { FileText } from "lucide-react"
 
-import { ArticleCollection } from "@/components/article-collection"
+import { SectionCollection } from "@/components/section-collection"
 import { Button } from "@/components/ui/button"
 import { getSectionArticles, getPublishedPage } from "@/lib/content"
 import { Markdown } from "@/components/markdown"
@@ -46,7 +49,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                <ArticleCollection articles={articles} leadLayout />
+                section === "how-stuff-works" ? <ExplainerCollection articles={articles} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
             )}
         </div>
     )

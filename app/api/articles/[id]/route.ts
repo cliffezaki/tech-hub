@@ -15,7 +15,7 @@ import { currentUser, userPermissions } from "@/lib/accounts"
 import { editorFields } from "@/lib/editor-fields"
 import { saveRecord } from "@/lib/platform-store"
 import { randomUUID } from "node:crypto"
-import { articleVisible } from "@/lib/article-visibility"
+import { articleVisible, publicArticle } from "@/lib/article-visibility"
 
 interface Props {
     params: Promise<{ id: string }>
@@ -28,23 +28,18 @@ export async function GET(request: Request, { params }: Props) {
 
         const user = await currentUser()
         const permissions = user ? await userPermissions(user) : []
-        if (
-            !article ||
-            (!articleVisible(article) &&
-                !permissions.includes("articles.editAll") &&
-                !(
-                    user &&
-                    article.ownerId === user.id &&
-                    permissions.includes("articles.editOwn")
-                ))
-        ) {
+        const canEdit = permissions.includes("articles.editAll") ||
+            (user && article?.ownerId === user.id && permissions.includes("articles.editOwn"))
+        if (!article || (!canEdit && !articleVisible(article))) {
             return NextResponse.json(
                 { error: "Article not found" },
                 { status: 404, headers: PRIVATE_RESPONSE_HEADERS }
             )
         }
 
-        return NextResponse.json(article, { headers: PRIVATE_RESPONSE_HEADERS })
+        return NextResponse.json(canEdit ? article : publicArticle(article), {
+            headers: PRIVATE_RESPONSE_HEADERS,
+        })
     } catch (error) {
         return handleError(error, "Failed to fetch article")
     }
@@ -82,7 +77,7 @@ export async function PUT(request: Request, { params }: Props) {
             "slug",
             "excerpt",
             "content",
-            "seoTitle", "metaDescription", "tags", "imageAlt", "imageCredit",
+            "seoTitle", "metaDescription", "tags", "quickFacts", "imageAlt", "imageCredit",
             "category",
             "section",
             "author",

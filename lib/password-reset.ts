@@ -1,7 +1,7 @@
 import "server-only"
 import { randomBytes } from "node:crypto"
 import { emailId, hashPassword } from "@/lib/accounts"
-import { claim, getRecord, saveRecord } from "@/lib/platform-store"
+import { getRecord, saveRecord, replaceRecord } from "@/lib/platform-store"
 import type { User } from "@/lib/permissions"
 import { emailConfigurationIssues, sendResetEmail, verifyEmailDelivery } from "@/lib/email"
 
@@ -62,26 +62,10 @@ export async function redeemReset(token: string, password: string) {
     )
         throw invalid()
     const passwordHash = await hashPassword(password)
-    // One atomic claim per account/version prevents reuse and parallel redemption of sibling links.
-    if (
-        !(await claim(
-            "password-reset-used",
-            `${user.id}-${record.sessionVersion}`,
-            { expiresAt: record.expiresAt }
-        ))
-    )
-        throw invalid()
-    const latest = await getRecord<User>("users", user.id)
-    if (
-        !latest ||
-        latest.status !== "active" ||
-        latest.sessionVersion !== record.sessionVersion ||
-        record.expiresAt <= Date.now()
-    )
-        throw invalid()
-    await saveRecord("users", user.id, {
-        ...latest,
+    // One conditional write changes the password and revokes sibling reset links together.
+    await replaceRecord("users", user.id, user, {
+        ...user,
         passwordHash,
-        sessionVersion: latest.sessionVersion + 1,
+        sessionVersion: user.sessionVersion + 1,
     })
 }

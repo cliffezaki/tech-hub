@@ -17,7 +17,7 @@ function optedOut() {
 }
 export async function track(kind: string, extra: Record<string, string> = {}) {
     const pathname = location.pathname
-    if (/^\/(admin|account|api)(\/|$)/.test(pathname)) return
+    if (/^\/(admin|account|reader|api)(\/|$)/.test(pathname)) return
     if (optedOut() || navigator.doNotTrack === "1" ||
         (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl) return
     if (!(await analyticsEnabled()) || optedOut()) return
@@ -53,7 +53,7 @@ export function TrackingConsent() {
             localStorage.removeItem("techhub-visitor")
             if (optedOut() || navigator.doNotTrack === "1" || (navigator as Navigator & {globalPrivacyControl?:boolean}).globalPrivacyControl) localStorage.removeItem(BROWSER_KEY)
         } catch { /* analytics also works when browser storage is blocked */ }
-        if (lastPath.current !== path && !/^\/(admin|account|api)(\/|$)/.test(path)) {
+        if (lastPath.current !== path && !/^\/(admin|account|reader|api)(\/|$)/.test(path)) {
             lastPath.current = path
             void track("view")
         }

@@ -21,7 +21,8 @@ function load(source, imports, env = {}) {
 const types = load(await readFile("lib/types.ts", "utf8"), {})
 const richContent = load(await readFile("lib/rich-content.ts", "utf8"), {})
 const visibility = load(await readFile("lib/article-visibility.ts", "utf8"), {})
-const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types, "@/lib/rich-content": richContent, "node:crypto": { randomUUID } })
+const demoPhotos = load(await readFile("lib/demo-photos.ts", "utf8"), {})
+const normalize = load(await readFile("lib/store/normalize.ts", "utf8"), { "@/lib/types": types, "@/lib/rich-content": richContent, "@/lib/demo-photos": demoPhotos, "node:crypto": { randomUUID } })
 const documents = new Map()
 let uuid = 0
 function makeClient(perspective = "published") { return {
@@ -78,7 +79,7 @@ const input = {
     title: "A correct slug", slug: "a-correct-slug", section: "news",
     content: "Body", imageUrl: "https://cdn.sanity.io/cover.svg", imageAlt: "Cover",
     imageCredit: "Original illustration", demo: true, demoBatch: "test-batch",
-    status: "published", featured: true,
+    status: "published", featured: true, quickFacts: ["First verified fact", "Second verified fact", "Third verified fact"],
 }
 const first = await store.createArticle(input)
 assert.equal(first.slug, "a-correct-slug")
@@ -87,6 +88,7 @@ let updated = await store.getArticle(first.id)
 assert.equal(updated.imageUrl, input.imageUrl)
 assert.equal(updated.imageAlt, input.imageAlt)
 assert.equal(updated.imageCredit, input.imageCredit)
+assert.deepEqual(Array.from(updated.quickFacts), input.quickFacts)
 assert.equal(updated.demo, true)
 assert.equal(updated.demoBatch, "test-batch")
 await store.updateArticle(first.id, { status: "draft" })
@@ -101,6 +103,14 @@ assert.equal((await store.getArticle(first.id)).imageUrl, undefined)
 await store.updateArticle(first.id, { status: "published", imageUrl: input.imageUrl })
 assert(!documents.has(`drafts.${first.id}`))
 assert.equal((await store.getArticle(first.id, false)).status, "published")
+// A simultaneous Studio draft must not hide its published sibling.
+documents.set(`drafts.${first.id}`, {...documents.get(first.id), _id:`drafts.${first.id}`, title:"Private revision", status:"draft"})
+assert.equal((await store.getArticle(first.id, false)).title, input.title)
+assert.equal((await store.getArticleBySlug(input.slug, false)).title, input.title)
+assert.equal((await store.listArticles(false))[0].title, input.title)
+assert.equal((await store.getArticle(first.id, true)).title, "Private revision")
+documents.delete(`drafts.${first.id}`)
+
 const a = await store.createArticle(input, "deterministic-demo")
 await store.updateArticle(a.id, { title: "Human edit" })
 const b = await store.createArticle({ ...input, title: "Would overwrite" }, "deterministic-demo")

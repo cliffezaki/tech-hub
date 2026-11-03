@@ -8,7 +8,8 @@ export const metadata: Metadata = {
     description: "Search every article published on Tech Hub.",
 }
 
-export default async function SearchPage() {
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ category?: string; section?: string }> }) {
+    const filters = await searchParams
     const articles = await getAllArticleSummaries()
 
     return (
@@ -21,7 +22,7 @@ export default async function SearchPage() {
                 </p>
             </header>
 
-            <SearchClient articles={articles} />
+            <SearchClient key={`${filters.category || ""}:${filters.section || ""}`} articles={articles} initialCategory={filters.category} initialSection={filters.section} />
         </div>
     )
 }

@@ -1,3 +1,4 @@
+import { topicSlug } from "@/lib/topics"
 import type { MetadataRoute } from "next"
 
 import { getAllArticleSummaries, getPublishedPages } from "@/lib/content"
@@ -30,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             ...[...new Set(articles.map(a => authorHref(a.author)))].map(href => ({
                 url: `${baseUrl}${href}`, changeFrequency: "weekly" as const, priority: 0.4,
             })),
+            ...[...new Set(articles.flatMap(a => a.tags || []).map(topicSlug))].map(topic => ({ url: `${baseUrl}/topics/${topic}`, changeFrequency: "weekly" as const, priority: 0.4 })),
             ...articles.map((article) => ({
                 url: `${baseUrl}${article.href}`,
                 lastModified: new Date(article.publishedAt),

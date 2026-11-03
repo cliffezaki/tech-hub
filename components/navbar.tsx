@@ -199,6 +199,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                         {i.name}
                                     </Link>
                                 ))}
+                            {signedIn && <Link href="/reader" className="mt-6 cms-primary" onClick={() => setClosing(true)}>My reading list</Link>}
                             {staff && <Link href="/admin" className="mt-6 cms-primary" onClick={() => setClosing(true)}>Publishing Dashboard</Link>}
                             <Link
                                 className={staff ? "mt-3 rounded border px-4 py-3 font-semibold" : "mt-6 cms-primary"}

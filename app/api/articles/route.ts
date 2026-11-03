@@ -13,24 +13,21 @@ import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 import type { ArticleSection } from "@/lib/types"
 import { currentUser, userPermissions } from "@/lib/accounts"
 import { editorFields } from "@/lib/editor-fields"
-import { articleVisible } from "@/lib/article-visibility"
+import { articleVisible, publicArticle } from "@/lib/article-visibility"
 
 export async function GET() {
     try {
         const user = await currentUser()
         const permissions = user ? await userPermissions(user) : []
-        const articles = await getStore().listArticles(
-            permissions.includes("articles.editAll") || permissions.includes("articles.editOwn")
-        )
+        const canEditAll = permissions.includes("articles.editAll")
+        const canEditOwn = permissions.includes("articles.editOwn")
+        const articles = await getStore().listArticles(canEditAll || canEditOwn)
         return NextResponse.json(
-            articles.filter(
-                (a) =>
-                    articleVisible(a) ||
-                    permissions.includes("articles.editAll") ||
-                    (user &&
-                        a.ownerId === user.id &&
-                        permissions.includes("articles.editOwn"))
-            ),
+            articles.flatMap((article) => {
+                if (canEditAll || (canEditOwn && user && article.ownerId === user.id))
+                    return [article]
+                return articleVisible(article) ? [publicArticle(article)] : []
+            }),
             { headers: PRIVATE_RESPONSE_HEADERS }
         )
     } catch (error) {

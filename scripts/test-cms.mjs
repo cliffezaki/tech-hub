@@ -142,14 +142,13 @@ try {
     assert(ownerInfo.data.permissions.includes("articles.publish"))
     assert(ownerInfo.data.permissions.includes("ads.settings"))
     await call("/api/cms/demo", { status: 403 })
-    const reader = await post("/api/auth/register", {
-        email: "reader@example.test",
-        password: "Test-password-long!",
-        role: "owner",
-        subscribed: true,
-    })
+    // Mail/token activation is covered by isolated verification tests. Seed a verified
+    // reader through the owner route to keep this integration suite network-independent.
+    await post("/api/cms/users", { email: "reader@example.test", name: "Reader", password: "Test-password-long!", role: "reader", status: "active" }, owner.cookie)
+    const reader = await post("/api/auth/login", { email: "reader@example.test", password: "Test-password-long!" })
+    await post("/api/auth/profile", { subscribed: true }, reader.cookie)
     assert.equal(reader.data.user.role, "reader")
-    assert.equal(reader.data.redirect, "/account")
+    assert.equal(reader.data.redirect, "/reader")
     await call("/api/cms/users", { cookie: reader.cookie, status: 403 })
     await post("/api/articles", { title: "Denied" }, reader.cookie, 403)
     await post("/api/cms/demo", { index: 0 }, reader.cookie, 403)
@@ -239,6 +238,7 @@ try {
     assert.equal(publicArticles.headers.get("cache-control"), "private, no-store")
     assert(publicArticles.headers.get("vary").split(",").some(value => value.trim().toLowerCase() === "cookie"))
     assert(!publicArticles.data.some((a) => a.id === draft.data.id))
+    assert(publicArticles.data.every((article) => !Object.hasOwn(article, "ownerId")))
     await call(`/api/articles/${draft.data.id}`, { status: 404 })
     const privateArticle = await call(`/api/articles/${draft.data.id}`, { cookie: owner.cookie })
     assert.equal(privateArticle.headers.get("cache-control"), "private, no-store")
@@ -285,6 +285,9 @@ try {
     })
     const published = await call(`/api/articles/${draft.data.id}`)
     assert.equal(published.data.sponsorship, "Sponsored test disclosure")
+    assert(!Object.hasOwn(published.data, "ownerId"))
+    const editorial = await call(`/api/articles/${draft.data.id}`, { cookie: owner.cookie })
+    assert.equal(editorial.data.ownerId, ownerId)
     await call(`/api/articles/${draft.data.id}`, {
         method: "PUT",
         body: { content: "Publish bypass" },

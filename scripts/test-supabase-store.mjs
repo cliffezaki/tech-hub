@@ -61,6 +61,10 @@ const adapter = loadModule(
             const query = new URL(url).searchParams
             const collection = query.get("collection")?.slice(3)
             const id = query.get("id")?.slice(3)
+            const containment = query.get("payload")
+            const matches = containment
+                ? JSON.parse(containment.replace(/^cs\./, ""))
+                : {}
             if (options.method === "POST") {
                 const record = JSON.parse(options.body)
                 const key = `${record.collection}:${record.id}`
@@ -72,6 +76,14 @@ const adapter = loadModule(
                 records.set(key, record)
                 return new Response(null, { status: 201 })
             }
+            if (options.method === "PATCH") {
+                const record = records.get(`${collection}:${id}`)
+                const match = query.get("payload->>recordVersion")
+                const expected = record?.payload.recordVersion === undefined ? "is.null" : `eq.${record.payload.recordVersion}`
+                if (!record || match !== expected) return Response.json([])
+                record.payload = JSON.parse(options.body).payload
+                return Response.json([{payload: record.payload}])
+            }
             if (options.method === "DELETE") {
                 records.delete(`${collection}:${id}`)
                 return new Response(null, { status: 204 })
@@ -80,7 +92,8 @@ const adapter = loadModule(
                 .filter(
                     (record) =>
                         record.collection === collection &&
-                        (!id || record.id === id)
+                        (!id || record.id === id) &&
+                        Object.entries(matches).every(([field, value]) => record.payload[field] === value)
                 )
                 .sort((a, b) => a.id.localeCompare(b.id))
             const offset = Number(query.get("offset") || 0)
@@ -118,6 +131,11 @@ for (let i = 2; i <= 7; i++)
 await platform.saveRecord("inquiries", "one", { message: "private" }, true)
 assert.equal((await platform.listRecords("users")).length, 7)
 assert.equal((await platform.listRecords("inquiries")).length, 1)
+await platform.saveRecord("comments", "first", { articleId: "one", status: "approved" })
+await platform.saveRecord("comments", "second", { articleId: "one", status: "pending" })
+await platform.saveRecord("comments", "third", { articleId: "two", status: "approved" })
+assert.equal((await platform.listRecords("comments", { articleId: "one", status: "approved" })).length, 1)
+assert.equal(new URL(calls.at(-1).url).searchParams.get("payload"), 'cs.{"articleId":"one","status":"approved"}')
 assert.equal(await platform.claim("locks", "campaigns", {}), true)
 assert.equal(await platform.claim("locks", "campaigns", {}), false)
 await platform.deleteRecord("locks", "campaigns")
@@ -127,6 +145,18 @@ const outcomes = await Promise.all([
     platform.claim("password-reset-used", "same-version", {}),
 ])
 assert.equal(outcomes.filter(Boolean).length, 1)
+const legacy = await platform.getRecord("users", "one")
+const updated = await platform.replaceRecord("users", "one", legacy, {...legacy, name: "Fresh", sessionVersion: 2})
+assert.equal(updated.recordVersion, 1)
+assert.equal(new URL(calls.at(-1).url).searchParams.get("payload->>recordVersion"), "is.null")
+await assert.rejects(platform.replaceRecord("users", "one", legacy, {...legacy, name: "Stale"}), /changed/)
+const contenders = await Promise.allSettled([
+    platform.replaceRecord("users", "one", updated, {...updated, sessionVersion: 3}),
+    platform.replaceRecord("users", "one", updated, {...updated, sessionVersion: 4}),
+])
+assert.equal(contenders.filter(r => r.status === "fulfilled").length, 1)
+await platform.deleteRecord("users", "one")
+await assert.rejects(platform.replaceRecord("users", "one", updated, updated), /changed/)
 const before = calls.length
 await assert.rejects(
     platform.getRecord("users", "one&collection=eq.inquiries"),

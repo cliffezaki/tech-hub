@@ -31,7 +31,7 @@ try {
     assert.equal(allowMeasurement(r, 62000), true)
     console.log("PASS: provider-specific coarse geography, spoof rejection, referrer minimization and expiring abuse limits")
 } finally {
-    for (const [key, value] of Object.entries(env)) value === undefined ? delete process.env[key] : process.env[key] = value
+    for (const [key, value] of Object.entries(env)) { if (value === undefined) delete process.env[key]; else process.env[key] = value }
 }
 const edgeSource = await readFile(new URL("../netlify/edge-functions/analytics-geography.js", import.meta.url), "utf8")
 const { default: edge } = await import(`data:text/javascript;base64,${Buffer.from(edgeSource).toString("base64")}`)

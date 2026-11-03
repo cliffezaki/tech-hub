@@ -64,6 +64,7 @@ export interface Article {
     seoTitle?: string
     metaDescription?: string
     tags?: string[]
+    quickFacts?: string[]
     demo?: boolean
     demoBatch?: string
     ownerId?: string
@@ -162,6 +163,7 @@ export interface ArticleSummary {
     seoTitle?: string
     metaDescription?: string
     tags?: string[]
+    quickFacts?: string[]
     demo?: boolean
     sponsorship?: string
     id: string

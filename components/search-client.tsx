@@ -14,10 +14,12 @@ import { Button } from "@/components/ui/button"
  * The article set is small enough to filter in the browser, which keeps search instant
  * and avoids adding a search service to the deployment.
  */
-export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
+export function SearchClient({ articles, initialCategory, initialSection }: { articles: ArticleSummary[]; initialCategory?: string; initialSection?: string }) {
     const [query, setQuery] = useState("")
-    const [section, setSection] = useState<ArticleSection | "all">("all")
-    const [category, setCategory] = useState("all")
+    const [section, setSection] = useState<ArticleSection | "all">(ARTICLE_SECTIONS.includes(initialSection as ArticleSection) ? initialSection as ArticleSection : "all")
+    const [category, setCategory] = useState(initialCategory && articles.some(a => a.category === initialCategory) ? initialCategory : "all")
+    const [topic, setTopic] = useState("all")
+    const [after, setAfter] = useState("")
     const [page, setPage] = useState(1)
     const categories = useMemo(() => [...new Set(articles.map(a => a.category))].sort(), [articles])
 
@@ -27,16 +29,19 @@ export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
         return articles.filter((article) => {
             if (section !== "all" && article.section !== section) return false
             if (category !== "all" && article.category !== category) return false
+            if (topic !== "all" && !article.tags?.includes(topic)) return false
+            if (after && article.publishedAt.slice(0, 10) < after) return false
             if (!term) return true
 
             return (
                 article.title.toLowerCase().includes(term) ||
                 article.excerpt.toLowerCase().includes(term) ||
                 article.category.toLowerCase().includes(term) ||
-                article.author.toLowerCase().includes(term)
+                article.author.toLowerCase().includes(term) ||
+                (article.tags || []).some(tag => tag.toLowerCase().includes(term))
             )
         })
-    }, [articles, query, section, category])
+    }, [articles, query, section, category, topic, after])
     const pages = Math.max(1, Math.ceil(results.length / 6))
     const current = Math.min(page, pages)
     const visible = results.slice((current - 1) * 6, current * 6)
@@ -46,6 +51,7 @@ export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
             <div className="relative">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                    list="search-suggestions"
                     value={query}
                     onChange={(event) => { setQuery(event.target.value); setPage(1) }}
                     placeholder="Search headlines, topics, and authors"
@@ -55,6 +61,7 @@ export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
                 />
             </div>
 
+            <datalist id="search-suggestions">{query.trim().length >= 2 && articles.filter(a => a.title.toLowerCase().includes(query.toLowerCase())).slice(0, 6).map(a => <option key={a.id} value={a.title} />)}</datalist>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {(["all", ...ARTICLE_SECTIONS] as const).map((option) => (
                     <button
@@ -82,7 +89,8 @@ export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
                 </select>
             </label>
 
-            <p className="mt-6 text-center text-sm text-muted-foreground">
+            <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm"><label>Topic <select className="ml-2 max-w-56 rounded border bg-background p-2" value={topic} onChange={e => { setTopic(e.target.value); setPage(1) }}><option value="all">All topics</option>{[...new Set(articles.flatMap(a => a.tags || []))].sort().map(t => <option key={t}>{t}</option>)}</select></label><label>Published since <input className="ml-2 rounded border bg-background p-2" type="date" value={after} onChange={e => { setAfter(e.target.value); setPage(1) }} /></label></div>
+            <p role="status" className="mt-6 text-center text-sm text-muted-foreground">
                 {results.length} result{results.length === 1 ? "" : "s"}
             </p>
 

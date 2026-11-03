@@ -6,6 +6,8 @@ export function AnalyticsPrivacyChoice() {
     const [error, setError] = useState("")
     useEffect(() => {
         try {
+            // Read browser-only privacy storage after hydration.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setExcluded(localStorage.getItem("techhub-analytics-opt-out") === "true" || localStorage.getItem("techhub-consent") === "declined")
             setReady(true)
         } catch { setError("Browser storage is unavailable. Use Do Not Track or Global Privacy Control to exclude measurements.") }

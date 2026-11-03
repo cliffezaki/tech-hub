@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getSiteSettings } from "@/lib/content"
@@ -27,7 +28,7 @@ export default async function SiteLayout({
             </main>
             <AdSlot slot="footer" />
             <Footer />
-            <a href="/analytics-privacy" className="mx-auto mb-5 text-xs underline">Audience measurement &amp; privacy</a>
+            <Link href="/analytics-privacy" className="mx-auto mb-5 text-xs underline">Audience measurement &amp; privacy</Link>
             <TrackingConsent />
         </div>
     )
