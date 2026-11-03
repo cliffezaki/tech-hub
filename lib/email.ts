@@ -137,9 +137,9 @@ async function sendSiteEmail({ to, subject, text, requestId, context, replyTo }:
     }
 }
 
-export async function sendVerificationEmail(to: string, url: URL, requestId: string) {
+export async function sendVerificationEmail(to: string, url: URL, requestId: string, code?: string) {
     return sendSiteEmail({ to, requestId, context: "verification", subject: "Verify your Tech Hub email",
-        text: `Confirm your Tech Hub account within 30 minutes:\n\n${url}\n\nOpen the link and select Verify email. If you did not sign up, ignore this message. No account will be activated.` })
+        text: `${code ? `Your Tech Hub verification code is ${code}. Enter it on the registration screen.\n\n` : ""}Confirm your Tech Hub account within 30 minutes:\n\n${url}\n\nOpen the link and select Verify email. If you did not sign up, ignore this message. No account will be activated.` })
 }
 
 export async function sendNewsletterVerification(to: string, url: URL, requestId: string) {
