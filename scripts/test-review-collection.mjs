@@ -6,7 +6,7 @@ const values=[]; let cursor=0, focused=false
 const React={useState(initial){const i=cursor++; if(!(i in values))values[i]=initial;return [values[i],next=>values[i]=typeof next==='function'?next(values[i]):next]},useRef(){return {current:{focus(){focused=true}}}}}
 const jsx=(type,props)=>({type,props})
 const exports={}
-const imports={'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'@/components/article-card':{ArticleCard:'Card'},'@/components/article-row':{ArticleRow:'Row'},'@/components/section-heading':{SectionHeading:'Heading'}}
+const imports={'@/components/review-spotlight':{ReviewSpotlight:'Spotlight'},'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'@/components/article-card':{ArticleCard:'Card'},'@/components/article-row':{ArticleRow:'Row'},'@/components/section-heading':{SectionHeading:'Heading'}}
 vm.runInNewContext(ts.transpileModule(await readFile('components/review-collection.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports,require:n=>{if(!(n in imports))throw Error(n);return imports[n]}})
 const articles=Array.from({length:11},(_,i)=>({id:String(i),category:i%2?'Phones':'Laptops'}))
 const render=()=>{cursor=0;return exports.ReviewCollection({articles})}

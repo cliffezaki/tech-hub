@@ -106,7 +106,7 @@ export default async function Home() {
                                     </div>
                                 </div>
                             </Link>
-                            {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">Fun Facts</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.map((fact, i) => <li key={i} className="border-b py-3 text-sm leading-relaxed break-words list-disc ml-4">{fact}</li>)}</ul></section>}
+                            {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.map((fact, i) => <li key={i} className="border-b py-3 text-sm leading-relaxed break-words list-disc ml-4">{fact}</li>)}</ul></section>}
                         </div>
 
                         {secondary.length > 0 && (
