@@ -58,6 +58,11 @@ const expiredToken=sent.at(-1)[1].hash.slice("#verify=".length)
 records.get(key("pending-accounts",digest(expiredToken))).expiresAt=0
 await assert.rejects(verification.verifyAccount(expiredToken))
 assert.equal(await storage.getRecord("users",other.id),null)
+const originalSend = mail.sendVerificationEmail
+mail.sendVerificationEmail = async () => { throw new Error("provider unavailable") }
+await assert.rejects(verification.requestVerification({...other,id:digest("failed@example.test"),email:"failed@example.test"}), /could not send/)
+assert.equal(await storage.getRecord("users",digest("failed@example.test")),null)
+mail.sendVerificationEmail = originalSend
 const newsletter = await load("lib/newsletter-verification.ts",imports)
 const email="newsletter@example.test",id=digest(email)
 await newsletter.requestNewsletter(email)

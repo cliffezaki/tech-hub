@@ -15,7 +15,7 @@ import type { ArticleSection } from "@/lib/types"
 
 export async function SectionPage({ section }: { section: ArticleSection }) {
     const articles = await getSectionArticles(section)
-    const discovery = section === "how-stuff-works" ? (await getAllArticleSummaries()).filter(a => a.section === "news" || a.section === "reviews").slice(0, 5) : []
+    const discovery = section === "how-stuff-works" ? (await getAllArticleSummaries()).filter(a => a.section === "news" || a.section === "reviews").slice(0, 4) : []
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)
     if (!page) notFound()

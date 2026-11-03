@@ -9,16 +9,15 @@ import type { User } from "@/lib/permissions"
 interface PendingAccount { user: User; expiresAt: number }
 export async function requestVerification(user: User) {
     if (!resetConfigured()) throw new Error("Email verification is not configured. Please try registration later.")
-    await verifyEmailDelivery()
     // Always validate the submitted password and mail service before checking membership.
-    if (await getRecord<User>("users", user.id)) return
+    if (await getRecord<User>("users", user.id)) { await verifyEmailDelivery(); return }
     const token = randomBytes(32).toString("hex")
     const id = emailId(token)
     await saveRecord("pending-accounts", id, { user, expiresAt: Date.now() + 30 * 60 * 1000 }, true)
     const url = new URL("/account", process.env.NEXT_PUBLIC_SITE_URL)
     url.hash = `verify=${token}`
     try { await sendVerificationEmail(user.email, url, id) }
-    catch { console.error("Account verification email delivery failed. Check provider delivery logs.") }
+    catch { throw new Error("We could not send your verification email. Please try again shortly. Your account has not been activated.") }
 }
 export async function verifyAccount(token: string) {
     if (!/^[a-f0-9]{64}$/.test(token)) throw new Error("Invalid verification link.")

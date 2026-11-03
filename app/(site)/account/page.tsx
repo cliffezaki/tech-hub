@@ -62,7 +62,7 @@ export default function AccountPage() {
                 `/api/auth/${user ? "profile" : mode}`,
                 {
                     method: "POST",
-                    signal: AbortSignal.timeout(30000),
+                    signal: AbortSignal.timeout(60000),
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         ...Object.fromEntries(form),
