@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRef, useState } from "react"
 import { ArticleCard } from "@/components/article-card"
-import { EditorialHero } from "@/components/editorial-hero"
+import { SafeImage } from "@/components/safe-image"
 import { SectionHeading } from "@/components/section-heading"
 import { explainerLayout } from "@/lib/explainer-layout"
 import type { ArticleSummary } from "@/lib/types"
@@ -30,7 +30,7 @@ export function ExplainerCollection({ articles }: { articles: ArticleSummary[] }
         requestAnimationFrame(() => grid.current?.querySelectorAll<HTMLAnchorElement>(":scope > a")[count]?.focus())
     }
     return <div className="mt-8 space-y-10 md:space-y-12">
-        <EditorialHero article={hero} label="Featured explainer" />
+        <article className="overflow-hidden rounded-xl border bg-card text-card-foreground"><Link href={hero.href} className="block"><div className="relative aspect-[16/9] md:aspect-[21/9] bg-muted">{hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || hero.title} fill priority sizes="100vw" className="object-cover" />}</div><div className="p-6 md:p-8"><p className="kicker text-brand-red">{hero.category}</p><h2 className="mt-3 text-3xl md:text-4xl font-bold">{hero.title}</h2><p className="mt-3 max-w-3xl text-muted-foreground">{hero.excerpt}</p><span className="mt-4 inline-block text-sm font-semibold">Read More ↗</span></div></Link></article>
         <section aria-label="Explore topics">
             <SectionHeading title="Explore" />
             <nav aria-label="Explainer topics" className="mb-6 flex flex-wrap gap-2">{topics.map(topic => <Link key={topic} href={`/search?category=${encodeURIComponent(topic)}&section=how-stuff-works`} className="rounded-full border px-4 py-2 text-sm hover:bg-muted">{topic}</Link>)}</nav>

@@ -18,13 +18,26 @@ export interface ArticleDetail extends ArticleSummary {
     imageCredit?: string
 }
 
+// Reviewed excerpts from the existing published article, used until CMS facts are supplied.
+// Only retain a fact while its supporting wording remains in the article.
+function reviewedLeadFacts(article: Article): string[] {
+    if (article.slug !== "apple-m6-macbook-pro-worth-it") return []
+    const facts = [
+        ["12-core CPU and a 12-core GPU", "The article lists a 12-core CPU and a 12-core GPU."],
+        ["Wi-Fi 7 only helps when your router supports it", "Wi-Fi 7 needs a compatible router to deliver its benefits."],
+        ["three Thunderbolt 4 ports", "The port selection includes three Thunderbolt 4 ports, HDMI and an SD card slot."],
+        ["screen, camera and speakers are the same", "The screen, camera and speakers remain unchanged from the previous model."],
+    ]
+    return facts.filter(([source]) => article.content.includes(source)).map(([, fact]) => fact)
+}
+
 function toSummary(article: Article): ArticleSummary {
     return {
         demo: article.demo,
         seoTitle: article.seoTitle,
         metaDescription: article.metaDescription,
         tags: article.tags,
-        quickFacts: article.quickFacts,
+        quickFacts: article.quickFacts?.length ? article.quickFacts : reviewedLeadFacts(article),
         id: article.id,
         title: article.title,
         slug: article.slug,
