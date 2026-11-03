@@ -24,6 +24,7 @@ function toSummary(article: Article): ArticleSummary {
         seoTitle: article.seoTitle,
         metaDescription: article.metaDescription,
         tags: article.tags,
+        quickFacts: article.quickFacts,
         id: article.id,
         title: article.title,
         slug: article.slug,

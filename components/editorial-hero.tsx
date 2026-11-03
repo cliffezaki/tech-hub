@@ -3,10 +3,10 @@ import { SafeImage } from "@/components/safe-image"
 import { formatDate } from "@/lib/format"
 import type { ArticleSummary } from "@/lib/types"
 import styles from "./editorial-layout.module.css"
-export function EditorialHero({ article, kenya = false }: { article: ArticleSummary; kenya?: boolean }) {
+export function EditorialHero({ article, kenya = false, label }: { article: ArticleSummary; kenya?: boolean; label?: string }) {
     return <article className={`${styles.hero} ${kenya ? styles.heroKenya : ""}`}>
         <div className={styles.heroText}>
-            <p className="text-xs font-bold uppercase tracking-widest text-white/75">{kenya ? "Kenya in focus" : "The Big Story"} · {article.category}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-white/75">{label || (kenya ? "Kenya in focus" : "The Big Story")} · {article.category}</p>
             <h2 className={styles.heroTitle}><Link href={article.href} className="hover:underline">{article.title}</Link></h2>
             <p className={styles.heroDescription}>{article.excerpt}</p>
             <p className="mt-5 text-xs leading-relaxed text-white/70">{article.author} · <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time></p>

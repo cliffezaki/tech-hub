@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button"
  * The article set is small enough to filter in the browser, which keeps search instant
  * and avoids adding a search service to the deployment.
  */
-export function SearchClient({ articles }: { articles: ArticleSummary[] }) {
+export function SearchClient({ articles, initialCategory, initialSection }: { articles: ArticleSummary[]; initialCategory?: string; initialSection?: string }) {
     const [query, setQuery] = useState("")
-    const [section, setSection] = useState<ArticleSection | "all">("all")
-    const [category, setCategory] = useState("all")
+    const [section, setSection] = useState<ArticleSection | "all">(ARTICLE_SECTIONS.includes(initialSection as ArticleSection) ? initialSection as ArticleSection : "all")
+    const [category, setCategory] = useState(initialCategory && articles.some(a => a.category === initialCategory) ? initialCategory : "all")
     const [topic, setTopic] = useState("all")
     const [after, setAfter] = useState("")
     const [page, setPage] = useState(1)

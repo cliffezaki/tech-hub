@@ -79,7 +79,7 @@ const input = {
     title: "A correct slug", slug: "a-correct-slug", section: "news",
     content: "Body", imageUrl: "https://cdn.sanity.io/cover.svg", imageAlt: "Cover",
     imageCredit: "Original illustration", demo: true, demoBatch: "test-batch",
-    status: "published", featured: true,
+    status: "published", featured: true, quickFacts: ["First verified fact", "Second verified fact", "Third verified fact"],
 }
 const first = await store.createArticle(input)
 assert.equal(first.slug, "a-correct-slug")
@@ -88,6 +88,7 @@ let updated = await store.getArticle(first.id)
 assert.equal(updated.imageUrl, input.imageUrl)
 assert.equal(updated.imageAlt, input.imageAlt)
 assert.equal(updated.imageCredit, input.imageCredit)
+assert.deepEqual(Array.from(updated.quickFacts), input.quickFacts)
 assert.equal(updated.demo, true)
 assert.equal(updated.demoBatch, "test-batch")
 await store.updateArticle(first.id, { status: "draft" })
