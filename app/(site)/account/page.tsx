@@ -62,6 +62,7 @@ export default function AccountPage() {
                 `/api/auth/${user ? "profile" : mode}`,
                 {
                     method: "POST",
+                    signal: AbortSignal.timeout(30000),
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         ...Object.fromEntries(form),
@@ -87,7 +88,7 @@ export default function AccountPage() {
                 }
             }
         } catch (e) {
-            setMessage((e as Error).message)
+            setMessage((e as Error).name === "TimeoutError" ? "The request took too long. Please check your inbox for a verification email before trying again." : (e as Error).message)
         } finally {
             setBusy(false)
         }

@@ -6,7 +6,7 @@ import { FileText } from "lucide-react"
 
 import { SectionCollection } from "@/components/section-collection"
 import { Button } from "@/components/ui/button"
-import { getSectionArticles, getPublishedPage } from "@/lib/content"
+import { getSectionArticles, getPublishedPage, getAllArticleSummaries } from "@/lib/content"
 import { Markdown } from "@/components/markdown"
 import { AdSlot } from "@/components/ad-slot"
 import { notFound } from "next/navigation"
@@ -15,6 +15,7 @@ import type { ArticleSection } from "@/lib/types"
 
 export async function SectionPage({ section }: { section: ArticleSection }) {
     const articles = await getSectionArticles(section)
+    const discovery = section === "how-stuff-works" ? (await getAllArticleSummaries()).filter(a => a.section === "news" || a.section === "reviews").slice(0, 5) : []
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)
     if (!page) notFound()
@@ -49,7 +50,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                section === "how-stuff-works" ? <ExplainerCollection articles={articles} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
+                section === "how-stuff-works" ? <ExplainerCollection articles={articles} discovery={discovery} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
             )}
         </div>
     )
