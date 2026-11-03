@@ -65,7 +65,7 @@
 
 :root {
   /* Soft Ivory. HSL channels retain Tailwind's opacity modifiers. */
-  --background: 42.8571 41.1765% 96.6667%; /* #FAF8F3 */
+  --background: 60 16.6667% 97.6471%; /* #FAFAF8 */
   --foreground: 0 0% 9.0196%; /* #171717 */
   --card: 0 0% 100%;
   --card-foreground: var(--foreground);

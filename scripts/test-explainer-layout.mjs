@@ -23,7 +23,7 @@ for(let n=0;n<35;n++){
 const states=[];let cursor=0, focused=false
 const jsx=(type,props)=>({type,props})
 const React={useState(init){const i=cursor++;if(!(i in states))states[i]=init;return [states[i],v=>states[i]=v]},useRef(){return {current:{querySelectorAll(){return Array.from({length:50},()=>({focus(){focused=true}}))}}}}}
-const component=await load('components/explainer-collection.tsx',{'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'next/link':{default:'Link'},'@/components/article-card':{ArticleCard:'Card'},'@/components/editorial-hero':{EditorialHero:'Hero'},'@/components/section-heading':{SectionHeading:'Heading'},'@/lib/explainer-layout':layout},{requestAnimationFrame:fn=>fn()})
+const component=await load('components/explainer-collection.tsx',{'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'next/link':{default:'Link'},'@/components/article-card':{ArticleCard:'Card'},'@/components/safe-image':{SafeImage:'Image'},'@/components/section-heading':{SectionHeading:'Heading'},'@/lib/explainer-layout':layout},{requestAnimationFrame:fn=>fn()})
 const walk=n=>Array.isArray(n)?n.flatMap(walk):n&&typeof n==='object'?[n,...walk(n.props?.children)]:[]
 const render=()=>{cursor=0;return walk(component.ExplainerCollection({articles:make(25)}))}
 let nodes=render(),count=nodes.filter(n=>n.type==='Card').length
