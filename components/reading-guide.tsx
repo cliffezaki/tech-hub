@@ -7,9 +7,9 @@ export function ReadingGuide() {
         const content = document.getElementById("article-content")
         if (!content) return
         const entries = Array.from(content.querySelectorAll("h2, h3")).map((heading, i) => { if (!heading.id) heading.id = `story-section-${i + 1}`; return { id: heading.id, text: heading.textContent || "" } })
-        // The contents list is derived from rendered Markdown headings after mount.
+        // Multi-section articles get a contents dropdown regardless of word count.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        if ((content.textContent || "").split(/\s+/).length >= 600 && entries.length >= 3) setHeadings(entries)
+        if (entries.length >= 3) setHeadings(entries)
         let frame = 0
         const update = () => { frame = 0; const bounds = content.getBoundingClientRect(); setProgress(Math.max(0, Math.min(100, (window.innerHeight - bounds.top) / bounds.height * 100))) }
         const scroll = () => { if (!frame) frame = requestAnimationFrame(update) }
