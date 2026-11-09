@@ -14,13 +14,21 @@ export function ImageAdjuster({ src, onApply, onCancel }: { src: string; onApply
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState("")
     useEffect(() => {
-        let active = true
-        const loaded = new window.Image()
-        loaded.crossOrigin = "anonymous"
-        loaded.onload = () => { if (active) { setImage(loaded); const w = Math.min(1920, loaded.naturalWidth); setWidth(w); setHeight(Math.round(w * loaded.naturalHeight / loaded.naturalWidth)) } }
-        loaded.onerror = () => { if (active) setError("This image host does not allow editing. Upload the original file to the media library, then try again.") }
-        loaded.src = src
-        return () => { active = false }
+        let active = true, objectUrl = ""
+        const controller = new AbortController()
+        async function load() {
+            try {
+                const response = await fetch("/api/media/source", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src }), signal: controller.signal })
+                if (!response.ok) throw new Error((await response.json()).error || "Could not load image.")
+                objectUrl = URL.createObjectURL(await response.blob())
+                const loaded = new window.Image()
+                loaded.onload = () => { if (active) { setImage(loaded); const scale = Math.min(1, 1920 / loaded.naturalWidth, 4096 / loaded.naturalHeight); setWidth(Math.max(32, Math.round(loaded.naturalWidth * scale))); setHeight(Math.max(32, Math.round(loaded.naturalHeight * scale))) } }
+                loaded.onerror = () => { if (active) setError("This image could not be decoded. Upload a JPG, PNG or WebP and try again.") }
+                loaded.src = objectUrl
+            } catch (e) { if (active) setError(e instanceof Error ? e.message : "Could not load this image.") }
+        }
+        void load()
+        return () => { active = false; controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl) }
     }, [src])
     useEffect(() => {
         if (!image || !canvas.current) return

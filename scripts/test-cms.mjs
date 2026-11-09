@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import sharp from "sharp"
 import { spawn } from "node:child_process"
 import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises"
 import os from "node:os"
@@ -224,6 +225,20 @@ try {
     assert(rendered.data.includes("<u>"))
     assert(rendered.data.includes("font-family:Georgia;font-size:24px"))
     assert(!rendered.data.includes("TECHHUB_DOCUMENT_V1\\n"), "No serialized document shown as article copy")
+    const mediaBody = new FormData()
+    mediaBody.append("file", new File([await sharp({ create: { width: 80, height: 40, channels: 3, background: "#d51d25" } }).png().toBuffer()], "crop-test.png", { type: "image/png" }))
+    const uploaded = await fetch(`${base}/api/media`, { method: "POST", headers: { Cookie: owner.cookie, Origin: base }, body: mediaBody })
+    assert.equal(uploaded.status, 201)
+    const mediaAsset = await uploaded.json()
+    const editableImage = await fetch(`${base}/api/media/source`, { method: "POST", headers: { Cookie: owner.cookie, Origin: base, "Content-Type": "application/json" }, body: JSON.stringify({ src: mediaAsset.url }) })
+    assert.equal(editableImage.status, 200)
+    assert.equal(editableImage.headers.get("content-type"), "image/webp")
+    const dimensions = await sharp(Buffer.from(await editableImage.arrayBuffer())).metadata()
+    assert.equal(dimensions.width, 80)
+    assert.equal(dimensions.height, 40)
+    await post("/api/media/source", { src: "https://example.test/not-in-library.jpg" }, owner.cookie, 400)
+    await post("/api/media/source", { src: "http://127.0.0.1/private" }, owner.cookie, 400)
+    await post("/api/media/source", { src: mediaAsset.url }, "", 403)
     const history = await call(`/api/articles/${rich.data.id}/workspace`, { cookie: owner.cookie })
     assert(history.data.revisions.length >= 2)
     await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { content: "TECHHUB_DOCUMENT_V1\n" + JSON.stringify({ type: "doc", content: [{ type: "script" }] }) }, status: 400 })
