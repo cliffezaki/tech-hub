@@ -200,12 +200,16 @@ try {
     assert.equal(draft.data.author, "Test Author")
     const richBody = "TECHHUB_DOCUMENT_V1\n" + JSON.stringify({ type: "doc", content: [
         { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Visual heading" }] },
-        { type: "paragraph", content: [{ type: "text", text: "Formatted content", marks: [{ type: "bold" }, { type: "underline" }] }] },
+        { type: "paragraph", content: [{ type: "text", text: "Formatted content", marks: [{ type: "bold" }, { type: "underline" }, { type: "textStyle", attrs: { fontFamily: "Georgia", fontSize: "24px" } }] }] },
         { type: "image", attrs: { src: "https://example.test/image.png", alt: "Accessible image", caption: "Caption", width: 50 } },
         { type: "table", content: [{ type: "tableRow", content: [{ type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Cell" }] }] }] }] },
     ] })
-    const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"] }, owner.cookie, 201)
+    const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"], pinnedAreas: ["homepage", "news"] }, owner.cookie, 201)
     assert.equal(rich.data.content, richBody)
+    assert.deepEqual(rich.data.pinnedAreas, ["homepage", "news"])
+    await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { pinnedAreas: [] } })
+    assert.deepEqual((await call(`/api/articles/${rich.data.id}`, { cookie: owner.cookie })).data.pinnedAreas, [])
+    await post("/api/articles", { title: "Unauthorized pin", pinnedAreas: ["homepage"] }, author.cookie, 403)
     assert.equal(rich.data.seoTitle, "Search title")
     await call(`/api/articles/${rich.data.id}`, { status: 404 })
     await call(`/api/articles/${rich.data.id}/workspace`, { status: 404 })
@@ -218,6 +222,7 @@ try {
     assert(rendered.data.includes("Visual heading"))
     assert(rendered.data.includes("<strong>"))
     assert(rendered.data.includes("<u>"))
+    assert(rendered.data.includes("font-family:Georgia;font-size:24px"))
     assert(!rendered.data.includes("TECHHUB_DOCUMENT_V1\\n"), "No serialized document shown as article copy")
     const history = await call(`/api/articles/${rich.data.id}/workspace`, { cookie: owner.cookie })
     assert(history.data.revisions.length >= 2)

@@ -6,10 +6,11 @@ import StarterKit from "@tiptap/starter-kit"
 import Image from "@tiptap/extension-image"
 import { TableKit } from "@tiptap/extension-table"
 import TextAlign from "@tiptap/extension-text-align"
-import { TextStyle, Color } from "@tiptap/extension-text-style"
+import { TextStyle, Color, FontFamily, FontSize } from "@tiptap/extension-text-style"
 import Highlight from "@tiptap/extension-highlight"
 import Placeholder from "@tiptap/extension-placeholder"
 import DragHandle from "@tiptap/extension-drag-handle-react"
+import { ImageAdjuster } from "@/components/admin/image-adjuster"
 import { editorDocument } from "@/lib/legacy-document"
 import { embedUrl, safeUrl, writeDocument } from "@/lib/rich-content"
 import type { MediaItem } from "@/lib/types"
@@ -29,6 +30,7 @@ const Gallery = Node.create({ name: "gallery", group: "block", content: "image+"
 const ButtonLink = Node.create({ name: "buttonLink", group: "block", atom: true, draggable: true, addAttributes() { return { label: { default: "Learn more" }, href: { default: "" } } }, parseHTML() { return [{ tag: "p[data-button-link]" }] }, renderHTML({ HTMLAttributes: a }) { return ["p", { "data-button-link": "true" }, ["a", { class: "rich-button", href: safeUrl(a.href) }, a.label]] } })
 
 export function VisualEditor({ initial, onChange, canUpload }: { initial: string; onChange: (value: string) => void; canUpload: boolean }) {
+    const [editingImage, setEditingImage] = useState<{ src: string; pos: number } | null>(null)
     const [message, setMessage] = useState("")
     const [panel, setPanel] = useState("")
     const [library, setLibrary] = useState<MediaItem[]>([])
@@ -38,8 +40,8 @@ export function VisualEditor({ initial, onChange, canUpload }: { initial: string
     const [busy, setBusy] = useState(false)
     const upload = useRef<HTMLInputElement>(null)
     const [document] = useState(() => { try { return { content: editorDocument(initial), error: "" } } catch (e) { return { content: null, error: (e as Error).message } } })
-    const editor = useEditor({ immediatelyRender: false, editable: !document.error, extensions: [StarterKit.configure({ link: { openOnClick: false } }), ArticleImage, TableKit.configure({ table: { resizable: true } }), TextAlign.configure({ types: ["heading", "paragraph"] }), TextStyle, Color, Highlight.configure({ multicolor: true }), Placeholder.configure({ placeholder: "Start writing your story…" }), Media, PullQuote, ButtonLink, Gallery], content: document.content as JSONContent || undefined, onUpdate: ({ editor }) => onChange(writeDocument(editor.getJSON())), editorProps: { attributes: { class: "rich-article min-h-[60vh] outline-none", "aria-label": "Article content", role: "textbox", "aria-multiline": "true" } } })
-    useEditorState({ editor, selector: ({ editor }) => editor ? { selection: editor.state.selection.from, transaction: editor.state.doc.content.size, active: ["bold", "italic", "underline", "strike", "bulletList", "orderedList"].map(x => editor.isActive(x)).join(), color: editor.getAttributes("textStyle").color } : null })
+    const editor = useEditor({ immediatelyRender: false, editable: !document.error, extensions: [StarterKit.configure({ link: { openOnClick: false } }), ArticleImage, TableKit.configure({ table: { resizable: true } }), TextAlign.configure({ types: ["heading", "paragraph"] }), TextStyle, Color, FontFamily, FontSize, Highlight.configure({ multicolor: true }), Placeholder.configure({ placeholder: "Start writing your story…" }), Media, PullQuote, ButtonLink, Gallery], content: document.content as JSONContent || undefined, onUpdate: ({ editor }) => onChange(writeDocument(editor.getJSON())), editorProps: { attributes: { class: "rich-article min-h-[60vh] outline-none", "aria-label": "Article content", role: "textbox", "aria-multiline": "true" } } })
+    useEditorState({ editor, selector: ({ editor }) => editor ? { selection: editor.state.selection.from, transaction: editor.state.doc.content.size, active: ["bold", "italic", "underline", "strike", "bulletList", "orderedList"].map(x => editor.isActive(x)).join(), textStyle: JSON.stringify(editor.getAttributes("textStyle")) } : null })
     if (document.error) return <div role="alert" className="rounded border border-amber-400 p-5">{document.error} Saving remains disabled until this conversion is reviewed.</div>
     if (!editor) return <p className="p-8">Preparing your writing space…</p>
     const button = (name: string, action: () => void, active = false, disabled = false) => <button type="button" key={name} title={name} aria-label={name} aria-pressed={active} disabled={disabled} className="editor-tool" onMouseDown={e => e.preventDefault()} onClick={action}>{name}</button>
@@ -73,6 +75,10 @@ export function VisualEditor({ initial, onChange, canUpload }: { initial: string
     return <section className="visual-editor">
         <div className="editor-toolbar" role="toolbar" aria-label="Text formatting">
             <select aria-label="Text style" className="editor-tool" value={editor.isActive("heading") ? editor.getAttributes("heading").level : "paragraph"} onChange={e => e.target.value === "paragraph" ? chain().setParagraph().run() : chain().toggleHeading({ level: Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6 }).run()}><option value="paragraph">Paragraph</option>{[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>Heading {n}</option>)}</select>
+            <select aria-label="Font family" className="editor-tool" value={editor.getAttributes("textStyle").fontFamily || ""} onChange={e => e.target.value ? chain().setFontFamily(e.target.value).run() : chain().unsetFontFamily().run()}><option value="">Site default font</option>{["Arial", "Georgia", "Verdana", "Times New Roman", "Courier New"].map(font => <option key={font}>{font}</option>)}</select>
+            <select aria-label="Font size" className="editor-tool" value={editor.getAttributes("textStyle").fontSize || ""} onChange={e => e.target.value ? chain().setFontSize(e.target.value).run() : chain().unsetFontSize().run()}><option value="">Default size</option>{Array.from({ length: 31 }, (_, i) => 12 + i * 2).map(size => <option key={size} value={`${size}px`}>{size}px</option>)}</select>
+            {button("Decrease text size", () => { chain().setFontSize(`${Math.max(12, (parseInt(editor.getAttributes("textStyle").fontSize) || 18) - 2)}px`).run() })}
+            {button("Increase text size", () => { chain().setFontSize(`${Math.min(72, (parseInt(editor.getAttributes("textStyle").fontSize) || 18) + 2)}px`).run() })}
             {button("Bold", () => { chain().toggleBold().run() }, editor.isActive("bold"))}
             {button("Italic", () => { chain().toggleItalic().run() }, editor.isActive("italic"))}
             {button("Underline", () => { chain().toggleUnderline().run() }, editor.isActive("underline"))}
@@ -100,7 +106,9 @@ export function VisualEditor({ initial, onChange, canUpload }: { initial: string
         </div>
         {selectedMedia && <div className="editor-context" aria-label="Media settings"><label>Media URL<input value={selectedMedia.src} onChange={e => chain().updateAttributes("media", { src: e.target.value }).run()} /></label><label>Caption<input value={selectedMedia.caption} onChange={e => chain().updateAttributes("media", { caption: e.target.value }).run()} /></label></div>}
         {selectedButton && <div className="editor-context" aria-label="Button settings"><label>Button label<input value={selectedButton.label} onChange={e => chain().updateAttributes("buttonLink", { label: e.target.value }).run()} /></label><label>Button URL<input value={selectedButton.href} onChange={e => chain().updateAttributes("buttonLink", { href: e.target.value }).run()} /></label></div>}
+        {editingImage && <ImageAdjuster key={editingImage.src} src={editingImage.src} onCancel={() => setEditingImage(null)} onApply={url => { const node = editor.state.doc.nodeAt(editingImage.pos); if (node?.type.name === "image" && node.attrs.src === editingImage.src) { editor.view.dispatch(editor.state.tr.setNodeMarkup(editingImage.pos, undefined, { ...node.attrs, src: url, ratio: "auto", focalX: 50, focalY: 50 })); setEditingImage(null) } else { setMessage("The selected image moved. Select it again to apply changes."); setEditingImage(null); setPanel("media") } }} />}
         {image && <div className="editor-context" aria-label="Image settings">
+            {canUpload && button("Crop and resize image", () => setEditingImage({ src: String(image.src), pos: editor.state.selection.from }))}
             {button("Add another image", () => { chain().insertContentAt(editor.state.selection.to, { type: "image", attrs: { ...image, src: "/editor-image-placeholder.svg", alt: "", caption: "" } }).run() })}
             <label>Image URL<input value={image.src || ""} onChange={e => chain().updateAttributes("image", { src: e.target.value }).run()} /></label>
             <label>Alt text<input value={image.alt || ""} onChange={e => chain().updateAttributes("image", { alt: e.target.value }).run()} /></label>

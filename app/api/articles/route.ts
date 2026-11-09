@@ -59,7 +59,7 @@ export async function POST(request: Request) {
                 },
                 { status: 403 }
             )
-        if (body.featured && !permissions.includes("articles.feature"))
+        if ((body.featured || body.pinnedAreas?.length) && !permissions.includes("articles.feature"))
             return NextResponse.json(
                 { error: "Featuring requires permission." },
                 { status: 403 }
@@ -98,6 +98,7 @@ export async function POST(request: Request) {
             imageCredit: body.imageCredit || undefined,
             status: body.scheduledAt ? "draft" : body.status === "published" ? "published" : "draft",
             featured: body.featured === true,
+            pinnedAreas: permissions.includes("articles.feature") && Array.isArray(body.pinnedAreas) ? body.pinnedAreas.filter((v: unknown) => typeof v === "string").slice(0, 20) : [],
         })
 
         revalidateSite()
