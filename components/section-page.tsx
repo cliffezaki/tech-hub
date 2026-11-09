@@ -2,11 +2,12 @@ import Link from "next/link"
 import { ArticleCollection } from "@/components/article-collection"
 import { ExplainerCollection } from "@/components/explainer-collection"
 import { ReviewCollection } from "@/components/review-collection"
+import { NewsTicker } from "@/components/news-ticker"
 import { FileText } from "lucide-react"
 
 import { SectionCollection } from "@/components/section-collection"
 import { Button } from "@/components/ui/button"
-import { getSectionArticles, getPublishedPage, getAllArticleSummaries } from "@/lib/content"
+import { getSectionArticles, getPublishedPage, getAllArticleSummaries, getTickerArticles } from "@/lib/content"
 import { Markdown } from "@/components/markdown"
 import { AdSlot } from "@/components/ad-slot"
 import { notFound } from "next/navigation"
@@ -14,13 +15,19 @@ import { SECTION_META } from "@/lib/types"
 import type { ArticleSection } from "@/lib/types"
 
 export async function SectionPage({ section }: { section: ArticleSection }) {
-    const articles = await getSectionArticles(section)
+    const showTicker = section === "news" || section === "reviews" || section === "tech-kenya"
+    const [articles, ticker] = await Promise.all([
+        getSectionArticles(section),
+        showTicker ? getTickerArticles(section) : Promise.resolve([]),
+    ])
     const discovery = section === "how-stuff-works" ? (await getAllArticleSummaries()).filter(a => a.section === "news" || a.section === "reviews").slice(0, 4) : []
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)
     if (!page) notFound()
 
     return (
+        <>
+        {showTicker && <div className="site-container"><NewsTicker articles={ticker} /></div>}
         <div className="site-container py-10 md:py-14">
             <header className="border-b pb-8">
                 <p className="kicker text-brand-red">{meta.label}</p>
@@ -53,5 +60,6 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                 section === "how-stuff-works" ? <ExplainerCollection articles={articles} discovery={discovery} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
             )}
         </div>
+        </>
     )
 }

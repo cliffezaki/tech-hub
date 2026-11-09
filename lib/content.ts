@@ -23,10 +23,12 @@ export interface ArticleDetail extends ArticleSummary {
 function reviewedLeadFacts(article: Article): string[] {
     if (article.slug !== "apple-m6-macbook-pro-worth-it") return []
     const facts = [
-        ["12-core CPU and a 12-core GPU", "The article lists a 12-core CPU and a 12-core GPU."],
-        ["Wi-Fi 7 only helps when your router supports it", "Wi-Fi 7 needs a compatible router to deliver its benefits."],
-        ["three Thunderbolt 4 ports", "The port selection includes three Thunderbolt 4 ports, HDMI and an SD card slot."],
-        ["screen, camera and speakers are the same", "The screen, camera and speakers remain unchanged from the previous model."],
+        ["12-core CPU and a 12-core GPU", "12-core CPU and 12-core GPU."],
+        ["Wi-Fi 7 only helps when your router supports it", "Wi-Fi 7 requires a compatible router."],
+        ["three Thunderbolt 4 ports", "Three Thunderbolt 4 ports, HDMI and an SD card slot."],
+        ["screen, camera and speakers are the same", "Screen, camera and speakers are unchanged."],
+        ["The M6 begins at that same price", "Starts at $1,999 with 1TB of storage."],
+        ["M5 owners should stay where they are", "M5 owners have little reason to upgrade."],
     ]
     return facts.filter(([source]) => article.content.includes(source)).map(([, fact]) => fact)
 }
@@ -93,6 +95,20 @@ export async function getLatestArticles(limit = 12): Promise<ArticleSummary[]> {
 export async function getAllArticleSummaries(): Promise<ArticleSummary[]> {
     const articles = await getPublishedArticles()
     return articles.map(toSummary)
+}
+
+/** Recent, published editorial headlines; section pages stay within their section. */
+export async function getTickerArticles(section?: ArticleSection): Promise<ArticleSummary[]> {
+    const now = Date.now()
+    return (await getPublishedArticles())
+        .filter(article => {
+            const age = now - Date.parse(article.publishedAt)
+            return !article.demo && (!section || article.section === section)
+                && age >= 0 && age <= 30 * 86400000
+        })
+        .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+        .slice(0, 6)
+        .map(toSummary)
 }
 
 export async function getArticleDetail(
@@ -215,8 +231,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         sections,
         newsCount: news.length,
         reviews: summaries.filter(a => a.section === "reviews").sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0,4),
-        ticker: summaries.filter(a => !a.demo && Date.now() - Date.parse(a.publishedAt) <= 7 * 86400000)
-            .sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 6),
+        ticker: await getTickerArticles(),
     }
 }
 
