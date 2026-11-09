@@ -77,6 +77,7 @@ export interface HomepageContent {
     secondary: ArticleSummary[]
     featured: ArticleSummary[]
     latestNews: ArticleSummary[]
+    ticker: ArticleSummary[]
     sections: { section: ArticleSection; label: string; subtitle: string; href: string; count: number }[]
     totalArticles: number
 }
@@ -117,6 +118,10 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         .filter((article) => article.section === "news" && !used.has(article.id))
         .slice(0, 6)
 
+    const ticker = [...summaries]
+        .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+        .slice(0, 6)
+
     const sections = (Object.keys(SECTION_META) as ArticleSection[])
         .filter((section) => section !== "news")
         .map((section) => ({
@@ -134,6 +139,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         secondary,
         featured,
         latestNews,
+        ticker,
         sections,
         totalArticles: summaries.length,
     }
