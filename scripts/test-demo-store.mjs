@@ -79,7 +79,7 @@ const input = {
     title: "A correct slug", slug: "a-correct-slug", section: "news",
     content: "Body", imageUrl: "https://cdn.sanity.io/cover.svg", imageAlt: "Cover",
     imageCredit: "Original illustration", demo: true, demoBatch: "test-batch",
-    status: "published", featured: true, quickFacts: ["First verified fact", "Second verified fact", "Third verified fact"],
+    status: "published", featured: true, quickFacts: ["First verified fact", "Second verified fact", "Third verified fact", "Fourth verified fact", "Fifth verified fact", "Sixth verified fact"],
 }
 const first = await store.createArticle(input)
 assert.equal(first.slug, "a-correct-slug")

@@ -76,7 +76,7 @@ export function normalizeArticle(input: unknown): Article {
         seoTitle: typeof raw.seoTitle === "string" ? raw.seoTitle : "",
         scheduledAt: typeof raw.scheduledAt === "string" ? raw.scheduledAt : "",
         metaDescription: typeof raw.metaDescription === "string" ? raw.metaDescription : "",
-        quickFacts: Array.isArray(raw.quickFacts) ? [...new Set(raw.quickFacts.filter((v): v is string => typeof v === "string").map(v => v.trim().slice(0, 240)).filter(Boolean))].slice(0, 4) : [],
+        quickFacts: Array.isArray(raw.quickFacts) ? [...new Set(raw.quickFacts.filter((v): v is string => typeof v === "string").map(v => v.trim().slice(0, 240)).filter(Boolean))].slice(0, 6) : [],
         tags: Array.isArray(raw.tags) ? raw.tags.filter((v): v is string => typeof v === "string") : [],
         category: String(raw.category || SECTION_META[section].defaultCategory),
         section,

@@ -38,5 +38,6 @@ assert.equal(count,layout.explainerLayout(make(25)).cards.length);assert(focused
 const fields=await load('lib/editor-fields.ts',{'@/lib/rich-content':{validateBody:v=>v}})
 assert.equal(fields.editorFields({}).quickFacts,undefined)
 assert.deepEqual(Array.from(fields.editorFields({quickFacts:[' A ','A','','B',''].slice(0,4)}).quickFacts),['A','B'])
-for(const bad of ['text',[5],Array(5).fill('a'),['x'.repeat(241)]])assert.throws(()=>fields.editorFields({quickFacts:bad}))
+assert.equal(fields.editorFields({quickFacts:['A','B','C','D','E','F']}).quickFacts.length,6)
+for(const bad of ['text',[5],Array(7).fill('a'),['x'.repeat(241)]])assert.throws(()=>fields.editorFields({quickFacts:bad}))
 console.log('PASS: sparse and full collections, disjoint stories, How To exclusion, featured selection, Show More batches/focus, and Quick Facts input validation.')
