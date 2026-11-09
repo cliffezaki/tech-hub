@@ -3,6 +3,7 @@ import { ArrowRight, PenLine } from "lucide-react"
 
 import { ArticleCard } from "@/components/article-card"
 import { NewsletterBox } from "@/components/newsletter-box"
+import { NewsTicker } from "@/components/news-ticker"
 import { SafeImage } from "@/components/safe-image"
 import { SectionHeading } from "@/components/section-heading"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,7 @@ import { getHomepageContent } from "@/lib/content"
 import { formatDate } from "@/lib/format"
 
 export default async function Home() {
-    const { settings, lead, secondary, featured, latestNews, sections, totalArticles } = await getHomepageContent()
+    const { settings, lead, secondary, featured, latestNews, ticker, sections, totalArticles } = await getHomepageContent()
 
     if (!lead) {
         return (
@@ -36,6 +37,11 @@ export default async function Home() {
 
     return (
         <div>
+            {ticker.length >= 2 && (
+                <div className="site-container">
+                    <NewsTicker articles={ticker} />
+                </div>
+            )}
             {/* Lead story with two supporting highlights */}
             <section className="border-b bg-muted/20">
                 <div className="site-container py-10 md:py-14">
