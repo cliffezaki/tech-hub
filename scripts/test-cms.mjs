@@ -201,7 +201,7 @@ try {
     assert.equal(draft.data.author, "Test Author")
     const richBody = "TECHHUB_DOCUMENT_V1\n" + JSON.stringify({ type: "doc", content: [
         { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Visual heading" }] },
-        { type: "paragraph", content: [{ type: "text", text: "Formatted content", marks: [{ type: "bold" }, { type: "underline" }, { type: "textStyle", attrs: { fontFamily: "Georgia", fontSize: "24px" } }] }] },
+        { type: "paragraph", content: [{ type: "text", text: "Formatted content", marks: [{ type: "bold" }, { type: "underline" }, { type: "textStyle", attrs: { fontFamily: "Merriweather", fontSize: "24px" } }] }] },
         { type: "image", attrs: { src: "https://example.test/image.png", alt: "Accessible image", caption: "Caption", width: 50 } },
         { type: "table", content: [{ type: "tableRow", content: [{ type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Cell" }] }] }] }] },
     ] })
@@ -223,7 +223,7 @@ try {
     assert(rendered.data.includes("Visual heading"))
     assert(rendered.data.includes("<strong>"))
     assert(rendered.data.includes("<u>"))
-    assert(rendered.data.includes("font-family:Georgia;font-size:24px"))
+    assert(rendered.data.includes("font-family:Merriweather;font-size:24px"))
     assert(!rendered.data.includes("TECHHUB_DOCUMENT_V1\\n"), "No serialized document shown as article copy")
     const mediaBody = new FormData()
     mediaBody.append("file", new File([await sharp({ create: { width: 80, height: 40, channels: 3, background: "#d51d25" } }).png().toBuffer()], "crop-test.png", { type: "image/png" }))

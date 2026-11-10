@@ -1,5 +1,6 @@
 /* Shared by the writing preview and published articles; never interprets raw HTML. */
 import { createElement, Fragment, type CSSProperties, type ReactNode } from "react"
+import { ARTICLE_FONTS } from "@/lib/editor-fonts"
 import { color, embedUrl, safeUrl, type RichNode } from "@/lib/rich-content"
 export function RichDocument({ document }: { document: RichNode }) {
     function render(n: RichNode, key: number): ReactNode {
@@ -12,7 +13,7 @@ export function RichDocument({ document }: { document: RichNode }) {
                 const tags: Record<string, string> = { bold: "strong", italic: "em", underline: "u", strike: "s", code: "code" }
                 if (tags[m.type]) value = createElement(tags[m.type], {}, value)
                 if (m.type === "link") value = <a href={safeUrl(m.attrs?.href) || undefined} rel="noopener noreferrer">{value}</a>
-                if (m.type === "textStyle") value = <span style={{ color: color(m.attrs?.color), fontFamily: ["Arial", "Georgia", "Verdana", "Times New Roman", "Courier New"].includes(String(m.attrs?.fontFamily)) ? String(m.attrs?.fontFamily) : undefined, fontSize: /^(1[2-9]|[2-6][0-9]|7[0-2])px$/.test(String(m.attrs?.fontSize)) ? String(m.attrs?.fontSize) : undefined }}>{value}</span>
+                if (m.type === "textStyle") value = <span style={{ color: color(m.attrs?.color), fontFamily: ARTICLE_FONTS.includes(String(m.attrs?.fontFamily)) ? String(m.attrs?.fontFamily) : undefined, fontSize: /^(1[2-9]|[2-6][0-9]|7[0-2])px$/.test(String(m.attrs?.fontSize)) ? String(m.attrs?.fontSize) : undefined }}>{value}</span>
                 if (m.type === "highlight") value = <mark style={{ backgroundColor: color(m.attrs?.color) || "#fef08a" }}>{value}</mark>
             }
             return <Fragment key={key}>{value}</Fragment>

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Playfair_Display, Inter } from "next/font/google"
 
 import "./globals.css"
+import "./article-fonts"
 import { ThemeProvider } from "@/components/theme-provider"
 import { getSiteSettings } from "@/lib/content"
 import { getSiteUrl } from "@/lib/site"
