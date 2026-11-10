@@ -1,5 +1,5 @@
 "use client"
-import { useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import { Bold, Italic, Underline, Strikethrough, AArrowDown, AArrowUp, Link, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, Palette, Highlighter, Undo2, Redo2, RemoveFormatting } from "lucide-react"
 import { FontPicker } from "@/components/admin/font-picker"
@@ -45,6 +45,18 @@ export function VisualEditor({ initial, onChange, canUpload, headline }: { headl
     const [document] = useState(() => { try { return { content: editorDocument(initial), error: "" } } catch (e) { return { content: null, error: (e as Error).message } } })
     const editor = useEditor({ immediatelyRender: false, editable: !document.error, extensions: [StarterKit.configure({ link: { openOnClick: false } }), ArticleImage, TableKit.configure({ table: { resizable: true } }), TextAlign.configure({ types: ["heading", "paragraph"] }), TextStyle, Color, FontFamily, FontSize, Highlight.configure({ multicolor: true }), Placeholder.configure({ placeholder: "Start writing your story…" }), Media, PullQuote, ButtonLink, Gallery], content: document.content as JSONContent || undefined, onUpdate: ({ editor }) => onChange(writeDocument(editor.getJSON())), editorProps: { attributes: { class: "rich-article min-h-[60vh] outline-none", "aria-label": "Article content", role: "textbox", "aria-multiline": "true" } } })
     useEditorState({ editor, selector: ({ editor }) => editor ? { selection: `${editor.state.selection.from}:${editor.state.selection.to}`, transaction: editor.state.doc.content.size, active: ["bold", "italic", "underline", "strike", "bulletList", "orderedList"].map(x => editor.isActive(x)).join(), textStyle: JSON.stringify(editor.getAttributes("textStyle")), highlight: JSON.stringify(editor.getAttributes("highlight")), alignment: JSON.stringify(editor.getAttributes("paragraph")) + JSON.stringify(editor.getAttributes("heading")), undo: editor.can().undo(), redo: editor.can().redo() } : null })
+    useEffect(() => {
+        if (!editor) return
+        const hideOutside = (event: Event) => {
+            const target = event.target as Element | null
+            if (!editor.isDestroyed && !editor.view.dom.contains(target) && !target?.closest?.(".editor-selection-toolbar")) editor.view.dispatch(editor.state.tr.setMeta("articleSelectionMenu", "hide"))
+        }
+        const escape = (event: KeyboardEvent) => { if (event.key === "Escape" && !editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta("articleSelectionMenu", "hide")) }
+        window.document.addEventListener("pointerdown", hideOutside)
+        window.document.addEventListener("focusin", hideOutside)
+        window.document.addEventListener("keydown", escape)
+        return () => { window.document.removeEventListener("pointerdown", hideOutside); window.document.removeEventListener("focusin", hideOutside); window.document.removeEventListener("keydown", escape) }
+    }, [editor])
     if (document.error) return <div role="alert" className="rounded border border-amber-400 p-5">{document.error} Saving remains disabled until this conversion is reviewed.</div>
     if (!editor) return <p className="p-8">Preparing your writing space…</p>
     const icons: Record<string, typeof Bold> = { Bold, Italic, Underline, Strike: Strikethrough, "Decrease text size": AArrowDown, "Increase text size": AArrowUp, Link, Bullets: List, Numbered: ListOrdered, "Clear format": RemoveFormatting, Undo: Undo2, Redo: Redo2 }
@@ -97,14 +109,14 @@ export function VisualEditor({ initial, onChange, canUpload, headline }: { headl
             {button("Undo", () => { chain().undo().run() }, false, !editor.can().undo())}{button("Redo", () => { chain().redo().run() }, false, !editor.can().redo())}
         </div>
         {headline}
-        <BubbleMenu editor={editor} updateDelay={100} options={{ placement: "top", offset: 10, flip: { padding: 8 }, shift: { padding: 8, boundary: editor.view.dom.closest(".visual-editor") as HTMLElement } }} className="editor-selection-toolbar" role="toolbar" aria-label="Selected text formatting">
+        <BubbleMenu pluginKey="articleSelectionMenu" editor={editor} updateDelay={100} options={{ placement: "top", offset: 10, flip: { padding: 8 }, shift: { padding: 8, boundary: editor.view.dom.closest(".visual-editor") as HTMLElement } }} className="editor-selection-toolbar"><div className="editor-selection-actions" role="toolbar" aria-label="Selected text formatting">
             {button("Bold", () => { chain().toggleBold().run() }, editor.isActive("bold"))}
             {button("Italic", () => { chain().toggleItalic().run() }, editor.isActive("italic"))}
             {button("Underline", () => { chain().toggleUnderline().run() }, editor.isActive("underline"))}
             {button("Strike", () => { chain().toggleStrike().run() }, editor.isActive("strike"))}
             {colors()}
             {button("Link", () => { setSource(editor.getAttributes("link").href || ""); setPanel("link") }, editor.isActive("link"))}
-        </BubbleMenu>
+        </div></BubbleMenu>
         <div className="editor-blockbar" role="toolbar" aria-label="Insert and arrange blocks">
             <select aria-label="Insert block" className="editor-tool" value="" onChange={e => {
                 const v = e.target.value
