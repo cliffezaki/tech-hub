@@ -5,6 +5,7 @@ export interface TrendingStory {
     detail: string
     whyItMatters: string
     sources: { name: string; url: string }[]
+    publishedAt?: string
     expiresAt: string
 }
 

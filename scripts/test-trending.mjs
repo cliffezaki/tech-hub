@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { SOURCES, candidates, validateStories, signature, authenticated, MAX_AGE } from "../lib/trending-core.mjs"
+import { SOURCES, candidates, validateStories, signature, authenticated, MAX_AGE, mergeStories } from "../lib/trending-core.mjs"
 import { parseFeed, refreshFeed } from "../lib/trending-worker.mjs"
 
 const now=Date.parse("2026-11-14T08:00:00Z")
@@ -76,3 +76,15 @@ assert.deepEqual(records.get("feed"),saved)
 assert.equal(records.get("lock").until,0)
 assert.equal(records.get("attempt").status,"failed")
 console.log("Trending tests passed: parsing, source validation, freshness, deduplication, grounding, copyright guard, authentication, budget, cache and failure preservation.")
+
+const sample=(i)=>({...saved.stories[0],id:String(i),headline:String.fromCharCode(97+i).repeat(24),sources:[{name:'The Verge',url:'https://www.theverge.com/'+i}],publishedAt:new Date(now+i*1000).toISOString(),expiresAt:new Date(now+MAX_AGE).toISOString()})
+const rolling=mergeStories(Array.from({length:7},(_,i)=>sample(i)),[sample(7)],now)
+assert.equal(rolling.length,7)
+assert.equal(rolling[0].id,'7')
+assert.equal(rolling.some(s=>s.id==='0'),false)
+const update={...sample(4),id:'updated-id',headline:'Updated coverage of this development'}
+const revised=mergeStories(rolling,[update],now)
+assert.equal(revised.length,7)
+assert.equal(revised.find(s=>s.id==='4').headline,update.headline)
+assert.equal(mergeStories(rolling,[],now+MAX_AGE+1).length,0)
+console.log('Rolling feed passed: newest first, seven-item cap, oldest replacement, source-based updates and expiry.')
