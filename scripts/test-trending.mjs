@@ -1,3 +1,5 @@
+import fs from "node:fs"
+import {createRequire} from "node:module"
 import assert from "node:assert/strict"
 import { SOURCES, candidates, validateStories, signature, authenticated, MAX_AGE, mergeStories } from "../lib/trending-core.mjs"
 import { parseFeed, refreshFeed } from "../lib/trending-worker.mjs"
@@ -17,7 +19,7 @@ assert.equal(candidates([...parsed,...parsed],now).length,1)
 assert.equal(candidates(parsed,now+MAX_AGE).length,0)
 assert.equal(candidates([{...parsed[0],title:"Best phone deals and coupons"}],now).length,0)
 const items=[...parsed,{...parsed[0],id:"second",source:"The Verge",url:"https://www.theverge.com/example"}]
-const draft={headline:"Developer software adds safeguards for shared projects",summary:"Developers have a new software release intended to help them spot application errors. It also includes information protection controls for teams working together, combining debugging assistance with safeguards for shared development projects.",detail:"A newly released developer tool brings error detection and information protection into the same workflow. The software is aimed at teams collaborating on applications, with controls for handling the information involved in that work. The available reporting describes both debugging support and safeguards for shared projects, rather than a tool focused solely on finding errors.",whyItMatters:"Teams working on shared applications need to locate errors while protecting the information involved in their projects.",sourceIds:items.map(i=>i.id)}
+const draft={headline:"Developer software adds safeguards for shared projects",summary:"Developers have a new software release intended to help them spot application errors. It also includes information protection controls for teams working together, combining debugging assistance with safeguards for shared development projects.",detail:"A newly released developer tool brings error detection and information protection into the same workflow. The software is aimed at teams collaborating on applications, with controls for handling the information involved in that work.\n\nThe available reporting describes both debugging support and safeguards for shared projects, rather than a tool focused solely on finding errors. Those controls address the information teams use while they build applications together, placing protection alongside the work of identifying software problems. Both functions apply to teams sharing application projects.",whyItMatters:"Teams working on shared applications need to locate errors while protecting the information involved in their projects.",sourceIds:items.map(i=>i.id)}
 assert.equal(validateStories({stories:[draft]},items,now).length,1)
 assert.equal(validateStories({stories:[{...draft,sourceIds:[items[0].id]}]},items,now).length,0)
 assert.equal(validateStories({stories:[{...draft,headline:"Software protects 500 million developer accounts"}]},items,now).length,0)
@@ -26,7 +28,13 @@ assert.equal(validateStories({stories:[{...draft,summary:description}]},items,no
 const single=[{...items[0],text:description+" "+description+" "+description}]
 assert.equal(validateStories({stories:[{...draft,sourceIds:[single[0].id]}]},single,now).length,0)
 assert.equal(validateStories({stories:[{...draft,summary:"According to BBC Technology, "+draft.summary,sourceIds:[single[0].id]}]},single,now).length,1)
-assert.equal(validateStories({stories:[{...draft,detail:draft.detail.replace(". The",".\n\nThe")}]},items,now).length,1)
+assert.equal(validateStories({stories:[{...draft,detail:draft.detail.replace("\n\n"," ")}]},items,now).length,0)
+assert.equal(validateStories({stories:[{...draft,detail:draft.detail + "\n\n" + draft.summary}]},items,now).length,0)
+assert.equal(validateStories({stories:[{...draft,detail:draft.summary + "\n\n" + draft.summary}]},items,now).length,0)
+const accepted = validateStories({stories:[draft]},items,now)[0]
+assert.equal(accepted.detail.split("\n\n").length,2)
+assert.equal(accepted.summary,draft.summary)
+assert.equal(accepted.whyItMatters,draft.whyItMatters)
 const signed=new Request("https://example.com",{headers:{"x-trending-time":String(now),"x-trending-signature":signature("test",String(now))}})
 assert.equal(authenticated(signed,"test",now),true)
 assert.equal(authenticated(signed,"wrong",now),false)
@@ -88,3 +96,18 @@ assert.equal(revised.length,7)
 assert.equal(revised.find(s=>s.id==='4').headline,update.headline)
 assert.equal(mergeStories(rolling,[],now+MAX_AGE+1).length,0)
 console.log('Rolling feed passed: newest first, seven-item cap, oldest replacement, source-based updates and expiry.')
+
+// The cached-content adapter must not mutate the homepage summary or other sections.
+const require=createRequire(import.meta.url)
+const ts=require("typescript")
+const compiled=ts.transpileModule(fs.readFileSync(new URL("../lib/briefing-paragraphs.ts",import.meta.url),"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText
+const helpers={};new Function("exports",compiled)(helpers)
+const current={summary:draft.summary,detail:draft.detail,whyItMatters:draft.whyItMatters}
+assert.equal(helpers.briefingParagraphs(current).length,2)
+assert.deepEqual(helpers.briefingParagraphs({...current,detail:"Older cached context with details."}),[draft.summary,"Older cached context with details."])
+assert.deepEqual(helpers.briefingParagraphs({summary:"First sentence. Second sentence.",detail:"First sentence. Second sentence."}),["First sentence.","Second sentence."])
+assert.equal(current.summary,draft.summary)
+assert.equal(current.whyItMatters,draft.whyItMatters)
+assert.equal(validateStories({stories:[{...draft,detail:draft.detail.replace("\n\n","\r\n\r\n")}]},items,now)[0].detail,draft.detail)
+assert.equal(validateStories({stories:[{...draft,detail:draft.detail+"<script>"}]},items,now).length,0)
+console.log("Briefing paragraphs passed: exactly two distinct paragraphs, cached compatibility, preserved summary/significance, newline normalization and markup rejection.")
