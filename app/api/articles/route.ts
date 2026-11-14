@@ -1,3 +1,4 @@
+import { readPlacements, withPlacements, preparePlacements, commitPlacements } from "@/lib/placement-store"
 import { NextResponse } from "next/server"
 
 import {
@@ -21,7 +22,9 @@ export async function GET() {
         const permissions = user ? await userPermissions(user) : []
         const canEditAll = permissions.includes("articles.editAll")
         const canEditOwn = permissions.includes("articles.editOwn")
-        const articles = await getStore().listArticles(canEditAll || canEditOwn)
+        const rawArticles = await getStore().listArticles(canEditAll || canEditOwn)
+        const placements = await readPlacements()
+        const articles = rawArticles.map(a=>withPlacements(a,placements))
         return NextResponse.json(
             articles.flatMap((article) => {
                 if (canEditAll || (canEditOwn && user && article.ownerId === user.id))
@@ -78,6 +81,8 @@ export async function POST(request: Request) {
             ? body.section
             : "news"
 
+        const plan = await preparePlacements("new", {...body, pinnedAreas: body.pinnedAreas || []}, section)
+        if (plan && "conflict" in plan) return NextResponse.json(plan.conflict, {status:409})
         const article = await getStore().createArticle({
             ownerId: user.id,
             title: body.title.trim(),
@@ -101,9 +106,13 @@ export async function POST(request: Request) {
             pinnedAreas: permissions.includes("articles.feature") && Array.isArray(body.pinnedAreas) ? body.pinnedAreas.filter((v: unknown) => typeof v === "string").slice(0, 20) : [],
         })
 
+        if(plan && !("conflict" in plan)) {plan.next.pins[article.id]=plan.next.pins.new || []; delete plan.next.pins.new}
+        await commitPlacements(plan, article)
         revalidateSite()
         return NextResponse.json(article, { status: 201 })
     } catch (error) {
+        if ((error as Error).message === "Unknown featured placement") return NextResponse.json({error:(error as Error).message}, {status:400})
+        if ((error as {status?:number}).status === 409) return NextResponse.json({error:"Placements changed while saving. Reload before trying again."}, {status:409})
         return handleError(error, "Failed to create article")
     }
 }

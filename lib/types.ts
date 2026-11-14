@@ -160,6 +160,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 }
 
 export interface ArticleSummary {
+    pinnedAreas?: string[]
     seoTitle?: string
     metaDescription?: string
     tags?: string[]

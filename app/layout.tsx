@@ -78,9 +78,10 @@ export default async function RootLayout({
             <body suppressHydrationWarning>
                 <ThemeProvider
                     attribute="class"
+                    themes={["light", "dark", "midnight"]}
                     defaultTheme="system"
                     enableSystem
-                    enableColorScheme
+                    enableColorScheme={false}
                 >
                     {children}
                 </ThemeProvider>

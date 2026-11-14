@@ -1,4 +1,5 @@
 "use client"
+import { FeaturedPlacement, placementFetch } from "@/components/admin/featured-placement"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { Article } from "@/lib/types"
@@ -21,7 +22,7 @@ export function ArticleActions({
     async function patch(value: Partial<Article>) {
         setBusy(true)
         try {
-            const r = await fetch(`/api/articles/${article.id}`, {
+            const r = await placementFetch(`/api/articles/${article.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(value),
@@ -85,7 +86,7 @@ export function ArticleActions({
                                         title: `${article.title} (copy)`,
                                         slug: `${article.slug}-copy-${Date.now()}`,
                                         status: "draft",
-                                        featured: false,
+                                        featured: false, pinnedAreas: [],
                                     }),
                                 })
                                 const d = await r.json()
@@ -108,55 +109,7 @@ export function ArticleActions({
                 )}
             </div>
             {permissions.includes("articles.feature") && (
-                <div className="flex flex-wrap items-center gap-3 text-xs">
-                    {["homepage", article.section, article.category]
-                        .filter((v, i, a) => a.indexOf(v) === i)
-                        .map((area) => (
-                            <label key={area}>
-                                <input
-                                    type="checkbox"
-                                    className="mr-1"
-                                    disabled={busy}
-                                    checked={
-                                        article.pinnedAreas?.includes(area) ||
-                                        false
-                                    }
-                                    onChange={(e) =>
-                                        patch({
-                                            pinnedAreas: e.target.checked
-                                                ? [
-                                                      ...(article.pinnedAreas ||
-                                                          []),
-                                                      area,
-                                                  ]
-                                                : article.pinnedAreas?.filter(
-                                                      (a) => a !== area
-                                                  ),
-                                        })
-                                    }
-                                />
-                                Pin: {area}
-                            </label>
-                        ))}
-                    <label>
-                        Display order{" "}
-                        <input
-                            aria-label={`Display order for ${article.title}`}
-                            className="w-16 rounded border bg-background p-1"
-                            type="number"
-                            defaultValue={article.manualOrder || 0}
-                            onBlur={(e) => {
-                                if (
-                                    Number(e.target.value) !==
-                                    (article.manualOrder || 0)
-                                )
-                                    void patch({
-                                        manualOrder: Number(e.target.value),
-                                    })
-                            }}
-                        />
-                    </label>
-                </div>
+                <FeaturedPlacement section={article.section} value={article.pinnedAreas || []} disabled={busy} onChange={v=>void patch({pinnedAreas:v,featured:false})} />
             )}
             {permissions.includes("articles.publish") && (
                 <label className="block text-xs">

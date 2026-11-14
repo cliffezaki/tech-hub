@@ -90,9 +90,7 @@ export default function AdminHomepagePage() {
         )
     }
 
-    const leadArticle = settings.heroArticleId
-        ? published.find((article) => article.id === settings.heroArticleId)
-        : featured[0] || published[0]
+    const leadArticle = published.find(article=>article.pinnedAreas?.includes("homepage")) || featured[0] || published[0]
 
     return (
         <div className="space-y-6">
@@ -126,22 +124,7 @@ export default function AdminHomepagePage() {
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="heroArticleId">Pinned article</Label>
-                    <select
-                        id="heroArticleId"
-                        value={settings.heroArticleId}
-                        onChange={(event) => setSettings({ ...settings, heroArticleId: event.target.value })}
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                        <option value="">Automatic — newest featured article</option>
-                        {published.map((article) => (
-                            <option key={article.id} value={article.id}>
-                                {article.title}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <p className="text-sm">Use <a className="underline" href="/admin/articles">Featured Placement in article settings</a> to manage Today’s Highlight, Also Worth Reading and Featured Articles.</p>
 
                 {leadArticle && (
                     <div className="flex gap-4 rounded-lg border bg-muted/30 p-3">

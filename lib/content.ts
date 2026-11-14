@@ -1,3 +1,5 @@
+import { readPlacements, withPlacements } from "@/lib/placement-store"
+import { pinnedFirst } from "@/lib/placements"
 import "server-only"
 import { cache } from "react"
 import { articleVisible } from "@/lib/article-visibility"
@@ -35,6 +37,7 @@ function reviewedLeadFacts(article: Article): string[] {
 
 function toSummary(article: Article): ArticleSummary {
     return {
+        pinnedAreas: article.pinnedAreas,
         demo: article.demo,
         seoTitle: article.seoTitle,
         metaDescription: article.metaDescription,
@@ -64,27 +67,18 @@ function isPublished(article: Article) {
 /** Every public read goes through here, so drafts can never leak onto the live site. */
 const getPublishedArticles = cache(async (): Promise<Article[]> => {
     const articles = await getStore().listArticles(false)
-    return articles.filter(isPublished).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
+    const placements = await readPlacements()
+    return articles.map(a=>withPlacements(a,placements)).filter(isPublished).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
 })
 
 export async function getSectionArticles(
     section: ArticleSection
 ): Promise<ArticleSummary[]> {
     const articles = await getPublishedArticles()
-    return articles
-        .filter((article) => article.section === section)
-        .sort(
-            (a, b) =>
-                Number(
-                    b.pinnedAreas?.includes(section) ||
-                        b.pinnedAreas?.includes(b.category)
-                ) -
-                    Number(
-                        a.pinnedAreas?.includes(section) ||
-                            a.pinnedAreas?.includes(a.category)
-                    ) || (a.manualOrder || 0) - (b.manualOrder || 0)
-        )
-        .map(toSummary)
+    const sectionArticles = articles.filter(a=>a.section === section)
+    const ordered = pinnedFirst(sectionArticles, `${section}:latest`)
+    const hero = sectionArticles.find(a=>a.pinnedAreas?.includes(`${section}:featured`))
+    return (hero ? [hero,...ordered.filter(a=>a.id!==hero.id)] : ordered).map(toSummary)
 }
 
 export async function getLatestArticles(limit = 12): Promise<ArticleSummary[]> {
@@ -157,43 +151,16 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         getPublishedArticles(),
         store.getSettings(),
     ])
-    articles.sort(
-        (a, b) =>
-            Number(b.pinnedAreas?.includes("homepage")) -
-                Number(a.pinnedAreas?.includes("homepage")) ||
-            (a.manualOrder || 0) - (b.manualOrder || 0)
-    )
     const summaries = articles.map(toSummary)
-
-    const featuredAll = summaries.filter((article) => article.featured)
-    const pinned = settings.heroArticleId
-        ? summaries.find((article) => article.id === settings.heroArticleId)
-        : summaries.find((summary) =>
-              articles
-                  .find((article) => article.id === summary.id)
-                  ?.pinnedAreas?.includes("homepage")
-          )
-
-    // Pinned choice wins, then the newest featured story, then simply the newest article.
-    const lead = pinned || featuredAll[0] || summaries[0] || null
-
+    const placements = await readPlacements()
+    const featuredAll = pinnedFirst(summaries, "homepage:featured").filter(a=>a.featured)
+    const lead = summaries.find(a=>a.pinnedAreas?.includes("homepage")) || featuredAll[0] || summaries[0] || null
     const used = new Set<string>(lead ? [lead.id] : [])
 
-    // The two slots beside the lead prefer other featured stories, then the newest news.
-    // Deduplicate with a local set: marking `used` here would consume every candidate
-    // before the slice, leaving the featured and news blocks below empty.
-    const seen = new Set(used)
-    const secondary = [
-        ...featuredAll,
-        ...summaries.filter((article) => article.section === "news"),
-        ...summaries,
-    ]
-        .filter((article) => {
-            if (seen.has(article.id)) return false
-            seen.add(article.id)
-            return true
-        })
-        .slice(0, 2)
+    const priorId = placements.lastLead && placements.lastLead !== lead?.id ? placements.lastLead : placements.previousLead
+    const prior = priorId ? summaries.find(a=>a.id===priorId && a.id!==lead?.id) : undefined
+    const manualAlso = summaries.find(a=>a.id!==lead?.id && a.pinnedAreas?.includes("homepage:also"))
+    const secondary = [manualAlso || prior || summaries.find(a=>a.id!==lead?.id)].filter((a):a is ArticleSummary=>!!a)
 
     secondary.forEach((article) => used.add(article.id))
 
@@ -205,7 +172,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     }).slice(0, 4)
     featured.forEach((article) => used.add(article.id))
 
-    const news = summaries.filter((article) => article.section === "news")
+    const news = pinnedFirst(summaries, "news:latest").filter((article) => article.section === "news")
     const latestNews = news
         .filter((article) => !used.has(article.id))
         .slice(0, 6)
@@ -230,7 +197,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         latestNews,
         sections,
         newsCount: news.length,
-        reviews: summaries.filter(a => a.section === "reviews").sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0,4),
+        reviews: pinnedFirst(summaries.filter(a => a.section === "reviews"), "homepage:reviews").slice(0,4),
         ticker: await getTickerArticles(),
     }
 }

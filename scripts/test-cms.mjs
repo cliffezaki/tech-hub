@@ -205,9 +205,9 @@ try {
         { type: "image", attrs: { src: "https://example.test/image.png", alt: "Accessible image", caption: "Caption", width: 50 } },
         { type: "table", content: [{ type: "tableRow", content: [{ type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Cell" }] }] }] }] },
     ] })
-    const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"], pinnedAreas: ["homepage", "news"] }, owner.cookie, 201)
+    const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"], pinnedAreas: ["homepage", "news:latest"] }, owner.cookie, 201)
     assert.equal(rich.data.content, richBody)
-    assert.deepEqual(rich.data.pinnedAreas, ["homepage", "news"])
+    assert.deepEqual(rich.data.pinnedAreas, ["homepage", "news:latest"])
     await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { pinnedAreas: [] } })
     assert.deepEqual((await call(`/api/articles/${rich.data.id}`, { cookie: owner.cookie })).data.pinnedAreas, [])
     await post("/api/articles", { title: "Unauthorized pin", pinnedAreas: ["homepage"] }, author.cookie, 403)
@@ -307,7 +307,7 @@ try {
     assert.equal(published.data.sponsorship, "Sponsored test disclosure")
     assert(!Object.hasOwn(published.data, "ownerId"))
     const editorial = await call(`/api/articles/${draft.data.id}`, { cookie: owner.cookie })
-    assert.equal(editorial.data.ownerId, ownerId)
+    assert.equal(editorial.data.ownerId, draft.data.ownerId)
     await call(`/api/articles/${draft.data.id}`, {
         method: "PUT",
         body: { content: "Publish bypass" },
@@ -577,6 +577,24 @@ try {
     const repeatedLike = await post("/api/public/likes",{articleId:draft.data.id},like.cookie)
     assert.equal(repeatedLike.data.count,1)
     assert.equal((await call(`/api/public/likes?articleId=${draft.data.id}`,{cookie:like.cookie})).data.liked,true)
+    if (process.env.CMS_TEST_EDITORIAL_ONLY) {
+        const alternative = await post('/api/articles', {title:'Alternative highlight',status:'published',content:'Placement integration test'}, owner.cookie,201)
+        const replacement = await call(`/api/articles/${alternative.data.id}`,{method:'PUT',body:{pinnedAreas:['homepage']},cookie:owner.cookie,status:409})
+        assert(replacement.data.confirmPlacements)
+        assert((await call(`/api/articles/${draft.data.id}`,{cookie:owner.cookie})).data.pinnedAreas.includes('homepage'))
+        await call(`/api/articles/${alternative.data.id}`,{method:'PUT',body:{pinnedAreas:['homepage'],confirmPlacements:replacement.data.confirmPlacements},cookie:owner.cookie})
+        assert(!(await call(`/api/articles/${draft.data.id}`,{cookie:owner.cookie})).data.pinnedAreas.includes('homepage'))
+        await call(`/api/articles/${rich.data.id}`,{method:'PUT',body:{pinnedAreas:['homepage:also'],featured:false},cookie:owner.cookie})
+        const conflict = await call(`/api/articles/${draft.data.id}`,{method:'PUT',body:{pinnedAreas:['homepage']},cookie:owner.cookie,status:409})
+        await call(`/api/articles/${draft.data.id}`,{method:'PUT',body:{pinnedAreas:['homepage'],confirmPlacements:conflict.data.confirmPlacements},cookie:owner.cookie})
+        assert((await call(`/api/articles/${rich.data.id}`,{cookie:owner.cookie})).data.pinnedAreas.includes('homepage:also'))
+        await call(`/api/articles/${rich.data.id}`,{method:'PUT',body:{pinnedAreas:[],featured:false},cookie:owner.cookie})
+        const liveHome=await call('/')
+        assert(liveHome.data.includes('Alternative highlight'))
+        console.log(`Editorial API integration passed: ${checks} checks, including permissions, drafts, publication, schedules, uploads, pin replacement confirmation, manual priority and unpinning.`)
+        server.kill('SIGTERM')
+        process.exit(0)
+    }
     await post("/api/public/subscribe",{email:"newsletter@example.test",consent:true})
     await post("/api/public/subscribe",{email:"NEWSLETTER@example.test",consent:true})
     const subscribers = await call("/api/cms/subscribers",{cookie:owner.cookie})
@@ -632,8 +650,8 @@ try {
     const upload = await fetch(`${base}/api/media`, { method: "POST", headers: { Origin: base, Cookie: owner.cookie }, body: form })
     assert.equal(upload.status, 201)
     checks++
-    const uploaded = await upload.json()
-    await call(`/api/media?id=${encodeURIComponent(uploaded.id)}`, { method: "DELETE", cookie: owner.cookie })
+    const uploadedImage = await upload.json()
+    await call(`/api/media?id=${encodeURIComponent(uploadedImage.id)}`, { method: "DELETE", cookie: owner.cookie })
     const svgForm = new FormData()
     svgForm.set("file", new Blob(["<svg/>"], { type: "image/svg+xml" }), "blocked.svg")
     const blockedSvg = await fetch(`${base}/api/media`, { method: "POST", headers: { Origin: base, Cookie: owner.cookie }, body: svgForm })

@@ -117,7 +117,7 @@ export default async function Home() {
                                     Also worth reading
                                 </h2>
                                 <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
-                                    {secondary.slice(1).map((article) => (
+                                    {secondary.map((article) => (
                                         <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3 [&_h3]:min-h-[3.75em]" />
                                     ))}
                                 </div>

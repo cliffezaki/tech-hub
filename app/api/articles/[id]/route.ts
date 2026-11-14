@@ -1,3 +1,4 @@
+import { readPlacements, withPlacements, preparePlacements, commitPlacements } from "@/lib/placement-store"
 import { NextResponse } from "next/server"
 
 import {
@@ -24,7 +25,8 @@ interface Props {
 export async function GET(request: Request, { params }: Props) {
     try {
         const { id } = await params
-        const article = await getStore().getArticle(id)
+        const rawArticle = await getStore().getArticle(id)
+        const article = rawArticle ? withPlacements(rawArticle, await readPlacements()) : null
 
         const user = await currentUser()
         const permissions = user ? await userPermissions(user) : []
@@ -170,6 +172,8 @@ export async function PUT(request: Request, { params }: Props) {
             patch.readTime = estimateReadTime(body.content)
         }
 
+        const plan = await preparePlacements(id, {...body, pinnedAreas: body.pinnedAreas ?? (await readPlacements()).pins[id] ?? []}, patch.section || current.section)
+        if (plan && "conflict" in plan) return NextResponse.json(plan.conflict, {status:409})
         const revisionId = randomUUID()
         await saveRecord("article-revisions", revisionId, { id: revisionId, articleId: id, userId: user.id, savedAt: new Date().toISOString(), data: current }, true)
         const updated = await getStore().updateArticle(id, patch)
@@ -181,9 +185,12 @@ export async function PUT(request: Request, { params }: Props) {
             )
         }
 
+        await commitPlacements(plan, updated)
         revalidateSite()
-        return NextResponse.json(updated)
+        return NextResponse.json(withPlacements(updated, await readPlacements()))
     } catch (error) {
+        if ((error as Error).message === "Unknown featured placement") return NextResponse.json({error:(error as Error).message}, {status:400})
+        if ((error as {status?:number}).status === 409) return NextResponse.json({error:"Placements changed while saving. Reload before trying again."}, {status:409})
         return handleError(error, "Failed to update article")
     }
 }

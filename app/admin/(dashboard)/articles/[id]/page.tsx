@@ -1,3 +1,4 @@
+import { readPlacements, withPlacements } from "@/lib/placement-store"
 import Link from "next/link"
 
 import { ArticleForm } from "@/components/admin/article-form"
@@ -38,5 +39,5 @@ export default async function EditArticlePage({ params }: PageProps) {
         )
     }
 
-    return <ArticleForm initialData={article} isEditing permissions={permissions} />
+    return <ArticleForm initialData={withPlacements(article, await readPlacements())} isEditing permissions={permissions} />
 }

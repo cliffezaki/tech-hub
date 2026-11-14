@@ -27,7 +27,7 @@
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *, .midnight, .midnight *));
 
 /*
  * Each custom property below holds bare HSL channels (e.g. "240 10% 8%") so they can be
@@ -89,10 +89,10 @@
   --radius: 0.625rem;
 }
 
-.dark {
-  --background: 228 8.1967% 11.9608%; /* #1C1D21 */
+.dark, .midnight {
+  --background: 0 0% 5.098%; /* #0D0D0D */
   --foreground: 42.8571 22.5806% 93.9216%; /* #F3F1EC */
-  --card: 231.4286 7.8652% 17.4510%; /* #292A30 */
+  --card: 0 0% 7.06%; /* #121212 */
   --card-foreground: var(--foreground);
   --brand-red: 355.0413 81.2081% 70.7843%; /* Accessible red text: #F17882 */
   --primary: var(--foreground);
@@ -100,10 +100,10 @@
   --secondary: var(--card);
   --secondary-foreground: var(--foreground);
   --muted: var(--card);
-  --muted-foreground: 234 5.9524% 67.0588%; /* #A6A7B0 */
-  --accent: 230 8% 21%;
+  --muted-foreground: 0 0% 72%;
+  --accent: 0 0% 11%;
   --accent-foreground: var(--foreground);
-  --border: 226.6667 7.0866% 24.9020%; /* #3B3D44 */
+  --border: 0 0% 20%;
   --input: 230 4.8% 49.0196%;
   --ring: var(--brand-red);
 }
@@ -352,3 +352,9 @@
 @media (max-width: 600px) { .editor-toolbar { padding: .45rem; } .editor-toolbar .editor-tool { min-height: 40px; } .editor-font-trigger { max-width: 170px; } .article-title-area { padding-top: 1.5rem; } }
 
 .editor-selection-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1px; }
+
+.midnight { --background:0 0% 0%; --card:0 0% 3%; --accent:0 0% 8%; --border:0 0% 18%; color-scheme:dark; }
+.dark {color-scheme:dark;}
+.appearance-select {max-width:100px;border:1px solid hsl(var(--border));border-radius:999px;padding:.4rem .5rem;background:hsl(var(--background));color:hsl(var(--foreground));font:500 .75rem system-ui;cursor:pointer;}
+:is(.dark,.midnight) .rich-article a {color:hsl(var(--brand-red));}
+:is(.dark,.midnight) .rich-article figcaption {color:hsl(var(--muted-foreground));}
