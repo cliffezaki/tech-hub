@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { TrendingNews } from "@/components/trending-news"
 import { EditorialGrid, ReviewStrip } from "@/components/editorial-stories"
 import { ArticleRow } from "@/components/article-row"
 import { NewsTicker } from "@/components/news-ticker"
@@ -109,13 +110,14 @@ export default async function Home() {
                             {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="border-b py-1.5 text-[0.8125rem] leading-5 break-words list-disc ml-4">{fact}</li>)}</ul></section>}
                         </div>
 
-                        {secondary.length > 0 && (
+                        {(
                             <div className="lg:col-span-4">
-                                <h2 className="kicker border-b pb-3 text-muted-foreground">
+                                <TrendingNews />
+                                <h2 className="kicker mt-8 border-b pb-3 text-muted-foreground">
                                     Also worth reading
                                 </h2>
                                 <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
-                                    {secondary.map((article) => (
+                                    {secondary.slice(1).map((article) => (
                                         <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3 [&_h3]:min-h-[3.75em]" />
                                     ))}
                                 </div>
