@@ -6,9 +6,9 @@ Replaces only the homepage's first secondary ArticleCard. `secondary.slice(1)` r
 
 - Existing Next.js and Netlify deployment; no new npm dependencies.
 - Existing private Supabase `cms_records` table, under the new `trending` collection. No migration, public database access or RLS changes are needed.
-- Set **OPENAI_API_KEY** and **TRENDING_AI_MODEL** as server-only Netlify environment variables with Functions scope, then redeploy. Choose a model supporting Chat Completions JSON mode and `max_completion_tokens`. Neither value is assumed to exist. Do not put keys in NEXT_PUBLIC variables, git or the client.
+- Uses Netlify AI Gateway through the official OpenAI SDK and runtime-injected provider credentials. The default model is gpt-4.1-mini, confirmed in the live provider catalogue. No separate API key is needed on an eligible Netlify plan with AI Features enabled. Usage consumes existing Netlify credits; no plan change or recharge is configured. TRENDING_AI_MODEL can override the model; a project OPENAI_API_KEY overrides gateway injection.
 - Existing SUPABASE_URL, SUPABASE_SECRET_KEY and ADMIN_SESSION_SECRET must include Functions scope. The schedule uses a purpose-specific, short-lived HMAC derived from the existing session secret; it never transmits that secret.
-- Run `trending-schedule` once from Netlify's Functions dashboard after configuration. Subsequent runs occur at minute zero of every second UTC hour. Netlify schedules run only on the published deploy, not preview branches. No ChatGPT reminder or visitor-triggered generation is involved.
+- The scheduler checks every five minutes, including initial population. The database rate limit allows generation no more than once every 110 minutes. Netlify schedules run only on the published deploy, not preview branches. No ChatGPT reminder or visitor-triggered generation is involved.
 - Until the first verified batch is available, visitors see an honest unavailable state, never fabricated placeholder news.
 
 ## Processing and costs
@@ -19,7 +19,7 @@ The editor groups coverage of the same event, prioritizes significant developmen
 
 At most two AI requests per attempt (6,000 completion tokens each), with a 110-minute minimum between attempts and a database lease against overlapping runs. An unchanged source fingerprint skips generation. At most 12 scheduled attempts daily, usually fewer AI calls. Provider token costs depend on the chosen model; set a provider budget before activation. No paid news API subscription is required by this implementation.
 
-One bounded feed snapshot is atomically replaced only after a nonempty verified batch. Failures retain recent output; stories expire based on original source publication dates, at 48 hours, not renewed by polling. The API caches reads for two minutes and browsers poll cached results every five minutes. After six hours without a new batch, the feed says updates are delayed. No public endpoint accepts generation requests or user-supplied source URLs.
+One bounded feed snapshot is atomically replaced only after a nonempty verified batch. Failures retain recent output; stories expire based on original source publication dates, at 48 hours, not renewed by polling. Summaries are stored in Supabase and browsers poll every five minutes; reads never regenerate news. After six hours without a new batch, the feed says updates are delayed. No public endpoint accepts generation requests or user-supplied source URLs.
 
 ## Operations
 
@@ -27,4 +27,4 @@ Netlify function logs report configuration absence, refresh outcome or failure w
 
 ## Validation
 
-Run `node scripts/test-trending.mjs`, `npm run typecheck` and `npm run build`. Browser checks: narrow/wide layouts, both themes, no image/date output, source links, Escape/backdrop/close button, focus returning to the clicked headline, background scroll restored, loading/empty/delayed states. Real generation requires the owner-provided AI key/model; mocks do not establish live factual accuracy or provider compatibility.
+Run `node scripts/test-trending.mjs`, `npm run typecheck` and `npm run build`. Browser checks: narrow/wide layouts, both themes, no image/date output, source links, Escape/backdrop/close button, focus returning to the clicked headline, background scroll restored, loading/empty/delayed states. Live generation uses runtime-injected gateway credentials; mocks do not establish live factual accuracy or provider compatibility.

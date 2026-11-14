@@ -51,7 +51,7 @@ export function TrendingNews() {
             <h2 id="trending-heading">Trending Now</h2>
             <span className={styles.indicator}><span aria-hidden="true" />Tech briefing</span>
         </header>
-        <p className={styles.disclosure}>AI summaries · Linked to original reporting</p>
+        <p className={styles.disclosure}>News summaries · Linked to original reporting</p>
         {stories.length ? <ol className={styles.list}>
             {stories.map(story => <li key={story.id}>
                 <button className={styles.story} aria-haspopup="dialog" onClick={event => {
