@@ -10,6 +10,8 @@ const placements=load('@/lib/placement-store'), shared=load('@/lib/placements'),
 function article(id,date,extra={}){return {id,title:id,slug:id,category:'News',section:'news',publishedAt:date,status:'published',featured:false,content:'story',excerpt:'summary',author:'Tech Hub',readTime:'2 min read',...extra}}
 async function save(id,body){const a=articles.find(a=>a.id===id);let plan=await placements.preparePlacements(id,body,a.section);if(plan?.conflict)return plan;Object.assign(a,body);await placements.commitPlacements(plan,a);return plan}
 (async()=>{
+ articles=[article('old','2026-10-01',{pinnedAreas:['homepage']}),article('current','2026-10-02',{pinnedAreas:['homepage']})];
+ const migrated=await placements.readPlacements();assert.deepEqual(Array.from(migrated.pins.current),['homepage']);assert.deepEqual(Array.from(migrated.pins.old),['homepage:featured']);assert.equal(migrated.previousLead,'old');
  articles=[article('a','2026-11-01',{pinnedAreas:['homepage','News'],featured:true}),article('b','2026-11-02'),article('c','2026-11-03')];
  let state=await placements.readPlacements();assert.deepEqual(Array.from(state.pins.a),['homepage','news:latest','homepage:featured']);
  let p=await save('b',{pinnedAreas:['homepage'],featured:false});assert.ok(p.conflict);assert.equal(records,null);

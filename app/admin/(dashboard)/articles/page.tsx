@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Eye, Loader2, Pencil, Plus, Search, Star, Trash2 } from "lucide-react"
+import { Eye, Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { formatDate } from "@/lib/format"
 import { ARTICLE_SECTIONS, SECTION_META } from "@/lib/types"
 import type { Article, ArticleSection } from "@/lib/types"
-import { cn } from "@/lib/utils"
 import { ArticleActions } from "@/components/admin/article-actions"
 import { DemoSeedButton } from "@/components/admin/demo-seed-button"
 
@@ -74,32 +73,6 @@ export default function AdminArticlesPage() {
 
             setArticles((current) =>
                 current.filter((item) => item.id !== article.id)
-            )
-        } finally {
-            setBusyId(null)
-        }
-    }
-
-    const toggleFeatured = async (article: Article) => {
-        setBusyId(article.id)
-        setError("")
-
-        try {
-            const response = await fetch(`/api/articles/${article.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ featured: !article.featured }),
-            })
-
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}))
-                setError(data.error || "Could not update that article.")
-                return
-            }
-
-            const updated: Article = await response.json()
-            setArticles((current) =>
-                current.map((item) => (item.id === updated.id ? updated : item))
             )
         } finally {
             setBusyId(null)
@@ -233,45 +206,14 @@ export default function AdminArticlesPage() {
                                 </p>
                                 <ArticleActions
                                     article={article}
-                                    onUpdated={(updated) =>
-                                        setArticles((items) =>
-                                            items.map((a) =>
-                                                a.id === updated.id
-                                                    ? updated
-                                                    : a
-                                            )
-                                        )
-                                    }
+                                    onUpdated={(updated) => {
+                                        setArticles(items=>items.map(a=>a.id===updated.id ? updated : a))
+                                        void fetch("/api/articles").then(r=>{if(!r.ok)throw Error();return r.json()}).then(data=>{if(Array.isArray(data))setArticles(data)}).catch(()=>setError("Saved. Refresh the list to see all updated placements."))
+                                    }}
                                 />
                             </div>
 
                             <div className="flex items-center gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title={
-                                        article.featured
-                                            ? "Remove from featured"
-                                            : "Mark as featured"
-                                    }
-                                    aria-label={
-                                        article.featured
-                                            ? "Remove from featured"
-                                            : "Mark as featured"
-                                    }
-                                    disabled={busyId === article.id}
-                                    onClick={() => toggleFeatured(article)}
-                                >
-                                    <Star
-                                        className={cn(
-                                            "h-4 w-4",
-                                            article.featured
-                                                ? "fill-amber-400 text-amber-400"
-                                                : "text-muted-foreground"
-                                        )}
-                                    />
-                                </Button>
-
                                 {article.status === "published" && (
                                     <Link
                                         href={`/${article.section}/${article.slug}`}

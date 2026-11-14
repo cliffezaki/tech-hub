@@ -18,7 +18,13 @@ export async function readPlacements(articles?:Article[]):Promise<PlacementState
   for(const id of Object.keys(pins)) pins[id]=pins[id].filter(p=>p!=="homepage")
   pins[settings.heroArticleId].push("homepage")
  }
- return {pins}
+ // Legacy homepage pins ranked several stories. Keep the active lead as the
+ // singleton and retain the remaining choices in the Featured Articles collection.
+ const state:PlacementState={pins}
+ const lead=chooseLead(all,state)
+ const former=all.filter(a=>a.id!==lead?.id && articleVisible(a) && pins[a.id]?.includes("homepage")).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt))
+ for(const a of all) if(a.id!==lead?.id && pins[a.id]?.includes("homepage")) pins[a.id]=[...new Set([...pins[a.id].filter(p=>p!=="homepage"),"homepage:featured"])]
+ return {...state,lastLead:lead?.id,previousLead:former[0]?.id}
 }
 export function withPlacements(a:Article,state:PlacementState):Article {return {...a,pinnedAreas:state.pins[a.id] || [],featured:!!state.pins[a.id]?.includes("homepage:featured")}}
 export async function preparePlacements(id:string,body:Record<string,unknown>,section:string) {
