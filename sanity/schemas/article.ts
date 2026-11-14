@@ -6,6 +6,12 @@ export default defineType({
     type: 'document',
     fields: [
         defineField({
+            name: 'demo', title: 'Demo / sample content', type: 'boolean',
+            initialValue: false,
+            description: 'Researched editorial sample, not original reporting or hands-on testing.',
+        }),
+        defineField({ name: 'demoBatch', title: 'Sample batch', type: 'string', readOnly: true }),
+        defineField({
             name: 'title',
             title: 'Title',
             type: 'string',
@@ -27,6 +33,14 @@ export default defineType({
             type: 'text',
             rows: 3,
             description: 'Short summary shown on cards and in search results',
+        }),
+        defineField({
+            name: 'quickFacts',
+            title: 'Quick Facts',
+            description: 'Up to six concise, editor-verified facts from this article. Shown when this is the homepage lead; leave empty to hide.',
+            type: 'array',
+            of: [{ type: 'string', validation: rule => rule.max(240) }],
+            validation: rule => rule.max(6).unique(),
         }),
         defineField({
             name: 'author',

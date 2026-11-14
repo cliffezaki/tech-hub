@@ -1,0 +1,9 @@
+Real illustrative stock photographs downloaded from Pexels on 2026-10-29.
+License: https://www.pexels.com/license/
+Use does not imply endorsement or depict the particular incident or software discussed.
+
+security.jpg: cottonbro studio, https://www.pexels.com/photo/laptop-in-close-up-shot-5483248/
+network.jpg: Brett Sayles, https://www.pexels.com/photo/close-up-photo-of-cables-plugged-into-the-server-2881233/
+office.jpg: Edmond Dantès, https://www.pexels.com/photo/person-typing-on-a-laptop-8068220/
+android.jpg: Andrey Matveev, https://www.pexels.com/photo/new-samsung-smartphone-22604142/
+iphone.jpg: Ahmed Manna, https://www.pexels.com/photo/an-iphone-lying-next-to-a-keyboard-on-a-desk-17753940/

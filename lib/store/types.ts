@@ -21,16 +21,17 @@ export interface ContentStore {
     /** True when the driver can persist changes in the current environment. */
     readonly writable: boolean
 
-    listArticles(): Promise<Article[]>
-    getArticle(id: string): Promise<Article | null>
-    getArticleBySlug(slug: string): Promise<Article | null>
-    createArticle(input: Omit<Article, "id">): Promise<Article>
+    listArticles(includeDrafts?: boolean): Promise<Article[]>
+    getArticle(id: string, includeDrafts?: boolean): Promise<Article | null>
+    getArticleBySlug(slug: string, includeDrafts?: boolean): Promise<Article | null>
+    /** A supplied deterministic id creates only if absent, never overwriting edited content. */
+    createArticle(input: Omit<Article, "id">, createOnlyId?: string): Promise<Article>
     updateArticle(id: string, patch: Partial<Article>): Promise<Article | null>
     deleteArticle(id: string): Promise<boolean>
 
-    listPages(): Promise<PageContent[]>
+    listPages(includeDrafts?: boolean): Promise<PageContent[]>
     getPage(id: string): Promise<PageContent | null>
-    getPageBySlug(slug: string): Promise<PageContent | null>
+    getPageBySlug(slug: string, includeDrafts?: boolean): Promise<PageContent | null>
     createPage(input: Omit<PageContent, "id" | "updatedAt">): Promise<PageContent>
     updatePage(id: string, patch: Partial<PageContent>): Promise<PageContent | null>
     deletePage(id: string): Promise<boolean>
