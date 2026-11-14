@@ -63,13 +63,13 @@ async function mock(url,init={}) {
     return new Response("offline",{status:503})
 }
 assert.equal((await refreshFeed(env,mock,now)).status,"updated")
-assert.equal(calls,2)
+assert.equal(calls,3)
 const saved=records.get("feed")
 assert.equal(saved.stories.length,1)
 assert.equal((await refreshFeed(env,mock,now+1000)).status,"rate-limited")
-assert.equal(calls,2)
+assert.equal(calls,3)
 assert.equal((await refreshFeed(env,mock,now+2*60*60*1000)).status,"unchanged")
-assert.equal(calls,2)
+assert.equal(calls,3)
 records.delete("processed");mode="failure"
 await assert.rejects(()=>refreshFeed(env,mock,now+4*60*60*1000))
 assert.deepEqual(records.get("feed"),saved)
