@@ -26,6 +26,7 @@ assert.equal(validateStories({stories:[{...draft,summary:description}]},items,no
 const single=[{...items[0],text:description+" "+description+" "+description}]
 assert.equal(validateStories({stories:[{...draft,sourceIds:[single[0].id]}]},single,now).length,0)
 assert.equal(validateStories({stories:[{...draft,summary:"According to BBC Technology, "+draft.summary,sourceIds:[single[0].id]}]},single,now).length,1)
+assert.equal(validateStories({stories:[{...draft,detail:draft.detail.replace(". The",".\n\nThe")}]},items,now).length,1)
 const signed=new Request("https://example.com",{headers:{"x-trending-time":String(now),"x-trending-signature":signature("test",String(now))}})
 assert.equal(authenticated(signed,"test",now),true)
 assert.equal(authenticated(signed,"wrong",now),false)
