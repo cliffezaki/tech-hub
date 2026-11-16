@@ -1,9 +1,12 @@
 "use client"
 import { useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
+import { Monitor, Sun, Moon } from "lucide-react"
 const subscribe = () => () => {}
+const modes = [{id:"system",label:"System",Icon:Monitor},{id:"light",label:"Light",Icon:Sun},{id:"midnight",label:"Midnight",Icon:Moon}]
 export function ThemeToggle() {
  const mounted=useSyncExternalStore(subscribe,()=>true,()=>false)
- const {theme,resolvedTheme,setTheme,forcedTheme}=useTheme()
- return <select aria-label="Appearance" title="Appearance" className="appearance-select" value={mounted ? theme === "system" ? resolvedTheme || "system" : theme : "system"} disabled={!mounted || !!forcedTheme} onChange={e=>setTheme(e.target.value)}><option value="system" hidden>Appearance</option><option value="light">Light</option><option value="dark">Dark</option><option value="midnight">Midnight</option></select>
+ const {theme,setTheme,forcedTheme}=useTheme()
+ const selected=mounted ? theme === "dark" ? "midnight" : theme || "system" : "system"
+ return <div className="appearance-control" role="group" aria-label="Appearance"><span aria-hidden className="appearance-active" style={{transform:`translateX(${Math.max(0,modes.findIndex(m=>m.id===selected))*100}%)`}}/>{modes.map(({id,label,Icon})=><button key={id} type="button" title={label} aria-label={label} aria-pressed={selected===id} disabled={!mounted||!!forcedTheme} onClick={()=>setTheme(id)}><Icon size={17} aria-hidden="true"/></button>)}</div>
 }

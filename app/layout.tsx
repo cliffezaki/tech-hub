@@ -79,6 +79,7 @@ export default async function RootLayout({
                 <ThemeProvider
                     attribute="class"
                     themes={["light", "dark", "midnight"]}
+                    value={{light:"light",dark:"midnight",midnight:"midnight"}}
                     defaultTheme="system"
                     enableSystem
                     enableColorScheme={false}

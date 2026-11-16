@@ -12,5 +12,5 @@ export default async (_request, context) => {
     const response=await fetch(new URL("/.netlify/functions/trending-refresh-background",origin),{method:"POST",redirect:"error",signal:AbortSignal.timeout(10000),headers:{"x-trending-time":timestamp,"x-trending-signature":signature(secret,timestamp)}})
     if(!response.ok)throw new Error("Could not start trending refresh")
 }
-// Check every five minutes; the worker limits generation to once per two hours.
-export const config = { schedule: "*/5 * * * *" }
+// Run every four hours (UTC); unchanged source evidence skips AI generation.
+export const config = { schedule: "0 */4 * * *" }

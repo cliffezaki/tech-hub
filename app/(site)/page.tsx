@@ -151,7 +151,7 @@ export default async function Home() {
                 >
                     <div className="site-container py-12 md:py-16">
                         <SectionHeading
-                            title="Latest news"
+                            title="More news"
                             subtitle={`${newsCount} article${newsCount === 1 ? "" : "s"} published`}
                             href="/news"
                             linkLabel="All news"

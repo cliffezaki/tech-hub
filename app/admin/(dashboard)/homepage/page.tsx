@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Loader2, Save, Star } from "lucide-react"
 
@@ -124,7 +125,7 @@ export default function AdminHomepagePage() {
                     </p>
                 </div>
 
-                <p className="text-sm">Use <a className="underline" href="/admin/articles">Featured Placement in article settings</a> to manage Today’s Highlight, Also Worth Reading and Featured Articles.</p>
+                <p className="text-sm">Use <Link className="underline" href="/admin/articles">Placement controls in article settings</Link> to manage Today’s Highlight, Also Worth Reading and Featured Articles.</p>
 
                 {leadArticle && (
                     <div className="flex gap-4 rounded-lg border bg-muted/30 p-3">

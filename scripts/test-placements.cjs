@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- CommonJS test harness loads transpiled TypeScript. */
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict'),ts=require('typescript');
 let records=null, articles=[], settings={heroArticleId:''};
 const store={listArticles:async()=>structuredClone(articles),getSettings:async()=>settings};

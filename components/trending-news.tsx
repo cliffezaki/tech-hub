@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { TrendingStory } from "@/lib/trending-types"
 import { briefingParagraphs } from "@/lib/briefing-paragraphs"
+import { SourceLogos } from "./source-logos"
 import styles from "./trending-news.module.css"
 
 export function TrendingNews() {
@@ -63,6 +64,7 @@ export function TrendingNews() {
                     <p>{story.summary}</p>
                     <span className={styles.more}>Read the briefing <span aria-hidden="true">↗</span></span>
                 </button>
+                <SourceLogos sources={story.sources}/>
             </li>)}
         </ol> : <p className={styles.empty} role="status">{status === "loading" ? "Loading tech updates…" : "Fresh briefings are not available right now. Please check back soon."}</p>}
         {!!stories.length && <p className={styles.footer}>{status === "ready" ? "Updated automatically" : "Showing recent briefings · Updates temporarily delayed"}</p>}
@@ -80,6 +82,7 @@ export function TrendingNews() {
                 <h3 className={styles.subheading}>Why it matters</h3>
                 <p className={styles.detail}>{selected.whyItMatters}</p>
                 <h3 className={styles.subheading}>Read the original reporting</h3>
+                <SourceLogos sources={selected.sources}/>
                 <ul className={styles.sources}>{selected.sources.map(source => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer">{source.name}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a></li>)}</ul>
                 <p className={styles.note}>This briefing is automatically prepared from the sources above. Refer to their reporting for full detail and subsequent corrections.</p>
                 <button className={styles.back} onClick={() => setSelected(null)}>Back to reading</button>
