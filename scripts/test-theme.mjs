@@ -7,7 +7,7 @@ import { ThemeProvider } from "next-themes"
 
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8")
 const tokens = (selector) => Object.fromEntries([...css.match(new RegExp(`${selector} \\{([\\s\\S]*?)\\n\\}`))[1].matchAll(/--([\w-]+):\s*([^;]+);/g)].map(m => [m[1],m[2]]))
-const light = tokens(":root"), dark = {...light,...tokens("\\.dark")}
+const light = tokens(":root"), dark = {...light,...tokens("\\.dark, \\.midnight")}
 function rgb(palette, key) {
     let v = palette[key]
     while (v.startsWith("var(")) v = palette[v.slice(6,-1)]
@@ -29,16 +29,16 @@ for (const [name,p] of [["Ivory",light],["Charcoal",dark]]) {
     }
     assert.ok(contrast(rgb(p,"brand-on-solid"),rgb(p,"brand-solid"))>=4.5)
 }
-const html = renderToStaticMarkup(React.createElement(ThemeProvider,{attribute:"class",defaultTheme:"system",enableSystem:true,enableColorScheme:true},React.createElement("main")))
+const html = renderToStaticMarkup(React.createElement(ThemeProvider,{attribute:"class",defaultTheme:"system",enableSystem:true,enableColorScheme:false,themes:["light","dark","midnight"],value:{light:"light",dark:"midnight",midnight:"midnight"}},React.createElement("main")))
 const script = html.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1]
-for (const [saved,systemDark,want] of [[null,false,"light"],[null,true,"dark"],["light",true,"light"],["dark",false,"dark"],["system",true,"dark"]]) {
+for (const [saved,systemDark,want] of [[null,false,"light"],[null,true,"midnight"],["light",true,"light"],["dark",false,"midnight"],["system",true,"midnight"]]) {
     const classes = new Set(), style = {}
     vm.runInNewContext(script,{
         document:{documentElement:{classList:{remove:(...x)=>x.forEach(v=>classes.delete(v)),add:v=>classes.add(v)},style}},
         localStorage:{getItem:key=>{assert.equal(key,"theme");return saved}},
         window:{matchMedia:()=>({matches:systemDark})},
     })
-    assert.ok(classes.has(want)); assert.equal(style.colorScheme,want)
+    assert.ok(classes.has(want)); assert.equal(style.colorScheme,undefined)
 }
 assert.match(css,/prefers-reduced-motion: reduce/)
 assert.match(css,/transform 250ms ease/)
