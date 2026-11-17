@@ -1,7 +1,7 @@
 import fs from "node:fs"
 import {createRequire} from "node:module"
 import assert from "node:assert/strict"
-import { SOURCES, candidates, validateStories, signature, authenticated, MAX_AGE, mergeStories, hasRequiredSources } from "../lib/trending-core.mjs"
+import { SOURCES, candidates, validateStories, signature, authenticated, MAX_AGE, mergeStories, hasRequiredSources, evidenceTopics } from "../lib/trending-core.mjs"
 import { parseFeed, refreshFeed } from "../lib/trending-worker.mjs"
 
 const now=Date.parse("2026-11-14T08:00:00Z")
@@ -72,13 +72,13 @@ async function mock(url,init={}) {
     return new Response("offline",{status:503})
 }
 assert.equal((await refreshFeed(env,mock,now)).status,"updated")
-assert.equal(calls,3)
+assert.equal(calls,2)
 const saved=records.get("feed")
 assert.equal(saved.stories.length,1)
 assert.equal((await refreshFeed(env,mock,now+1000)).status,"rate-limited")
-assert.equal(calls,3)
+assert.equal(calls,2)
 assert.equal((await refreshFeed(env,mock,now+4*60*60*1000)).status,"unchanged")
-assert.equal(calls,3)
+assert.equal(calls,2)
 records.delete("processed");mode="failure"
 await assert.rejects(()=>refreshFeed(env,mock,now+8*60*60*1000))
 assert.deepEqual(records.get("feed"),saved)
@@ -119,3 +119,7 @@ assert.equal(hasRequiredSources([items[0],items[0],items[0]].map(i=>({name:i.sou
 assert.equal(hasRequiredSources([{name:'BBC Technology',url:'https://evil.example/fake'},{name:'The Verge',url:'https://theverge.com/story'},{name:'Ars Technica',url:'https://arstechnica.com/story'}]),false);
 const manualSigned=new Request('https://example.com',{headers:{'x-trending-time':String(now),'x-trending-force':'1','x-trending-signature':signature('test',String(now),true)}});assert.equal(authenticated(manualSigned,'test',now),true);assert.equal(authenticated(new Request('https://example.com',{headers:{'x-trending-time':String(now),'x-trending-force':'1','x-trending-signature':signature('test',String(now))}}),'test',now),false);
 console.log('PASS: three-source requirement, distinct publishers, source URL matching and signed manual refresh.');
+
+const researchTopics=evidenceTopics(items);assert.equal(researchTopics.length,1);assert.equal(researchTopics[0].items.length,3);assert.ok(researchTopics[0].items.every(i=>i.id.startsWith('event-1-source-')));
+assert.equal(evidenceTopics(items.slice(0,2)).length,0);
+console.log('PASS: generation receives one corroborated event and local source IDs; unrelated or two-source events are withheld.');
