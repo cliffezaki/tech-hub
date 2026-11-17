@@ -89,6 +89,7 @@ async function call(
     }
 }
 try {
+    suite: {
     let ready = false
     for (let i = 0; i < 150; i++) {
         try {
@@ -208,6 +209,16 @@ try {
     const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"], pinnedAreas: ["homepage", "news:latest"] }, owner.cookie, 201)
     assert.equal(rich.data.content, richBody)
     assert.deepEqual(rich.data.pinnedAreas, ["homepage", "news:latest"])
+    const typography = JSON.stringify({lead:{font:"Lora",size:40},more:{font:"Inter",size:22}})
+    await call("/api/settings", {method:"PUT",cookie:owner.cookie,body:{titleTypography:typography}})
+    assert.equal((await call("/api/settings")).data.titleTypography,typography)
+    await call(`/api/articles/${rich.data.id}`, {method:"PUT",cookie:owner.cookie,body:{titleFont:"Lora",titleSize:"38px"}})
+    const styledHeadline=(await call(`/api/articles/${rich.data.id}`,{cookie:owner.cookie})).data
+    assert.equal(styledHeadline.titleFont,"Lora");assert.equal(styledHeadline.titleSize,"38px")
+    assert.equal(styledHeadline.content,richBody)
+    await call(`/api/articles/${rich.data.id}`, {method:"PUT",cookie:owner.cookie,body:{titleFont:"unsupported"},status:400})
+    console.log("PASS: title settings and headline styles survive authenticated save/reload without changing body content.")
+    if(process.env.CMS_TYPOGRAPHY_ONLY) break suite
     await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { pinnedAreas: [] } })
     assert.deepEqual((await call(`/api/articles/${rich.data.id}`, { cookie: owner.cookie })).data.pinnedAreas, [])
     await post("/api/articles", { title: "Unauthorized pin", pinnedAreas: ["homepage"] }, author.cookie, 403)
@@ -753,6 +764,7 @@ try {
         `PASS: ${checks} HTTP checks plus assertions for account roles, owner protection, draft privacy, authorization, CSRF, scheduling, consent, inquiry privacy, and moderation.`
     )
     console.log(`Isolated test data: ${temporary}`)
+    }
 } catch (e) {
     console.error(logs)
     throw e

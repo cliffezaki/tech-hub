@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- TypeScript test harness. */
 const ts=require('typescript'),fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-function load(file){const module={exports:{}};const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInThisContext('(function(require,module,exports){'+code+'\n})')(name=>load(name.replace('@/','')+'.ts'),module,module.exports);return module.exports}
+function load(file){const loaded={exports:{}};const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInThisContext('(function(require,module,exports){'+code+'\n})')(name=>load(name.replace('@/','')+'.ts'),loaded,loaded.exports);return loaded.exports}
 const {parseTitleTypography,titleVariables,headlineStyle}=load('lib/title-typography.ts');
 const first={lead:{font:'Lora',size:38},more:{font:'Inter',size:22}};
 assert.deepEqual(parseTitleTypography(JSON.stringify(first)),first);

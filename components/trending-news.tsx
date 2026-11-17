@@ -10,6 +10,8 @@ export function TrendingNews() {
     const [stories, setStories] = useState<TrendingStory[]>([])
     const [status, setStatus] = useState("loading")
     const [selected, setSelected] = useState<TrendingStory | null>(null)
+    const [feedHeight,setFeedHeight]=useState(540)
+    const feedRef=useRef<HTMLElement>(null)
     const dialog = useRef<HTMLDialogElement>(null)
     const opener = useRef<HTMLButtonElement | null>(null)
 
@@ -35,6 +37,16 @@ export function TrendingNews() {
         return () => { controller.abort(); clearInterval(timer) }
     }, [])
 
+    useEffect(()=>{
+        const feed=feedRef.current, list=feed?.querySelector("ol")
+        if(!feed||!list||stories.length<2)return
+        const entries=Array.from(list.children).slice(0,2)
+        const measure=()=>setFeedHeight(Math.max(540,Math.ceil(feed.getBoundingClientRect().height-list.getBoundingClientRect().height+entries.reduce((sum,e)=>sum+e.getBoundingClientRect().height,0)+2)))
+        const observer=new ResizeObserver(measure)
+        entries.forEach(e=>observer.observe(e));measure()
+        return ()=>observer.disconnect()
+    },[stories])
+
     useEffect(() => {
         const element = dialog.current
         if (!selected || !element) return
@@ -48,7 +60,7 @@ export function TrendingNews() {
         }
     }, [selected])
 
-    return <section data-title-section="trending" className={styles.feed} aria-labelledby="trending-heading">
+    return <section ref={feedRef} style={{height:feedHeight}} data-title-section="trending" className={styles.feed} aria-labelledby="trending-heading">
         <header className={styles.header}>
             <h2 id="trending-heading">Trending Now</h2>
             <span className={styles.indicator}><span aria-hidden="true" />Tech briefing</span>
