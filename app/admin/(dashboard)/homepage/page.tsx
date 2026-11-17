@@ -1,5 +1,6 @@
 "use client"
 
+import { TrendingVerification } from "@/components/admin/trending-verification"
 import { TitleTypographySettings } from "@/components/admin/title-typography-settings"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -118,6 +119,7 @@ export default function AdminHomepagePage() {
                 </p>
             )}
 
+            <TrendingVerification/>
             <TitleTypographySettings value={settings.titleTypography} onChange={titleTypography=>setSettings({...settings,titleTypography})}/>
             <Card className="space-y-5 p-5">
                 <div>

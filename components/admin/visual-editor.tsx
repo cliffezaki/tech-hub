@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import { Bold, Italic, Underline, Strikethrough, AArrowDown, AArrowUp, Link, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, Palette, Highlighter, Undo2, Redo2, RemoveFormatting } from "lucide-react"
+import { ARTICLE_FONTS } from "@/lib/editor-fonts"
 import { FontPicker } from "@/components/admin/font-picker"
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react"
 import { Node, mergeAttributes, type JSONContent } from "@tiptap/core"
@@ -32,7 +33,7 @@ const PullQuote = Node.create({ name: "pullQuote", group: "block", content: "par
 const Gallery = Node.create({ name: "gallery", group: "block", content: "image+", draggable: true, parseHTML() { return [{ tag: "div.rich-gallery" }] }, renderHTML() { return ["div", { class: "rich-gallery" }, 0] } })
 const ButtonLink = Node.create({ name: "buttonLink", group: "block", atom: true, draggable: true, addAttributes() { return { label: { default: "Learn more" }, href: { default: "" } } }, parseHTML() { return [{ tag: "p[data-button-link]" }] }, renderHTML({ HTMLAttributes: a }) { return ["p", { "data-button-link": "true" }, ["a", { class: "rich-button", href: safeUrl(a.href) }, a.label]] } })
 
-export function VisualEditor({ initial, onChange, canUpload, headline, headlineTypography, onHeadlineTypography }: { headlineTypography?:{font:string;size:string};onHeadlineTypography?:(font:string,size:string)=>void; headline?: ReactNode; initial: string; onChange: (value: string) => void; canUpload: boolean }) {
+export function VisualEditor({ initial, onChange, canUpload, headline, headlineTypography, onHeadlineTypography }: { headlineTypography?:{font:string;size:string;bold?:boolean;italic?:boolean};onHeadlineTypography?:(font:string,size:string,bold?:boolean,italic?:boolean)=>void; headline?: ReactNode; initial: string; onChange: (value: string) => void; canUpload: boolean }) {
     const [headlineActive,setHeadlineActive]=useState(false)
     const [editingImage, setEditingImage] = useState<{ src: string; pos: number } | null>(null)
     const [message, setMessage] = useState("")
@@ -64,15 +65,17 @@ export function VisualEditor({ initial, onChange, canUpload, headline, headlineT
     const position=editor.view.domAtPos(editor.state.selection.from)
     const element=position.node instanceof Element ? position.node : position.node.parentElement
     const computed=element ? window.getComputedStyle(element) : null
-    const inheritedFont=editor.isActive("heading") ? "Playfair Display" : "Inter"
+    const computedFont=computed?.fontFamily.split(",")[0].replace(/["\']/g, "").trim()
+    const inheritedFont=ARTICLE_FONTS.includes(computedFont||"")?computedFont:editor.isActive("heading") ? "Playfair Display" : "Inter"
     const currentFont=headlineActive ? headlineTypography?.font || "Playfair Display" : mark.fontFamily || inheritedFont
-    const currentSize=headlineActive ? headlineTypography?.size || "44px" : mark.fontSize || `${Math.round(parseFloat(computed?.fontSize||"18"))}px`
-    function applyFont(font:string){if(headlineActive){onHeadlineTypography?.(font,headlineTypography?.size||"");return}if(font)chain().setFontFamily(font).run();else chain().unsetFontFamily().run()}
-    function applySize(size:string){if(headlineActive){onHeadlineTypography?.(headlineTypography?.font||"",size);return}if(size)chain().setFontSize(size).run();else chain().unsetFontSize().run()}
+    const currentSize=headlineActive ? headlineTypography?.size || "44px" : mark.fontSize || `${parseFloat(computed?.fontSize||"18")}px`
+    const sizeValue=headlineActive ? headlineTypography?.size||"" : mark.fontSize||""
+    function applyFont(font:string){if(headlineActive){onHeadlineTypography?.(font,headlineTypography?.size||"",headlineTypography?.bold,headlineTypography?.italic);return}if(font)chain().setFontFamily(font).run();else chain().unsetFontFamily().run()}
+    function applySize(size:string){if(headlineActive){onHeadlineTypography?.(headlineTypography?.font||"",size,headlineTypography?.bold,headlineTypography?.italic);return}if(size)chain().setFontSize(size).run();else chain().unsetFontSize().run()}
     const icons: Record<string, typeof Bold> = { Bold, Italic, Underline, Strike: Strikethrough, "Decrease text size": AArrowDown, "Increase text size": AArrowUp, Link, Bullets: List, Numbered: ListOrdered, "Clear format": RemoveFormatting, Undo: Undo2, Redo: Redo2 }
-    const button = (name: string, action: () => void, active = false, disabled = false) => <button type="button" key={name} title={name} aria-label={name} aria-pressed={active} disabled={disabled} className="editor-tool" onMouseDown={e => e.preventDefault()} onClick={action}>{icons[name] ? (() => { const Icon = icons[name]; return <Icon size={18} aria-hidden="true" /> })() : name}</button>
+    const button = (name: string, action: () => void, active = false, disabled = false) => <button type="button" key={name} title={name} aria-label={name} aria-pressed={active} disabled={disabled || (headlineActive && !["Bold","Italic","Decrease text size","Increase text size"].includes(name))} className="editor-tool" onMouseDown={e => e.preventDefault()} onClick={action}>{icons[name] ? (() => { const Icon = icons[name]; return <Icon size={18} aria-hidden="true" /> })() : name}</button>
     const chain = () => editor.chain().focus()
-    function colors() { return <><label className="editor-tool editor-color" title="Text color"><Palette size={18} aria-hidden="true" /><input type="color" aria-label="Text color" value={editor!.getAttributes("textStyle").color || "#171717"} onChange={e => chain().setColor(e.target.value).run()} /></label><label className="editor-tool editor-color" title="Highlight color"><Highlighter size={18} aria-hidden="true" /><input type="color" aria-label="Highlight color" value={editor!.getAttributes("highlight").color || "#fef08a"} onChange={e => chain().setHighlight({ color: e.target.value }).run()} /></label></> }
+    function colors() { return <><label className="editor-tool editor-color" title="Text color"><Palette size={18} aria-hidden="true" /><input disabled={headlineActive} type="color" aria-label="Text color" value={editor!.getAttributes("textStyle").color || "#171717"} onChange={e => chain().setColor(e.target.value).run()} /></label><label className="editor-tool editor-color" title="Highlight color"><Highlighter size={18} aria-hidden="true" /><input disabled={headlineActive} type="color" aria-label="Highlight color" value={editor!.getAttributes("highlight").color || "#fef08a"} onChange={e => chain().setHighlight({ color: e.target.value }).run()} /></label></> }
     function block(action: "up" | "down" | "copy" | "remove") {
         if (!editor) return
         const { $from } = editor.state.selection
@@ -101,27 +104,27 @@ export function VisualEditor({ initial, onChange, canUpload, headline, headlineT
     const selectedButton = editor.isActive("buttonLink") ? editor.getAttributes("buttonLink") : null
     return <section className="visual-editor">
         <div className="editor-toolbar" role="toolbar" aria-label="Text formatting">
-            <select aria-label="Text style" className="editor-tool" value={editor.isActive("heading") ? editor.getAttributes("heading").level : "paragraph"} onChange={e => e.target.value === "paragraph" ? chain().setParagraph().run() : chain().toggleHeading({ level: Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6 }).run()}><option value="paragraph">Paragraph</option>{[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>Heading {n}</option>)}</select>
+            <select disabled={headlineActive} aria-label="Text style" className="editor-tool" value={editor.isActive("heading") ? editor.getAttributes("heading").level : "paragraph"} onChange={e => e.target.value === "paragraph" ? chain().setParagraph().run() : chain().toggleHeading({ level: Number(e.target.value) as 1 | 2 | 3 | 4 | 5 | 6 }).run()}><option value="paragraph">Paragraph</option>{[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>Heading {n}</option>)}</select>
             <FontPicker value={currentFont} onChange={applyFont} />
-            <select aria-label="Font size" className="editor-tool" value={currentSize} onChange={e=>applySize(e.target.value)}><option value="">Default size</option>{[...new Set([parseInt(currentSize),...Array.from({length:61},(_,i)=>12+i)])].sort((a,b)=>a-b).map(size=><option key={size} value={`${size}px`}>{size}px</option>)}</select>
-            {button("Decrease text size",()=>applySize(`${Math.max(headlineActive?16:12,parseInt(currentSize)-2)}px`))}
-            {button("Increase text size",()=>applySize(`${Math.min(72,parseInt(currentSize)+2)}px`))}
-            {button("Bold", () => { chain().toggleBold().run() }, editor.isActive("bold"))}
-            {button("Italic", () => { chain().toggleItalic().run() }, editor.isActive("italic"))}
+            <select aria-label="Font size" className="editor-tool" value={sizeValue} onChange={e=>applySize(e.target.value)}><option value="">{sizeValue ? "Default size" : `${currentSize} (inherited)`}</option>{[...new Set([parseInt(currentSize),...Array.from({length:61},(_,i)=>12+i)])].sort((a,b)=>a-b).map(size=><option key={size} value={`${size}px`}>{size}px</option>)}</select>
+            {button("Decrease text size",()=>applySize(`${Math.max(headlineActive?16:12,Math.round(parseFloat(currentSize))-2)}px`))}
+            {button("Increase text size",()=>applySize(`${Math.min(72,Math.round(parseFloat(currentSize))+2)}px`))}
+            {button("Bold", () => { if(headlineActive)onHeadlineTypography?.(headlineTypography?.font||"",headlineTypography?.size||"",!(headlineTypography?.bold??true),headlineTypography?.italic);else chain().toggleBold().run() }, headlineActive ? headlineTypography?.bold??true : editor.isActive("bold"))}
+            {button("Italic", () => { if(headlineActive)onHeadlineTypography?.(headlineTypography?.font||"",headlineTypography?.size||"",headlineTypography?.bold,!(headlineTypography?.italic??false));else chain().toggleItalic().run() }, headlineActive ? headlineTypography?.italic??false : editor.isActive("italic"))}
             {button("Underline", () => { chain().toggleUnderline().run() }, editor.isActive("underline"))}
             {button("Strike", () => { chain().toggleStrike().run() }, editor.isActive("strike"))}
             {button("Link", () => { setSource(editor.getAttributes("link").href || ""); setPanel("link") }, editor.isActive("link"))}
             {button("Bullets", () => { chain().toggleBulletList().run() }, editor.isActive("bulletList"))}
             {button("Numbered", () => { chain().toggleOrderedList().run() }, editor.isActive("orderedList"))}
-            <label className="editor-alignment editor-tool" title="Text alignment">{editor.isActive({ textAlign: "center" }) ? <AlignCenter size={18} /> : editor.isActive({ textAlign: "right" }) ? <AlignRight size={18} /> : editor.isActive({ textAlign: "justify" }) ? <AlignJustify size={18} /> : <AlignLeft size={18} />}<select aria-label="Text alignment" value={["left", "center", "right", "justify"].find(v => editor.isActive({ textAlign: v })) || "left"} onChange={e => chain().setTextAlign(e.target.value).run()}>{["left", "center", "right", "justify"].map(v => <option key={v}>{v}</option>)}</select></label>
+            <label className="editor-alignment editor-tool" title="Text alignment">{editor.isActive({ textAlign: "center" }) ? <AlignCenter size={18} /> : editor.isActive({ textAlign: "right" }) ? <AlignRight size={18} /> : editor.isActive({ textAlign: "justify" }) ? <AlignJustify size={18} /> : <AlignLeft size={18} />}<select disabled={headlineActive} aria-label="Text alignment" value={["left", "center", "right", "justify"].find(v => editor.isActive({ textAlign: v })) || "left"} onChange={e => chain().setTextAlign(e.target.value).run()}>{["left", "center", "right", "justify"].map(v => <option key={v}>{v}</option>)}</select></label>
             {colors()}
             {button("Clear format", () => { chain().unsetAllMarks().run() })}
             {button("Undo", () => { chain().undo().run() }, false, !editor.can().undo())}{button("Redo", () => { chain().redo().run() }, false, !editor.can().redo())}
         </div>
         <div onFocusCapture={()=>setHeadlineActive(true)}>{headline}</div>
         <BubbleMenu pluginKey="articleSelectionMenu" editor={editor} updateDelay={100} options={{ placement: "top", offset: 10, flip: { padding: 8 }, shift: { padding: 8, boundary: editor.view.dom.closest(".visual-editor") as HTMLElement } }} className="editor-selection-toolbar"><div className="editor-selection-actions" role="toolbar" aria-label="Selected text formatting">
-            {button("Bold", () => { chain().toggleBold().run() }, editor.isActive("bold"))}
-            {button("Italic", () => { chain().toggleItalic().run() }, editor.isActive("italic"))}
+            {button("Bold", () => { if(headlineActive)onHeadlineTypography?.(headlineTypography?.font||"",headlineTypography?.size||"",!(headlineTypography?.bold??true),headlineTypography?.italic);else chain().toggleBold().run() }, headlineActive ? headlineTypography?.bold??true : editor.isActive("bold"))}
+            {button("Italic", () => { if(headlineActive)onHeadlineTypography?.(headlineTypography?.font||"",headlineTypography?.size||"",headlineTypography?.bold,!(headlineTypography?.italic??false));else chain().toggleItalic().run() }, headlineActive ? headlineTypography?.italic??false : editor.isActive("italic"))}
             {button("Underline", () => { chain().toggleUnderline().run() }, editor.isActive("underline"))}
             {button("Strike", () => { chain().toggleStrike().run() }, editor.isActive("strike"))}
             {colors()}

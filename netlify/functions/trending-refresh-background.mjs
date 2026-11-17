@@ -7,6 +7,7 @@ export default async request => {
     if(!authenticated(request,get("ADMIN_SESSION_SECRET")))return
     const env=Object.fromEntries(["OPENAI_API_KEY","TRENDING_AI_MODEL","OPENAI_BASE_URL","SUPABASE_URL","SUPABASE_SECRET_KEY"].map(key=>[key,get(key)]))
     env.useGateway=true
+    env.force=request.headers.get("x-trending-force")==="1"
     try {console.log("Trending refresh",JSON.stringify(await refreshFeed(env)))}
     catch {console.error("Trending refresh failed; recent cached briefings retained.")}
 }

@@ -4,7 +4,10 @@ export function editorFields(body: Record<string, unknown>) {
     if (body.quickFacts !== undefined && (!Array.isArray(body.quickFacts) || body.quickFacts.length > 6 || body.quickFacts.some(v => typeof v !== "string" || v.trim().length > 240))) throw new Error("Quick Facts must contain up to six facts of 240 characters or fewer.")
     if(body.titleFont !== undefined && body.titleFont !== "" && !ARTICLE_FONTS.includes(String(body.titleFont))) throw new Error("Choose a supported headline font.")
     if(body.titleSize !== undefined && body.titleSize !== "" && (!/^\d+px$/.test(String(body.titleSize)) || parseInt(String(body.titleSize))<16 || parseInt(String(body.titleSize))>72)) throw new Error("Headline size must be 16–72px.")
+    for(const key of ["titleBold","titleItalic"]) if(body[key] !== undefined && typeof body[key] !== "boolean") throw new Error("Headline formatting must be true or false.")
     return {
+        ...(body.titleBold !== undefined ? {titleBold:body.titleBold as boolean} : {}),
+        ...(body.titleItalic !== undefined ? {titleItalic:body.titleItalic as boolean} : {}),
         ...(body.titleFont !== undefined ? {titleFont:String(body.titleFont)} : {}),
         ...(body.titleSize !== undefined ? {titleSize:String(body.titleSize)} : {}),
         ...(body.quickFacts !== undefined ? { quickFacts: [...new Set((body.quickFacts as string[]).map(v => v.trim()).filter(Boolean))] } : {}),

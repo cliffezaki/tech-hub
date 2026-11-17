@@ -73,6 +73,8 @@ export function normalizeArticle(input: unknown): Article {
         slug: slugify(String(raw.slug || title)) || generateId(),
         excerpt: String(raw.excerpt || ""),
         content,
+        titleBold: typeof raw.titleBold === "boolean" ? raw.titleBold : undefined,
+        titleItalic: typeof raw.titleItalic === "boolean" ? raw.titleItalic : undefined,
         titleFont: typeof raw.titleFont === "string" ? raw.titleFont : "",
         titleSize: typeof raw.titleSize === "string" ? raw.titleSize : "",
         seoTitle: typeof raw.seoTitle === "string" ? raw.seoTitle : "",

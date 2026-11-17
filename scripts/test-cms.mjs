@@ -209,16 +209,30 @@ try {
     const rich = await post("/api/articles", { title: "Visual editor test", content: richBody, status: "draft", seoTitle: "Search title", metaDescription: "Description", tags: ["Testing"], pinnedAreas: ["homepage", "news:latest"] }, owner.cookie, 201)
     assert.equal(rich.data.content, richBody)
     assert.deepEqual(rich.data.pinnedAreas, ["homepage", "news:latest"])
-    const typography = JSON.stringify({lead:{font:"Lora",size:40},more:{font:"Inter",size:22}})
+    const typography = JSON.stringify({lead:{font:"Lora",size:40,bold:false,italic:true,useArticleStyles:true},more:{font:"Inter",size:22,bold:true,italic:false,useArticleStyles:false}})
     await call("/api/settings", {method:"PUT",cookie:owner.cookie,body:{titleTypography:typography}})
     assert.equal((await call("/api/settings")).data.titleTypography,typography)
-    await call(`/api/articles/${rich.data.id}`, {method:"PUT",cookie:owner.cookie,body:{titleFont:"Lora",titleSize:"38px"}})
+    await call(`/api/articles/${rich.data.id}`, {method:"PUT",cookie:owner.cookie,body:{titleFont:"Lora",titleSize:"38px",titleBold:false,titleItalic:true}})
     const styledHeadline=(await call(`/api/articles/${rich.data.id}`,{cookie:owner.cookie})).data
-    assert.equal(styledHeadline.titleFont,"Lora");assert.equal(styledHeadline.titleSize,"38px")
+    assert.equal(styledHeadline.titleFont,"Lora");assert.equal(styledHeadline.titleSize,"38px");assert.equal(styledHeadline.titleBold,false);assert.equal(styledHeadline.titleItalic,true)
     assert.equal(styledHeadline.content,richBody)
     await call(`/api/articles/${rich.data.id}`, {method:"PUT",cookie:owner.cookie,body:{titleFont:"unsupported"},status:400})
     console.log("PASS: title settings and headline styles survive authenticated save/reload without changing body content.")
-    if(process.env.CMS_TYPOGRAPHY_ONLY) break suite
+    if(process.env.CMS_TYPOGRAPHY_ONLY) {
+        await call(`/api/articles/${rich.data.id}`,{method:"PUT",cookie:owner.cookie,body:{status:"published"}})
+        const homepage=(await call("/")).data,detail=(await call(`/news/${rich.data.slug}`)).data
+        assert(homepage.includes("--article-title-font:Lora"));assert(homepage.includes("--article-title-size:38px"));assert(homepage.includes("--article-title-weight:400"));assert(homepage.includes("--article-title-style:italic"))
+        assert(detail.includes("font-family:Lora"));assert(detail.includes("font-weight:400"));assert(detail.includes("font-style:italic"))
+        const refs=[{name:"BBC Technology",url:"https://www.bbc.com/news/example"},{name:"The Verge",url:"https://www.theverge.com/example"},{name:"Ars Technica",url:"https://arstechnica.com/example"}]
+        const sample={headline:"Verified test story",summary:"Example",detail:"Example",whyItMatters:"Example",expiresAt:new Date(Date.now()+3600000).toISOString()}
+        await writeFile(path.join(temporary,"private","drafts.platform.trending.feed.json"),JSON.stringify({generatedAt:new Date().toISOString(),stories:[{...sample,id:"three",sources:refs},{...sample,id:"two",sources:refs.slice(0,2)}]}))
+        assert.deepEqual((await call("/api/trending")).data.stories.map(s=>s.id),["three"])
+        await call("/api/trending/manage",{status:403})
+        assert.equal((await call("/api/trending/manage",{cookie:owner.cookie})).data.stories.length,1)
+        await call("/api/trending/manage",{method:"POST",status:403})
+        console.log("PASS: published homepage/detail receive headline styles; public feed withholds two-source stories; management routes require authorization.")
+        break suite
+    }
     await call(`/api/articles/${rich.data.id}`, { method: "PUT", cookie: owner.cookie, body: { pinnedAreas: [] } })
     assert.deepEqual((await call(`/api/articles/${rich.data.id}`, { cookie: owner.cookie })).data.pinnedAreas, [])
     await post("/api/articles", { title: "Unauthorized pin", pinnedAreas: ["homepage"] }, author.cookie, 403)

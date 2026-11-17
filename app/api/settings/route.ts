@@ -30,7 +30,7 @@ export async function PUT(request: Request) {
 
         for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof SiteSettings)[]) {
             if (key !== "identityVersion" && typeof body[key] === "string") {
-                if (body[key].length > 2000) return NextResponse.json({ error: "A settings field is too long." }, { status: 400 })
+                if (body[key].length > (key === "titleTypography" ? 6000 : 2000)) return NextResponse.json({ error: "A settings field is too long." }, { status: 400 })
                 patch[key] = body[key]
             }
         }

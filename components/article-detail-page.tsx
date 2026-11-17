@@ -93,7 +93,7 @@ export async function ArticleDetailPage({
                         </p>
                     )}
 
-                    <h1 style={headlineStyle(article.titleFont,article.titleSize)} className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">
+                    <h1 style={headlineStyle(article.titleFont,article.titleSize,article.titleBold,article.titleItalic)} className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">
                         {article.title}
                     </h1>
 

@@ -39,7 +39,7 @@ function toSummary(article: Article): ArticleSummary {
     return {
         pinnedAreas: article.pinnedAreas,
         demo: article.demo,
-        titleFont: article.titleFont, titleSize: article.titleSize,
+        titleBold: article.titleBold, titleItalic: article.titleItalic, titleFont: article.titleFont, titleSize: article.titleSize,
         seoTitle: article.seoTitle,
         metaDescription: article.metaDescription,
         tags: article.tags,

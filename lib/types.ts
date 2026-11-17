@@ -61,6 +61,8 @@ export type ArticleStatus = "draft" | "published"
 
 export interface Article {
     scheduledAt?: string
+    titleBold?: boolean
+    titleItalic?: boolean
     titleFont?: string
     titleSize?: string
     seoTitle?: string
@@ -165,6 +167,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 
 export interface ArticleSummary {
     pinnedAreas?: string[]
+    titleBold?: boolean
+    titleItalic?: boolean
     titleFont?: string
     titleSize?: string
     seoTitle?: string
