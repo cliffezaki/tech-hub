@@ -6,5 +6,7 @@ function Logo({name,url}:{name:string;url:string}) {
 }
 export function SourceLogos({sources}:{sources:{name:string;url:string}[]}) {
  const publishers=sources.filter((s,i)=>sources.findIndex(p=>p.name===s.name)===i)
- return <div className="source-logos" aria-label="Reporting sources">{publishers.slice(0,4).map(s=><Logo key={s.name} {...s}/>)}{publishers.length>4&&<details className="source-overflow"><summary className="source-extra" title="More reporting sources">+{publishers.length-4}</summary><div>{publishers.slice(4).map(s=><a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer">{s.name} ↗</a>)}</div></details>}</div>
+ const visible=publishers.slice(0,4)
+ const remaining=sources.filter((source,index)=>sources.findIndex(s=>s.url===source.url)===index&&!visible.some(s=>s.url===source.url))
+ return <div className="source-logos" aria-label="Reporting sources">{visible.map(s=><Logo key={s.name} {...s}/>)}{remaining.length>0&&<details className="source-overflow"><summary className="source-extra" title="More reporting sources">+{remaining.length}</summary><div>{remaining.map(s=><a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer">{s.name} ↗</a>)}</div></details>}</div>
 }
