@@ -56,8 +56,11 @@ export default async function Home() {
         <div>
             <div className="site-container"><NewsTicker articles={ticker} /></div>
             <AdSlot slot="homepage-top" />
-            <div className="site-container homepage-flow py-10 md:py-14"><div className="home-main">
-<div className="home-lead">
+            {/* Lead story with two supporting highlights */}
+            <section className="border-b bg-muted/20">
+                <div className="site-container py-10 md:py-14">
+                    <div className="grid items-start gap-10 lg:grid-cols-12">
+                        <div className="lg:col-span-8">
                             <Link href={lead.href} className="group block">
                                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-muted">
                                     {lead.imageUrl && (
@@ -107,9 +110,27 @@ export default async function Home() {
                             </Link>
                             {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="border-b py-1.5 text-[0.8125rem] leading-5 break-words list-disc ml-4">{fact}</li>)}</ul></section>}
                         </div>
+
+                        {(
+                            <div className="lg:col-span-4">
+                                <TrendingNews />
+                                <h2 className="kicker mt-8 border-b pb-3 text-muted-foreground">
+                                    Also worth reading
+                                </h2>
+                                <div data-title-section="also" className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
+                                    {secondary.map((article) => (
+                                        <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3" />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </section>
+
             {/* Editor-selected highlights */}
             {featured.length > 0 && (
-                <section className="home-featured py-10">
+                <section className="site-container py-12 md:py-16">
                     <SectionHeading
                         title="Featured"
                         subtitle="Worth your time, from across Tech Hub"
@@ -118,14 +139,18 @@ export default async function Home() {
                 </section>
             )}
 
-            {reviews.length > 0 && <section className="home-reviews pb-10" aria-label="Reviews"><SectionHeading title="Reviews" href="/reviews" linkLabel="View All Reviews" /><div data-title-section="reviews"><ReviewStrip articles={reviews} /></div></section>}
+            {reviews.length > 0 && <section className="site-container pb-12 md:pb-16" aria-label="Reviews"><SectionHeading title="Reviews" href="/reviews" linkLabel="View All Reviews" /><div data-title-section="reviews"><ReviewStrip articles={reviews} /></div></section>}
 
             {/* The main news feed */}
             {latestNews.length > 0 && (
                 <section
-                    className="home-more border-t"
+                    className={
+                        featured.length > 0
+                            ? "border-t bg-muted/20"
+                            : "bg-muted/20"
+                    }
                 >
-                    <div className="py-10">
+                    <div className="site-container py-12 md:py-16">
                         <SectionHeading
                             title="More news"
                             subtitle={`${newsCount} article${newsCount === 1 ? "" : "s"} published`}
@@ -139,19 +164,6 @@ export default async function Home() {
                 </section>
             )}
 
-            </div>
-<aside className="home-sidebar">
-                                <TrendingNews />
-                                <h2 className="kicker mt-8 border-b pb-3 text-muted-foreground">
-                                    Also worth reading
-                                </h2>
-                                <div data-title-section="also" className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
-                                    {secondary.map((article) => (
-                                        <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3" />
-                                    ))}
-                                </div>
-                            </aside>
-            </div>
             {/* Sections are linked, not unpacked — each has its own page */}
             <AdSlot slot="homepage-middle" />
             <section className="site-container py-12 md:py-16">
