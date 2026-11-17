@@ -20,7 +20,7 @@ import type { ContentStore, UploadInput } from "./types"
 const SETTINGS_DOC_ID = "siteSettings"
 
 const ARTICLE_PROJECTION = `{
-    demo, demoBatch, seoTitle, metaDescription, tags, quickFacts, scheduledAt,
+    demo, demoBatch, titleFont, titleSize, seoTitle, metaDescription, tags, quickFacts, scheduledAt,
     ownerId, pinnedAreas, manualOrder, sponsorship,
     _id,
     title,
@@ -126,6 +126,8 @@ function toDocFields(input: Partial<Article>) {
     assign("title", input.title)
     assign("excerpt", input.excerpt)
     assign("content", input.content)
+    assign("titleFont", input.titleFont)
+    assign("titleSize", input.titleSize)
     assign("seoTitle", input.seoTitle)
     assign("metaDescription", input.metaDescription)
     assign("tags", input.tags)

@@ -61,6 +61,8 @@ export type ArticleStatus = "draft" | "published"
 
 export interface Article {
     scheduledAt?: string
+    titleFont?: string
+    titleSize?: string
     seoTitle?: string
     metaDescription?: string
     tags?: string[]
@@ -109,6 +111,7 @@ export interface MediaItem {
 }
 
 export interface SiteSettings {
+    titleTypography: string
     logoLight: string
     logoDark: string
     logoSame: string
@@ -141,6 +144,7 @@ export interface SiteSettings {
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
+    titleTypography: "{}",
     logoLight: "", logoDark: "", logoSame: "true", logoWidth: "150",
     iconSource: "", icon16: "", icon32: "", icon180: "", icon192: "", icon512: "", iconIco: "",
     identityVersion: "", socialImage: "", socialTitle: "", socialDescription: "",
@@ -161,6 +165,8 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 
 export interface ArticleSummary {
     pinnedAreas?: string[]
+    titleFont?: string
+    titleSize?: string
     seoTitle?: string
     metaDescription?: string
     tags?: string[]

@@ -79,7 +79,7 @@ export async function PUT(request: Request, { params }: Props) {
             "slug",
             "excerpt",
             "content",
-            "seoTitle", "metaDescription", "tags", "quickFacts", "imageAlt", "imageCredit",
+            "titleFont", "titleSize", "seoTitle", "metaDescription", "tags", "quickFacts", "imageAlt", "imageCredit",
             "category",
             "section",
             "author",

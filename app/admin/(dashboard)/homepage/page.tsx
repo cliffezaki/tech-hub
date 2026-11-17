@@ -1,5 +1,6 @@
 "use client"
 
+import { TitleTypographySettings } from "@/components/admin/title-typography-settings"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Loader2, Save, Star } from "lucide-react"
@@ -117,6 +118,7 @@ export default function AdminHomepagePage() {
                 </p>
             )}
 
+            <TitleTypographySettings value={settings.titleTypography} onChange={titleTypography=>setSettings({...settings,titleTypography})}/>
             <Card className="space-y-5 p-5">
                 <div>
                     <h2 className="font-semibold">Lead story</h2>

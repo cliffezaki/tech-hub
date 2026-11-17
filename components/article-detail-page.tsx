@@ -1,3 +1,4 @@
+import { headlineStyle } from "@/lib/title-typography"
 import { ReadingGuide } from "@/components/reading-guide"
 import { topicSlug } from "@/lib/topics"
 import { ReaderTools } from "@/components/reader-tools"
@@ -92,7 +93,7 @@ export async function ArticleDetailPage({
                         </p>
                     )}
 
-                    <h1 className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">
+                    <h1 style={headlineStyle(article.titleFont,article.titleSize)} className="mt-3 text-3xl font-black leading-[1.12] text-balance md:text-5xl">
                         {article.title}
                     </h1>
 

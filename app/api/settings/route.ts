@@ -1,3 +1,4 @@
+import { parseTitleTypography } from "@/lib/title-typography"
 import { NextResponse } from "next/server"
 
 import { handleError, requireAdmin, requireWritableStore, revalidateSite } from "@/lib/api"
@@ -34,6 +35,7 @@ export async function PUT(request: Request) {
             }
         }
 
+        if (patch.titleTypography !== undefined) patch.titleTypography = JSON.stringify(parseTitleTypography(patch.titleTypography))
         if (patch.siteName !== undefined && (!patch.siteName.trim() || patch.siteName.length > 80)) return NextResponse.json({ error: "Site name must contain 1–80 characters." }, { status: 400 })
         if (patch.contactEmail !== undefined) {
             patch.contactEmail = patch.contactEmail.trim()

@@ -1,3 +1,4 @@
+import { titleVariables } from "@/lib/title-typography"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -14,7 +15,7 @@ export default async function SiteLayout({
     const settings = await getSiteSettings()
 
     return (
-        <div className="public-site flex min-h-screen flex-col">
+        <div style={titleVariables(settings.titleTypography)} className="public-site flex min-h-screen flex-col">
             <a
                 href="#main-content"
                 className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-foreground focus:px-4 focus:py-2 focus:text-background"

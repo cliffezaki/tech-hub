@@ -383,3 +383,27 @@
 .source-logos a:hover,.source-logos a:focus-visible{transform:translateY(-3px);z-index:2;outline:2px solid hsl(var(--brand-red))}
 .source-logos img{object-fit:contain;border-radius:50%}
 @media(prefers-reduced-motion:reduce){.source-logos a{transition:none}}
+
+.public-site [data-title-section="lead"]:is(h1,h2,h3), .public-site [data-title-section="lead"] h3 {font-family:var(--title-lead-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-lead-size));}
+
+.public-site [data-title-section="also"]:is(h1,h2,h3), .public-site [data-title-section="also"] h3 {font-family:var(--title-also-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-also-size));}
+
+.public-site [data-title-section="featured"]:is(h1,h2,h3), .public-site [data-title-section="featured"] h3 {font-family:var(--title-featured-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-featured-size));}
+
+.public-site [data-title-section="reviews"]:is(h1,h2,h3), .public-site [data-title-section="reviews"] h3 {font-family:var(--title-reviews-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-reviews-size));}
+
+.public-site [data-title-section="more"]:is(h1,h2,h3), .public-site [data-title-section="more"] h3 {font-family:var(--title-more-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-more-size));}
+
+.public-site [data-title-section="trending"]:is(h1,h2,h3), .public-site [data-title-section="trending"] h3 {font-family:var(--title-trending-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-trending-size));}
+
+.public-site [data-title-section="newsPage"]:is(h1,h2,h3), .public-site [data-title-section="newsPage"] h3 {font-family:var(--title-newsPage-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-newsPage-size));}
+
+.public-site [data-title-section="reviewsPage"]:is(h1,h2,h3), .public-site [data-title-section="reviewsPage"] h3 {font-family:var(--title-reviewsPage-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-reviewsPage-size));}
+
+.public-site [data-title-section="kenyaPage"]:is(h1,h2,h3), .public-site [data-title-section="kenyaPage"] h3 {font-family:var(--title-kenyaPage-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-kenyaPage-size));}
+
+.public-site [data-title-section="guidesPage"]:is(h1,h2,h3), .public-site [data-title-section="guidesPage"] h3 {font-family:var(--title-guidesPage-font);font-size:clamp(18px, calc(16px + 1.5vw), var(--title-guidesPage-size));}
+
+.public-site h1[data-title-section="lead"] {font-size:clamp(28px,3.4vw,var(--title-lead-size));line-height:1.14;margin-top:1rem;}
+
+.source-overflow{position:relative}.source-overflow summary{cursor:pointer;list-style:none}.source-overflow>div{position:absolute;right:0;min-width:180px;padding:8px;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:8px;z-index:5}.source-overflow>div a{border-radius:4px;width:auto;height:auto;margin:0;padding:8px;font-size:12px;display:block}

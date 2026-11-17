@@ -84,7 +84,7 @@ export default async function Home() {
                                         </span>
                                     </div>
 
-                                    <h1 className="mt-4 text-3xl font-black leading-[1.08] text-balance md:text-5xl lg:text-6xl">
+                                    <h1 data-title-section="lead" className="mt-4 text-3xl font-black leading-[1.08] text-balance md:text-5xl lg:text-6xl">
                                         <span className="headline-link">
                                             {heroTitle}
                                         </span>
@@ -116,7 +116,7 @@ export default async function Home() {
                                 <h2 className="kicker mt-8 border-b pb-3 text-muted-foreground">
                                     Also worth reading
                                 </h2>
-                                <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
+                                <div data-title-section="also" className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
                                     {secondary.map((article) => (
                                         <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3 [&_h3]:min-h-[3.75em]" />
                                     ))}
@@ -134,11 +134,11 @@ export default async function Home() {
                         title="Featured"
                         subtitle="Worth your time, from across Tech Hub"
                     />
-                    <EditorialGrid articles={featured} />
+                    <div data-title-section="featured"><EditorialGrid articles={featured} /></div>
                 </section>
             )}
 
-            {reviews.length > 0 && <section className="site-container pb-12 md:pb-16" aria-label="Reviews"><SectionHeading title="Reviews" href="/reviews" linkLabel="View All Reviews" /><ReviewStrip articles={reviews} /></section>}
+            {reviews.length > 0 && <section className="site-container pb-12 md:pb-16" aria-label="Reviews"><SectionHeading title="Reviews" href="/reviews" linkLabel="View All Reviews" /><div data-title-section="reviews"><ReviewStrip articles={reviews} /></div></section>}
 
             {/* The main news feed */}
             {latestNews.length > 0 && (
@@ -156,7 +156,7 @@ export default async function Home() {
                             href="/news"
                             linkLabel="All news"
                         />
-                        <div className="max-w-5xl sm:[&_h3]:text-[1.375rem]">
+                        <div data-title-section="more" className="max-w-5xl sm:[&_h3]:text-[1.375rem]">
                             {latestNews.map(article => <ArticleRow key={article.id} article={article} extended />)}
                         </div>
                     </div>
