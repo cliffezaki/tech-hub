@@ -133,7 +133,7 @@ export interface HomepageContent {
     lead: ArticleSummary | null
     secondary: ArticleSummary[]
     featured: ArticleSummary[]
-    related?: ArticleSummary
+    related: ArticleSummary[]
     latestNews: ArticleSummary[]
     sections: {
         section: ArticleSection
@@ -185,11 +185,11 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     const reviews = pinnedFirst(summaries.filter(a => a.section === "reviews" && !used.has(a.id)), "homepage:reviews").slice(0, 4)
     reviews.forEach(article => used.add(article.id))
     const phoneCoverage = /\b(phone|phones|smartphone|iphone|android|xiaomi|galaxy)\b/i
-    const related = lead && summaries.find(article => !used.has(article.id) && (
+    const related = lead ? summaries.filter(article => !used.has(article.id) && (
         article.tags?.some(tag => lead.tags?.includes(tag)) ||
         (article.category === lead.category && !["News", "Reviews"].includes(article.category)) ||
-        (phoneCoverage.test(lead.title + " " + lead.excerpt) && phoneCoverage.test(article.title))
-    ))
+        (phoneCoverage.test(lead.title + " " + lead.excerpt) && phoneCoverage.test(article.title + " " + article.excerpt))
+    )).slice(0, 2) : []
 
     const sections = (Object.keys(SECTION_META) as ArticleSection[])
         .filter((section) => section !== "news")

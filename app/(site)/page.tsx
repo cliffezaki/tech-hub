@@ -109,7 +109,18 @@ export default async function Home() {
                                 </div>
                             </Link>
                             {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="border-b py-1.5 text-[0.8125rem] leading-5 break-words list-disc ml-4">{fact}</li>)}</ul>{lead.quickFacts.length > 2 && <details className="lg:hidden"><summary className="py-2 text-sm">Show all {lead.quickFacts.length >= 6 ? "six" : lead.quickFacts.length}</summary><ul className="list-disc pl-4 text-sm">{lead.quickFacts.slice(2,6).map(fact=><li className="py-1" key={fact}>{fact}</li>)}</ul></details>}</section>}
-                            {related && <Link className="mt-5 hidden border-t pt-3 lg:block" href={related.href}><span className="kicker block">Beyond the Headlines</span><span className="font-serif">{related.title} ↗</span></Link>}
+                            {related.length > 0 && (
+                                <section aria-label="Beyond the Headlines" className="mt-5 hidden border-t pt-3 lg:block">
+                                    <h2 className="kicker">Beyond the Headlines</h2>
+                                    <div className={related.length > 1 ? "mt-2 grid grid-cols-2 gap-6 divide-x" : "mt-2"}>
+                                        {related.map(article => (
+                                            <Link key={article.id} href={article.href} className="font-serif leading-snug hover:underline even:pl-6">
+                                                {article.title} <span aria-hidden="true">↗</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
 
                         {(
@@ -120,7 +131,7 @@ export default async function Home() {
                                 </h2>
                                 <div data-title-section="also" className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-1">
                                     {secondary.map((article) => (
-                                        <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3" />
+                                        <ArticleCard key={article.id} article={article} className="[&_h3]:line-clamp-3 lg:[&_p]:line-clamp-3 lg:[&>div:last-child]:px-5 lg:[&>div:last-child]:pb-5" />
                                     ))}
                                 </div>
                             </div>

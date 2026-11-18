@@ -41,10 +41,21 @@ export function TrendingNews() {
         const feed=feedRef.current, list=feed?.querySelector("ol")
         if(!feed||!list||stories.length<2)return
         const entries=Array.from(list.children).slice(0,2)
-        const measure=()=>setFeedHeight(Math.ceil(feed.offsetHeight - list.offsetHeight + entries[0].getBoundingClientRect().height + entries[1].getBoundingClientRect().height / 2))
-        const observer=new ResizeObserver(measure)
-        entries.forEach(e=>observer.observe(e));measure()
-        return ()=>observer.disconnect()
+        const desktop = window.matchMedia("(min-width: 1024px)")
+        const measure = () => {
+            const chrome = feed.offsetHeight - list.offsetHeight
+            const first = entries[0].getBoundingClientRect().height
+            const second = entries[1].getBoundingClientRect().height
+            setFeedHeight(Math.ceil(chrome + first + second * (desktop.matches ? 1 : 0.5)))
+        }
+        const observer = new ResizeObserver(measure)
+        entries.forEach(entry => observer.observe(entry))
+        desktop.addEventListener("change", measure)
+        measure()
+        return () => {
+            observer.disconnect()
+            desktop.removeEventListener("change", measure)
+        }
     },[stories])
 
     useEffect(() => {
