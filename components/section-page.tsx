@@ -20,7 +20,9 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
         getSectionArticles(section),
         showTicker ? getTickerArticles(section) : Promise.resolve([]),
     ])
-    const discovery = section === "how-stuff-works" ? (await getAllArticleSummaries()).filter(a => a.section === "news" || a.section === "reviews").slice(0, 4) : []
+    const published = section === "how-stuff-works" ? await getAllArticleSummaries() : []
+    const discovery = published.filter(a => a.section === "news" || a.section === "reviews").slice(0, 4)
+    const compactHeader = ["news", "how-stuff-works", "tech-kenya"].includes(section)
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)
     if (!page) notFound()
@@ -29,7 +31,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
         <>
         {showTicker && <div className="site-container"><NewsTicker articles={ticker} /></div>}
         <div data-title-section={({news:"newsPage",reviews:"reviewsPage","tech-kenya":"kenyaPage","how-stuff-works":"guidesPage"} as Record<string,string>)[section]} className={showTicker || section === "how-stuff-works" ? "site-container pt-3 pb-10 md:pt-4 md:pb-14" : "site-container py-10 md:py-14"}>
-            {section !== "reviews" && <header className="border-b pb-8">
+            {compactHeader ? <h1 className="kicker text-brand-red">{meta.label}</h1> : section !== "reviews" && <header className="border-b pb-8">
                 <p className="kicker text-brand-red">{meta.label}</p>
                 <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
                     {page.title}
@@ -57,7 +59,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                section === "how-stuff-works" ? <ExplainerCollection articles={articles} discovery={discovery} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
+                section === "how-stuff-works" ? <ExplainerCollection articles={articles} discovery={discovery} published={published} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
             )}
         </div>
         </>

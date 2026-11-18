@@ -18,12 +18,25 @@ function TextStory({ article }: { article: ArticleSummary }) {
     </article>
 }
 
-export function ExplainerCollection({ articles, discovery = [] }: { articles: ArticleSummary[]; discovery?: ArticleSummary[] }) {
-    const { hero, topics, explore, cards, collections } = explainerLayout(articles)
+export function ExplainerCollection({ articles, discovery = [], published = [] }: { articles: ArticleSummary[]; discovery?: ArticleSummary[]; published?: ArticleSummary[] }) {
+    const { hero, topics, explore, cards: availableCards, collections } = explainerLayout(articles)
     const [count, setCount] = useState(4)
     const [announcement, setAnnouncement] = useState("")
     const grid = useRef<HTMLDivElement>(null)
     if (!hero) return <p className="py-8 text-muted-foreground">New explainers are on their way.</p>
+    const occupied = new Set([hero, ...explore, ...collections.flatMap(group => group.articles), ...discovery].map(article => article.id))
+    const terms = (article: ArticleSummary) => new Set(
+        [article.category, ...(article.tags || []), article.title].join(" ").toLowerCase()
+            .match(/\b[a-z]{4,}\b/g)?.filter(word => !["with", "that", "from", "what", "your", "does", "every", "news", "when", "they", "have", "this", "before"].includes(word))
+    )
+    const heroTerms = terms(hero)
+    const related = published.filter(article => !occupied.has(article.id)).map(article => ({
+        article, score: (article.section === "how-stuff-works" ? 2 : 0) + [...terms(article)].filter(word => heroTerms.has(word)).length
+    })).filter(item => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 4).map(item => item.article)
+    const relatedIds = new Set(related.map(article => article.id))
+    const cards = availableCards.filter(article => !relatedIds.has(article.id))
+    const title = hero.title === "HTTPS protects the connection. It does not certify every claim on the page"
+        ? "What HTTPS actually protects" : hero.mobileHeadline || hero.title
     function showMore() {
         const next = Math.min(count + 4, cards.length)
         setCount(next)
@@ -31,25 +44,23 @@ export function ExplainerCollection({ articles, discovery = [] }: { articles: Ar
         // Move focus into newly revealed content so removing the last button is safe.
         requestAnimationFrame(() => grid.current?.querySelectorAll<HTMLAnchorElement>(":scope > a")[count]?.focus())
     }
-    return <div className="mt-8 space-y-10 md:space-y-12">
-        <article className="grid gap-6 lg:grid-cols-[2fr_3fr]">
+    return <div className="mt-4 space-y-10 md:space-y-12">
+        <article className="grid items-start gap-6 md:grid-cols-2">
             <div className="min-w-0">
-                <p className="kicker text-brand-red">{hero.category}</p>
+                <h2 data-article-title style={headlineVariables(hero)} className="font-serif text-3xl font-bold leading-tight"><Link href={hero.href}>{title}</Link></h2>
+                <p className="kicker mt-3 text-brand-red">{hero.category}</p>
                 <p className="mt-3 leading-relaxed">{hero.excerpt}</p>
                 <p className="mt-3 text-xs text-muted-foreground">{hero.author} · {formatDate(hero.publishedAt)} · {hero.readTime}</p>
                 <Link className="mt-4 inline-block border-b text-sm font-semibold" href={hero.href}>Read More ↗</Link>
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                    {articles.filter(article => article.id !== hero.id).slice(0, 2).map(article => <div key={article.id} className="border-t pt-3">
+                <div className="mt-4 grid gap-2">
+                    {related.map(article => <div key={article.id} className="border-t pt-3">
                         <h3 className="font-serif font-bold leading-snug"><Link className="hover:underline" href={article.href}>{article.title}</Link></h3>
-                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{article.excerpt}</p>
+                        <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{article.excerpt}</p>
                     </div>)}
                 </div>
             </div>
-            <Link href={hero.href} className="relative order-first flex min-h-64 items-end overflow-hidden rounded-xl bg-neutral-900 lg:order-last lg:min-h-80">
-                {hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || ""} fill priority sizes="(max-width:1023px) 100vw,60vw" className="object-cover" />}
-                <div className="relative w-full bg-gradient-to-t from-black/90 via-black/55 to-transparent px-6 pb-6 pt-16 text-white">
-                    <h2 data-article-title style={headlineVariables(hero)} className="max-w-[30ch] text-3xl font-bold leading-tight">{hero.title}</h2>
-                </div>
+            <Link href={hero.href} aria-label={hero.title} className="relative order-first block aspect-[4/3] overflow-hidden rounded-xl bg-muted md:order-last md:aspect-[6/5]">
+                {hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || ""} fill priority sizes="(max-width:767px) 100vw,50vw" className="object-cover" />}
             </Link>
         </article>
         <section aria-label="Explore topics">
