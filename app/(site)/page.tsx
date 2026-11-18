@@ -21,7 +21,7 @@ export default async function Home() {
         lead,
         secondary,
         featured,
-        latestNews,
+        related, latestNews,
         sections,
         newsCount,
         ticker,
@@ -58,7 +58,7 @@ export default async function Home() {
             <AdSlot slot="homepage-top" />
             {/* Lead story with two supporting highlights */}
             <section className="border-b bg-muted/20">
-                <div className="site-container py-10 md:py-14">
+                <div className="home-lead site-container py-4 lg:py-10">
                     <div className="grid items-start gap-10 lg:grid-cols-12">
                         <div className="lg:col-span-8">
                             <Link href={lead.href} className="group block">
@@ -87,11 +87,11 @@ export default async function Home() {
 
                                     <h1 data-article-title style={headlineVariables(lead)} data-title-section="lead" className="mt-4 text-3xl font-black leading-[1.08] text-balance md:text-5xl lg:text-6xl">
                                         <span className="headline-link">
-                                            {heroTitle}
+                                            <span className="hidden lg:inline">{heroTitle}</span><span className="lg:hidden">{lead.mobileHeadline || heroTitle}</span>
                                         </span>
                                     </h1>
 
-                                    <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+                                    <p className="hidden lg:block mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
                                         {heroSubtitle}
                                     </p>
 
@@ -108,7 +108,8 @@ export default async function Home() {
                                     </div>
                                 </div>
                             </Link>
-                            {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="border-b py-1.5 text-[0.8125rem] leading-5 break-words list-disc ml-4">{fact}</li>)}</ul></section>}
+                            {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="border-b py-1.5 text-[0.8125rem] leading-5 break-words list-disc ml-4">{fact}</li>)}</ul>{lead.quickFacts.length > 2 && <details className="lg:hidden"><summary className="py-2 text-sm">Show all {lead.quickFacts.length >= 6 ? "six" : lead.quickFacts.length}</summary><ul className="list-disc pl-4 text-sm">{lead.quickFacts.slice(2,6).map(fact=><li className="py-1" key={fact}>{fact}</li>)}</ul></details>}</section>}
+                            {related && <Link className="mt-5 hidden border-t pt-3 lg:block" href={related.href}><span className="kicker block">Beyond the Headlines</span><span className="font-serif">{related.title} ↗</span></Link>}
                         </div>
 
                         {(

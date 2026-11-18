@@ -11,7 +11,7 @@ for (const size of [0, 1, 2, 6, 9, 30]) {
  if (size > 1) assert.equal(new Set([hero.id, ...headlines.map(a => a.id), ...feed.map(a => a.id)]).size, size)
  assert(feed.every((a,i) => !i || Date.parse(a.publishedAt) <= Date.parse(feed[i-1].publishedAt)))
 }
-assert.equal(exports.newsLayout(articles.slice(0,6)).feed.length, 3)
+assert.equal(exports.newsLayout(articles.slice(0,6)).feed.length, 4)
 const filtered = exports.newsLayout(articles, "AI")
 assert.equal(filtered.hero, undefined)
 assert.equal(filtered.headlines.length, 0)

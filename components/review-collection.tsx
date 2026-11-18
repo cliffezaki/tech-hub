@@ -6,16 +6,14 @@ import { ArticleRow } from "@/components/article-row"
 import { SectionHeading } from "@/components/section-heading"
 import type { ArticleSummary } from "@/lib/types"
 export function ReviewCollection({ articles }: { articles: ArticleSummary[] }) {
-    const [category, setCategory] = useState("all")
     const [count, setCount] = useState(4)
     const heading = useRef<HTMLDivElement>(null)
-    const filtered = articles.filter(a => category === "all" || a.category === category)
+    const filtered = articles
     const spotlight = filtered.find(a => a.pinnedAreas?.includes("reviews:featured")) || filtered.find(a => !a.pinnedAreas?.includes("reviews:latest") && a.featured && a.imageUrl) || filtered.find(a => !a.pinnedAreas?.includes("reviews:latest") && a.imageUrl)
     const feed = filtered.filter(a=>a.id!==spotlight?.id)
     const cards = feed.slice(0, count)
     const additional = feed.slice(count)
-    return <section className="py-8" aria-label="Review collection">
-        <label className="mb-8 block text-sm">Category <select className="ml-3 max-w-full rounded border bg-background p-2" value={category} onChange={e => { setCategory(e.target.value); setCount(4) }}><option value="all">All categories</option>{[...new Set(articles.map(a => a.category))].map(c => <option key={c}>{c}</option>)}</select></label>
+    return <section className="pb-8" aria-label="Review collection">
         {spotlight && <ReviewSpotlight article={spotlight} />}
         <div ref={heading} tabIndex={-1} className="scroll-mt-24"><SectionHeading title="Latest Reviews" /></div>
         <div id="review-cards" className="grid items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">{cards.map(article => <ArticleCard key={article.id} article={article} />)}</div>

@@ -10,7 +10,7 @@ export function TrendingNews() {
     const [stories, setStories] = useState<TrendingStory[]>([])
     const [status, setStatus] = useState("loading")
     const [selected, setSelected] = useState<TrendingStory | null>(null)
-    const [feedHeight,setFeedHeight]=useState(540)
+    const [feedHeight,setFeedHeight]=useState<number | undefined>(undefined)
     const feedRef=useRef<HTMLElement>(null)
     const dialog = useRef<HTMLDialogElement>(null)
     const opener = useRef<HTMLButtonElement | null>(null)
@@ -22,7 +22,7 @@ export function TrendingNews() {
                 const response = await fetch("/api/trending", { signal: controller.signal })
                 if (!response.ok) throw new Error("Unavailable")
                 const feed = await response.json()
-                setStories(feed.stories)
+                setStories(feed.stories.slice(0, 5))
                 setStatus(feed.status)
             } catch {
                 if (!controller.signal.aborted) {
@@ -41,7 +41,7 @@ export function TrendingNews() {
         const feed=feedRef.current, list=feed?.querySelector("ol")
         if(!feed||!list||stories.length<2)return
         const entries=Array.from(list.children).slice(0,2)
-        const measure=()=>setFeedHeight(Math.max(540,Math.ceil(feed.getBoundingClientRect().height-list.getBoundingClientRect().height+entries.reduce((sum,e)=>sum+e.getBoundingClientRect().height,0)+2)))
+        const measure=()=>setFeedHeight(Math.ceil(feed.offsetHeight - list.offsetHeight + entries[0].getBoundingClientRect().height + entries[1].getBoundingClientRect().height / 2))
         const observer=new ResizeObserver(measure)
         entries.forEach(e=>observer.observe(e));measure()
         return ()=>observer.disconnect()

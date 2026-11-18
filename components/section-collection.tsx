@@ -19,11 +19,13 @@ export function SectionCollection({ articles, section }: { articles: ArticleSumm
     const hero = news ? newsContent.hero : section === "tech-kenya" && category === "all" ? articles[0] : undefined
     const headlines = news ? newsContent.headlines : []
     const remaining = filtered.filter(a => a.id !== hero?.id && !headlines.some(b => b.id === a.id))
-    const feed = news ? newsContent.feed : remaining
+    const desk = news && category === "all" ? newsContent.feed.filter(a => !a.pinnedAreas?.includes("news:latest")).slice(0, Math.min(4, Math.max(0, newsContent.feed.length - 2))) : []
+    const feed = news ? newsContent.feed.filter(a => !desk.some(item => item.id === a.id)) : remaining
     const visible = feed.slice(0, limit)
     return <>
         {hero && <div className="my-8"><EditorialHero article={hero} kenya={section === "tech-kenya"} /></div>}
         {headlines.length > 0 && <section className="my-8"><SectionHeading title="More headlines" /><HeadlineStrip articles={headlines} /></section>}
+        {desk.length > 0 && <section className="my-8"><SectionHeading title="From the news desk" /><HeadlineStrip articles={desk} /></section>}
         {educational && <nav aria-label="Explore learning topics" className="my-8 flex flex-wrap gap-3">{categories.map(topic => <button key={topic} type="button" aria-pressed={category === topic} onClick={() => { setCategory(topic); setLimit(12) }} className="rounded-lg border px-5 py-3 text-sm hover:bg-muted aria-pressed:bg-muted">{topic}<span className="ml-3 text-muted-foreground">{articles.filter(a => a.category === topic).length}</span></button>)}</nav>}
         {section === "tech-kenya" && <div className="my-8 grid gap-6 rounded-xl border-l-4 border-brand-red bg-muted/40 p-6 sm:grid-cols-2"><div><p className="kicker text-brand-red">Kenya in focus</p><h2 className="mt-2 text-2xl font-bold">Ideas, infrastructure, impact.</h2><p className="mt-3 text-muted-foreground">Explore the people and developments shaping Kenya’s digital future.</p></div><nav aria-label="Kenyan technology coverage" className="flex flex-wrap content-center gap-2">{categories.map(topic => <button key={topic} type="button" aria-pressed={category === topic} onClick={() => { setCategory(topic); setLimit(12) }} className="rounded-full border bg-background px-4 py-2 text-sm aria-pressed:underline">{topic}</button>)}</nav></div>}
         <section className="py-8" aria-label="Browse articles">

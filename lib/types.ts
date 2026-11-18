@@ -63,6 +63,7 @@ export interface Article {
     scheduledAt?: string
     titleBold?: boolean
     titleItalic?: boolean
+    mobileHeadline?: string
     titleFont?: string
     titleSize?: string
     seoTitle?: string
@@ -169,6 +170,7 @@ export interface ArticleSummary {
     pinnedAreas?: string[]
     titleBold?: boolean
     titleItalic?: boolean
+    mobileHeadline?: string
     titleFont?: string
     titleSize?: string
     seoTitle?: string

@@ -29,7 +29,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
         <>
         {showTicker && <div className="site-container"><NewsTicker articles={ticker} /></div>}
         <div data-title-section={({news:"newsPage",reviews:"reviewsPage","tech-kenya":"kenyaPage","how-stuff-works":"guidesPage"} as Record<string,string>)[section]} className="site-container py-10 md:py-14">
-            <header className="border-b pb-8">
+            {section !== "reviews" && <header className="border-b pb-8">
                 <p className="kicker text-brand-red">{meta.label}</p>
                 <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
                     {page.title}
@@ -42,7 +42,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                         <Markdown content={page.content} />
                     </div>
                 )}
-            </header>
+            </header>}
 
             <AdSlot slot={section} />
             {articles.length === 0 ? (

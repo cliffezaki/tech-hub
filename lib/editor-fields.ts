@@ -8,6 +8,7 @@ export function editorFields(body: Record<string, unknown>) {
     return {
         ...(body.titleBold !== undefined ? {titleBold:body.titleBold as boolean} : {}),
         ...(body.titleItalic !== undefined ? {titleItalic:body.titleItalic as boolean} : {}),
+        ...(typeof body.mobileHeadline === "string" ? {mobileHeadline:body.mobileHeadline.trim().slice(0,180)} : {}),
         ...(body.titleFont !== undefined ? {titleFont:String(body.titleFont)} : {}),
         ...(body.titleSize !== undefined ? {titleSize:String(body.titleSize)} : {}),
         ...(body.quickFacts !== undefined ? { quickFacts: [...new Set((body.quickFacts as string[]).map(v => v.trim()).filter(Boolean))] } : {}),

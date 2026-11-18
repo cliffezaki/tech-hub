@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Playfair_Display, Inter } from "next/font/google"
+
 
 import "./globals.css"
 import "./article-fonts"
@@ -8,18 +8,6 @@ import { getSiteSettings } from "@/lib/content"
 import { getSiteUrl } from "@/lib/site"
 import { publishingConfig } from "@/lib/advertising"
 import { siteIcon, versionedIcon } from "@/lib/site-identity"
-
-const playfair = Playfair_Display({
-    subsets: ["latin"],
-    variable: "--font-playfair",
-    display: "swap",
-})
-
-const inter = Inter({
-    subsets: ["latin"],
-    variable: "--font-inter",
-    display: "swap",
-})
 
 export async function generateMetadata(): Promise<Metadata> {
     const settings = await getSiteSettings()
@@ -73,7 +61,7 @@ export default async function RootLayout({
         <html
             lang={String(publishing?.language || "en")}
             suppressHydrationWarning
-            className={`${playfair.variable} ${inter.variable}`}
+            className="publication-fonts"
         >
             <body suppressHydrationWarning>
                 <ThemeProvider

@@ -39,7 +39,7 @@ function toSummary(article: Article): ArticleSummary {
     return {
         pinnedAreas: article.pinnedAreas,
         demo: article.demo,
-        titleBold: article.titleBold, titleItalic: article.titleItalic, titleFont: article.titleFont, titleSize: article.titleSize,
+        mobileHeadline: article.mobileHeadline, titleBold: article.titleBold, titleItalic: article.titleItalic, titleFont: article.titleFont, titleSize: article.titleSize,
         seoTitle: article.seoTitle,
         metaDescription: article.metaDescription,
         tags: article.tags,
@@ -133,6 +133,7 @@ export interface HomepageContent {
     lead: ArticleSummary | null
     secondary: ArticleSummary[]
     featured: ArticleSummary[]
+    related?: ArticleSummary
     latestNews: ArticleSummary[]
     sections: {
         section: ArticleSection
@@ -166,7 +167,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     secondary.forEach((article) => used.add(article.id))
 
     const featureSeen = new Set(used)
-    const featured = [...featuredAll, ...summaries].filter(article => {
+    const featured = [...featuredAll, ...summaries.filter(a=>a.section !== "news"), ...summaries].filter(article => {
         if (featureSeen.has(article.id)) return false
         featureSeen.add(article.id)
         return true
@@ -176,7 +177,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     const news = pinnedFirst(summaries, "news:latest").filter((article) => article.section === "news")
     const latestNews = news
         .filter((article) => !used.has(article.id))
-        .slice(0, 6)
+        .slice(0, 5)
 
     const sections = (Object.keys(SECTION_META) as ArticleSection[])
         .filter((section) => section !== "news")
@@ -195,6 +196,7 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         lead,
         secondary,
         featured,
+        related: lead ? summaries.find(a => !used.has(a.id) && !latestNews.some(n=>n.id===a.id) && a.section !== "reviews" && (a.tags?.some(t=>lead.tags?.includes(t)) || (a.category === lead.category && !["News","Reviews"].includes(a.category)))) : undefined,
         latestNews,
         sections,
         newsCount: news.length,

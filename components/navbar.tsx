@@ -96,7 +96,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
     return (
         <>
             <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-                <div className="site-container grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+                <div className="site-container publication-nav grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
                     <div className="flex items-center justify-self-start gap-2 sm:gap-3">
                         <button
                             ref={trigger}
