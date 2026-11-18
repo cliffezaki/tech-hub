@@ -434,10 +434,14 @@
  .home-lead .group.block {order:0}
  .home-lead .group.block>div:first-child {height:clamp(150px,42vw,180px);aspect-ratio:auto}
  .home-lead .group.block>.mt-6 {margin-top:12px}
- .public-site .home-lead h1[data-title-section="lead"] {font-size:clamp(30px,8vw,34px);line-height:1.12;margin-top:8px}
- .home-lead [data-title-section="trending"] {order:1}
- .home-lead section[aria-labelledby="lead-quick-facts"] {order:2;margin-top:0}
- .home-lead section[aria-labelledby="lead-quick-facts"]>ul>li:nth-child(n+3) {display:none}
+ .public-site .home-lead h1[data-title-section="lead"] {font-size:clamp(28px,7.4vw,30px);line-height:1.1;margin-top:6px}
+ .home-lead [data-title-section="trending"] {order:2}
+ .home-lead .lead-facts {order:1;margin-top:0;padding-top:0}
+ .lead-facts details:not([open]) + ul {display:none}
+ .lead-facts summary::-webkit-details-marker {display:none}
+ .lead-facts summary span {display:inline-block;transition:transform .15s}
+ .lead-facts details[open] summary span {transform:rotate(90deg)}
+ @media(prefers-reduced-motion:no-preference){.lead-facts details[open] + ul {animation:facts-in .18s ease-out} @keyframes facts-in {from {opacity:0;transform:translateY(-3px)} to {opacity:1;transform:none}}}
  .home-lead h2.kicker.mt-8,.home-lead [data-title-section="also"] {order:3;margin-top:0}
 }
 

@@ -108,7 +108,17 @@ export default async function Home() {
                                     </div>
                                 </div>
                             </Link>
-                            {!!lead.quickFacts?.length && <section aria-labelledby="lead-quick-facts" className="mt-8 border-t pt-5"><h2 id="lead-quick-facts" className="kicker text-brand-red">At a Glance</h2><ul className="mt-3 grid gap-x-6 sm:grid-cols-2">{lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="border-b py-1.5 text-[0.8125rem] leading-5 break-words list-disc ml-4">{fact}</li>)}</ul>{lead.quickFacts.length > 2 && <details className="lg:hidden"><summary className="py-2 text-sm">Show all {lead.quickFacts.length >= 6 ? "six" : lead.quickFacts.length}</summary><ul className="list-disc pl-4 text-sm">{lead.quickFacts.slice(2,6).map(fact=><li className="py-1" key={fact}>{fact}</li>)}</ul></details>}</section>}
+                            {!!lead.quickFacts?.length && (
+                                <section aria-label="At a Glance" className="lead-facts mt-8 border-t pt-5">
+                                    <h2 className="kicker hidden text-brand-red lg:block">At a Glance</h2>
+                                    <details className="lg:hidden">
+                                        <summary className="kicker cursor-pointer list-none py-2 text-brand-red"><span aria-hidden="true">▸</span> AT A GLANCE</summary>
+                                    </details>
+                                    <ul className="mt-3 grid gap-x-6 sm:grid-cols-2">
+                                        {lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="ml-4 list-disc border-b py-1.5 text-[0.8125rem] leading-5">{fact}</li>)}
+                                    </ul>
+                                </section>
+                            )}
                             {related.length > 0 && (
                                 <section aria-label="Beyond the Headlines" className="mt-5 hidden border-t pt-3 lg:block">
                                     <h2 className="kicker">Beyond the Headlines</h2>

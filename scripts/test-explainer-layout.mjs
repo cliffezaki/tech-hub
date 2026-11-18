@@ -23,7 +23,7 @@ for(let n=0;n<35;n++){
 const states=[];let cursor=0, focused=false
 const jsx=(type,props)=>({type,props})
 const React={useState(init){const i=cursor++;if(!(i in states))states[i]=init;return [states[i],v=>states[i]=v]},useRef(){return {current:{querySelectorAll(){return Array.from({length:50},()=>({focus(){focused=true}}))}}}}}
-const component=await load('components/explainer-collection.tsx',{'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'next/link':{default:'Link'},'@/components/article-card':{ArticleCard:'Card'},'@/components/safe-image':{SafeImage:'Image'},'@/components/section-heading':{SectionHeading:'Heading'},'@/lib/explainer-layout':layout},{requestAnimationFrame:fn=>fn()})
+const component=await load('components/explainer-collection.tsx',{'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'next/link':{default:'Link'},'@/components/article-card':{ArticleCard:'Card'},'@/components/safe-image':{SafeImage:'Image'},'@/components/section-heading':{SectionHeading:'Heading'},'@/lib/title-typography':{headlineVariables:()=>({})},'@/lib/format':{formatDate:()=>''},'@/lib/explainer-layout':layout},{requestAnimationFrame:fn=>fn()})
 const walk=n=>Array.isArray(n)?n.flatMap(walk):n&&typeof n==='object'?[n,...walk(n.props?.children)]:[]
 const render=()=>{cursor=0;return walk(component.ExplainerCollection({articles:make(25)}))}
 let nodes=render(),count=nodes.filter(n=>n.type==='Card').length
@@ -35,7 +35,7 @@ while(nodes.some(n=>n.type==='button')){
     assert(next>count&&next<=count+4);count=next
 }
 assert.equal(count,layout.explainerLayout(make(25)).cards.length);assert(focused)
-const fields=await load('lib/editor-fields.ts',{'@/lib/rich-content':{validateBody:v=>v}})
+const fields=await load('lib/editor-fields.ts',{'@/lib/editor-fonts':{ARTICLE_FONTS:[]},'@/lib/rich-content':{validateBody:v=>v}})
 assert.equal(fields.editorFields({}).quickFacts,undefined)
 assert.deepEqual(Array.from(fields.editorFields({quickFacts:[' A ','A','','B',''].slice(0,4)}).quickFacts),['A','B'])
 assert.equal(fields.editorFields({quickFacts:['A','B','C','D','E','F']}).quickFacts.length,6)

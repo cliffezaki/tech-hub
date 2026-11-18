@@ -40,13 +40,13 @@ export function TrendingNews() {
     useEffect(()=>{
         const feed=feedRef.current, list=feed?.querySelector("ol")
         if(!feed||!list||stories.length<2)return
-        const entries=Array.from(list.children).slice(0,2)
+        const entries=Array.from(list.children).slice(0,3)
         const desktop = window.matchMedia("(min-width: 1024px)")
         const measure = () => {
             const chrome = feed.offsetHeight - list.offsetHeight
-            const first = entries[0].getBoundingClientRect().height
-            const second = entries[1].getBoundingClientRect().height
-            setFeedHeight(Math.ceil(chrome + first + second * (desktop.matches ? 1 : 0.5)))
+            const visible = entries.slice(0, desktop.matches ? 2 : 3)
+            const height = visible.reduce((sum, row) => sum + row.getBoundingClientRect().height, 0)
+            setFeedHeight(Math.ceil(chrome + height))
         }
         const observer = new ResizeObserver(measure)
         entries.forEach(entry => observer.observe(entry))

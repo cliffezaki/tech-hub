@@ -13,6 +13,10 @@ export function ReviewSpotlight({ article }: { article: ArticleSummary }) {
                 <p className="mt-4 text-base leading-relaxed text-muted-foreground">{article.excerpt}</p>
                 <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{article.author} · <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time> · {article.readTime}</p>
                 <Link href={article.href} className="mt-5 inline-block border-b pb-1 text-sm font-semibold">Read the review <span aria-hidden="true">↗</span><span className="sr-only">: {article.title}</span></Link>
+                {!!article.quickFacts?.length && <section className="mt-5 border-t pt-3">
+                    <h3 className="kicker text-brand-red">At a Glance</h3>
+                    <ul className="mt-1 divide-y">{article.quickFacts.slice(0, 3).map(fact => <li key={fact} className="py-2 text-sm leading-snug">{fact}</li>)}</ul>
+                </section>}
             </div>
             <Link href={article.href} aria-label={`Read ${article.title}`} className="relative block aspect-[3/2] overflow-hidden rounded-lg bg-muted lg:col-span-2">
                 <SafeImage src={article.imageUrl!} alt={article.imageAlt || article.title} fill priority sizes="(max-width: 1023px) 100vw, 66vw" className="object-cover" />

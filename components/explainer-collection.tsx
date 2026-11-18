@@ -1,6 +1,7 @@
 "use client"
 
 import { headlineVariables } from "@/lib/title-typography"
+import { formatDate } from "@/lib/format"
 import Link from "next/link"
 import { useRef, useState } from "react"
 import { ArticleCard } from "@/components/article-card"
@@ -31,7 +32,26 @@ export function ExplainerCollection({ articles, discovery = [] }: { articles: Ar
         requestAnimationFrame(() => grid.current?.querySelectorAll<HTMLAnchorElement>(":scope > a")[count]?.focus())
     }
     return <div className="mt-8 space-y-10 md:space-y-12">
-        <article className="overflow-hidden rounded-xl border bg-card text-card-foreground"><Link href={hero.href} className="relative isolate flex min-h-[clamp(18rem,36vw,32rem)] items-end bg-neutral-900"><div className="absolute inset-0 -z-10">{hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || hero.title} fill priority sizes="100vw" className="object-cover" />}</div><div className="w-full bg-gradient-to-t from-black/95 via-black/70 to-transparent px-6 pb-7 pt-20 text-white md:px-10"><p className="kicker text-brand-red">{hero.category}</p><h2 data-article-title style={headlineVariables(hero)} className="mt-3 text-3xl md:text-4xl font-bold">{hero.title}</h2><span className="mt-4 inline-block text-sm font-semibold">Read More ↗</span></div></Link></article>
+        <article className="grid gap-6 lg:grid-cols-[2fr_3fr]">
+            <div className="min-w-0">
+                <p className="kicker text-brand-red">{hero.category}</p>
+                <p className="mt-3 leading-relaxed">{hero.excerpt}</p>
+                <p className="mt-3 text-xs text-muted-foreground">{hero.author} · {formatDate(hero.publishedAt)} · {hero.readTime}</p>
+                <Link className="mt-4 inline-block border-b text-sm font-semibold" href={hero.href}>Read More ↗</Link>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    {articles.filter(article => article.id !== hero.id).slice(0, 2).map(article => <div key={article.id} className="border-t pt-3">
+                        <h3 className="font-serif font-bold leading-snug"><Link className="hover:underline" href={article.href}>{article.title}</Link></h3>
+                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{article.excerpt}</p>
+                    </div>)}
+                </div>
+            </div>
+            <Link href={hero.href} className="relative order-first flex min-h-64 items-end overflow-hidden rounded-xl bg-neutral-900 lg:order-last lg:min-h-80">
+                {hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || ""} fill priority sizes="(max-width:1023px) 100vw,60vw" className="object-cover" />}
+                <div className="relative w-full bg-gradient-to-t from-black/90 via-black/55 to-transparent px-6 pb-6 pt-16 text-white">
+                    <h2 data-article-title style={headlineVariables(hero)} className="max-w-[30ch] text-3xl font-bold leading-tight">{hero.title}</h2>
+                </div>
+            </Link>
+        </article>
         <section aria-label="Explore topics">
             <SectionHeading title="Explore" />
             {!!discovery.length && <div className="mb-6 grid items-start gap-6 md:grid-cols-2"><Link href={discovery[0].href} className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-[#252a30] text-white">{discovery[0].imageUrl && <SafeImage src={discovery[0].imageUrl} alt={discovery[0].imageAlt || ""} fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" />}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" /><h2 data-article-title style={headlineVariables(discovery[0])} className="absolute bottom-0 p-6 text-2xl font-bold leading-snug">{discovery[0].title}</h2></Link><div className="divide-y">{discovery.slice(1,4).map(article => <TextStory key={article.id} article={article} />)}</div></div>}
