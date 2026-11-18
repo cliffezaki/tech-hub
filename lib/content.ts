@@ -166,8 +166,9 @@ export async function getHomepageContent(): Promise<HomepageContent> {
 
     secondary.forEach((article) => used.add(article.id))
 
+    const reservedNews = new Set(summaries.filter(a => !used.has(a.id) && !a.featured && (a.section === "news" || (a.section === "tech-kenya" && a.category.toLowerCase() === "news"))).sort((a,b) => Number(b.section === "news") - Number(a.section === "news")).slice(0,5).map(a => a.id))
     const featureSeen = new Set(used)
-    const featured = [...featuredAll, ...summaries.filter(a=>a.section !== "news"), ...summaries].filter(article => {
+    const featured = [...featuredAll, ...summaries.filter(a=>!reservedNews.has(a.id) && !a.pinnedAreas?.includes("homepage:reviews"))].filter(article => {
         if (featureSeen.has(article.id)) return false
         featureSeen.add(article.id)
         return true
@@ -175,9 +176,20 @@ export async function getHomepageContent(): Promise<HomepageContent> {
     featured.forEach((article) => used.add(article.id))
 
     const news = pinnedFirst(summaries, "news:latest").filter((article) => article.section === "news")
-    const latestNews = news
+    const additionalNews = summaries.filter(a => a.section === "tech-kenya" && a.category.toLowerCase() === "news")
+    const latestNews = [...news, ...additionalNews]
         .filter((article) => !used.has(article.id))
         .slice(0, 5)
+
+    latestNews.forEach(article => used.add(article.id))
+    const reviews = pinnedFirst(summaries.filter(a => a.section === "reviews" && !used.has(a.id)), "homepage:reviews").slice(0, 4)
+    reviews.forEach(article => used.add(article.id))
+    const phoneCoverage = /\b(phone|phones|smartphone|iphone|android|xiaomi|galaxy)\b/i
+    const related = lead && summaries.find(article => !used.has(article.id) && (
+        article.tags?.some(tag => lead.tags?.includes(tag)) ||
+        (article.category === lead.category && !["News", "Reviews"].includes(article.category)) ||
+        (phoneCoverage.test(lead.title + " " + lead.excerpt) && phoneCoverage.test(article.title))
+    ))
 
     const sections = (Object.keys(SECTION_META) as ArticleSection[])
         .filter((section) => section !== "news")
@@ -196,11 +208,11 @@ export async function getHomepageContent(): Promise<HomepageContent> {
         lead,
         secondary,
         featured,
-        related: lead ? summaries.find(a => !used.has(a.id) && !latestNews.some(n=>n.id===a.id) && a.section !== "reviews" && (a.tags?.some(t=>lead.tags?.includes(t)) || (a.category === lead.category && !["News","Reviews"].includes(a.category)))) : undefined,
+        related,
         latestNews,
         sections,
         newsCount: news.length,
-        reviews: pinnedFirst(summaries.filter(a => a.section === "reviews"), "homepage:reviews").slice(0,4),
+        reviews,
         ticker: await getTickerArticles(),
     }
 }
