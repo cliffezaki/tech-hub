@@ -73,6 +73,7 @@ export default async function Home() {
                                             className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                                         />
                                     )}
+                                    <h1 className="mobile-lead-title lg:hidden">{lead.mobileHeadline || heroTitle}</h1>
                                 </div>
 
                                 <div className="mt-6">
@@ -85,7 +86,7 @@ export default async function Home() {
                                         </span>
                                     </div>
 
-                                    <h1 data-article-title style={headlineVariables(lead)} data-title-section="lead" className="mt-4 text-3xl font-black leading-[1.08] text-balance md:text-5xl lg:text-6xl">
+                                    <h1 data-article-title style={headlineVariables(lead)} data-title-section="lead" className="hidden lg:block mt-4 text-3xl font-black leading-[1.08] text-balance md:text-5xl lg:text-6xl">
                                         <span className="headline-link">
                                             <span className="hidden lg:inline">{heroTitle}</span><span className="lg:hidden">{lead.mobileHeadline || heroTitle}</span>
                                         </span>
@@ -113,8 +114,11 @@ export default async function Home() {
                                     <h2 className="kicker hidden text-brand-red lg:block">At a Glance</h2>
                                     <details className="lg:hidden">
                                         <summary className="kicker cursor-pointer list-none py-2 text-brand-red"><span aria-hidden="true">▸</span> AT A GLANCE</summary>
-                                    </details>
                                     <ul className="mt-3 grid gap-x-6 sm:grid-cols-2">
+                                        {lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="ml-4 list-disc border-b py-1.5 text-[0.8125rem] leading-5">{fact}</li>)}
+                                    </ul>
+                                    </details>
+                                    <ul className="mt-3 hidden lg:grid gap-x-6 sm:grid-cols-2">
                                         {lead.quickFacts.slice(0, 6).map((fact, i) => <li key={i} className="ml-4 list-disc border-b py-1.5 text-[0.8125rem] leading-5">{fact}</li>)}
                                     </ul>
                                 </section>

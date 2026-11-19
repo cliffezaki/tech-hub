@@ -49,9 +49,9 @@ export const SECTION_META: Record<
         defaultCategory: "Explainer",
     },
     "tech-kenya": {
-        label: "Tech Kenya",
-        navLabel: "Tech Kenya",
-        title: "Tech Kenya",
+        label: "Kenya",
+        navLabel: "Kenya",
+        title: "Kenya",
         subtitle: "Technology, startups, and infrastructure across Kenya",
         defaultCategory: "Tech Kenya",
     },

@@ -17,17 +17,24 @@ export function TrendingNews() {
 
     useEffect(() => {
         const controller = new AbortController()
+        try {
+            const cached = JSON.parse(localStorage.getItem("verified-briefings-v1") || "null")
+            if (Array.isArray(cached) && cached.length) { setStories(cached.slice(0, 5)); setStatus("delayed") }
+        } catch {}
         async function refresh() {
             try {
                 const response = await fetch("/api/trending", { signal: controller.signal })
                 if (!response.ok) throw new Error("Unavailable")
                 const feed = await response.json()
-                setStories(feed.stories.slice(0, 5))
+                if (!feed.stories?.length) throw new Error("Empty feed")
+                const latest = feed.stories.slice(0, 5)
+                setStories(latest)
+                try { localStorage.setItem("verified-briefings-v1", JSON.stringify(latest)) } catch {}
                 setStatus(feed.status)
             } catch {
                 if (!controller.signal.aborted) {
-                    setStories(current => current.filter(s => Date.parse(s.expiresAt) > Date.now()))
-                    setStatus("unavailable")
+                    
+                    setStatus("delayed")
                 }
             }
         }

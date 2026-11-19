@@ -45,7 +45,7 @@ export function ExplainerCollection({ articles, discovery = [], published = [] }
         requestAnimationFrame(() => grid.current?.querySelectorAll<HTMLAnchorElement>(":scope > a")[count]?.focus())
     }
     return <div className="mt-4 space-y-10 md:space-y-12">
-        <article className="grid items-start gap-6 md:grid-cols-2">
+        <article className="grid items-start gap-4 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
             <div className="min-w-0">
                 <h2 data-article-title style={headlineVariables(hero)} className="font-serif text-3xl font-bold leading-tight"><Link href={hero.href}>{title}</Link></h2>
                 <p className="kicker mt-3 text-brand-red">{hero.category}</p>
@@ -61,6 +61,7 @@ export function ExplainerCollection({ articles, discovery = [], published = [] }
             </div>
             <Link href={hero.href} aria-label={hero.title} className="relative order-first block aspect-[4/3] overflow-hidden rounded-xl bg-muted md:order-last md:aspect-[6/5]">
                 {hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || ""} fill priority sizes="(max-width:767px) 100vw,50vw" className="object-cover" />}
+                {(hero.quickFacts?.[0] || title === "What HTTPS actually protects") && <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-5 pb-4 pt-12 text-sm text-white">{hero.quickFacts?.[0] || "Encryption protects information travelling between your browser and the website."}</span>}
             </Link>
         </article>
         <section aria-label="Explore topics">

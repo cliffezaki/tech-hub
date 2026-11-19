@@ -13,6 +13,7 @@ type Item = {
     menu: string
     hidden?: boolean
 }
+const secondary = new Set(["/about", "/contact", "/advertise"])
 const defaults: Item[] = [
     { id: "home", name: "Home", href: "/", menu: "main" },
     ...ARTICLE_SECTIONS.map((s) => ({
@@ -73,7 +74,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
             if (e.key === "Escape") setClosing(true)
             if (e.key === "Tab") {
                 const links =
-                    drawer.current?.querySelectorAll<HTMLElement>("a,button")
+                    drawer.current?.querySelectorAll<HTMLElement>("a,button,summary")
                 if (!links?.length) return
                 const first = links[0],
                     last = links[links.length - 1]
@@ -139,7 +140,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                             : "whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground"
                                     }
                                 >
-                                    {i.name}
+                                    {i.href === "/tech-kenya" ? "Kenya" : i.name}
                                 </Link>
                             ))}
                     </nav>
@@ -188,7 +189,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                         </div>
                         <nav className="flex flex-col">
                             {items
-                                .filter((i) => !i.hidden)
+                                .filter((i) => !i.hidden && !secondary.has(i.href))
                                 .map((i) => (
                                     <Link
                                         className="border-b py-3 text-lg font-semibold"
@@ -196,9 +197,13 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                         key={i.id}
                                         onClick={() => setClosing(true)}
                                     >
-                                        {i.name}
+                                        {i.href === "/tech-kenya" ? "Kenya" : i.name}
                                     </Link>
                                 ))}
+                            {items.some(i => !i.hidden && secondary.has(i.href)) && <details className="border-b" onPointerEnter={event => { if (event.pointerType === "mouse") event.currentTarget.open = true }}>
+                                <summary className="cursor-pointer py-3 text-lg font-semibold">More</summary>
+                                <div className="grid pb-3 pl-4">{items.filter(i => !i.hidden && secondary.has(i.href)).map(i => <Link key={i.id} href={i.href} className="py-2 hover:underline" onClick={() => setClosing(true)}>{i.name}</Link>)}</div>
+                            </details>}
                             {signedIn && <Link href="/reader" className="mt-6 cms-primary" onClick={() => setClosing(true)}>My reading list</Link>}
                             {staff && <Link href="/admin" className="mt-6 cms-primary" onClick={() => setClosing(true)}>Publishing Dashboard</Link>}
                             <Link

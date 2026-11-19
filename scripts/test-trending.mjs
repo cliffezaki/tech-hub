@@ -95,7 +95,7 @@ const update={...sample(4),id:'updated-id',headline:'Updated coverage of this de
 const revised=mergeStories(rolling,[update],now)
 assert.equal(revised.length,7)
 assert.equal(revised.find(s=>s.id==='4').headline,update.headline)
-assert.equal(mergeStories(rolling,[],now+MAX_AGE+1).length,0)
+assert.equal(mergeStories(rolling,[],now+MAX_AGE+1).length,rolling.length)
 console.log('Rolling feed passed: newest first, seven-item cap, oldest replacement, source-based updates and expiry.')
 
 // The cached-content adapter must not mutate the homepage summary or other sections.

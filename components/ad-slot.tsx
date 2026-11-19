@@ -21,38 +21,30 @@ export function AdSlot({ slot }: { slot: string }) {
     const ref = useRef<HTMLDivElement>(null)
     useEffect(() => {
         let active = true
+        setAds([])
         fetch(
             `/api/public/ads?slot=${encodeURIComponent(slot)}&path=${encodeURIComponent(path)}`
         )
             .then((r) => r.json())
-            .then((d) => {
-                if (active) setAds(Array.isArray(d) ? d : [])
-            })
+            .then((d) => { if (active) setAds(Array.isArray(d) ? d : []) })
             .catch(() => {})
-        return () => {
-            active = false
-        }
+        return () => { active = false }
     }, [slot, path])
     useEffect(() => {
         if (!ref.current || !ads.length) return
         const seen = new Set<string>()
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (
-                    entries[0]?.isIntersecting
-                )
-                    for (const ad of ads)
-                        if (!seen.has(ad.id)) {
-                            seen.add(ad.id)
-                            track("impression", {
-                                campaign: ad.id,
-                                placement: ad.placement,
-                            })
-                        }
+        const observer = new IntersectionObserver((entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting || entry.intersectionRatio < 0.5) continue
+                    const ad = ads.find(item => item.id === (entry.target as HTMLElement).dataset.campaign)
+                    if (!ad || seen.has(ad.id)) continue
+                    seen.add(ad.id)
+                    track("impression", { campaign: ad.id, placement: ad.placement })
+                }
             },
             { threshold: 0.5 }
         )
-        observer.observe(ref.current)
+        ref.current.querySelectorAll("[data-campaign]").forEach(node => observer.observe(node))
         return () => observer.disconnect()
     }, [ads])
     if (!ads.length) return null
@@ -61,6 +53,7 @@ export function AdSlot({ slot }: { slot: string }) {
             {ads.map((ad) => (
                 <aside
                     key={ad.id}
+                    data-campaign={ad.id}
                     className="mx-auto max-w-5xl overflow-hidden rounded-lg border"
                 >
                     <p className="bg-muted px-4 py-1 text-center text-[10px] uppercase tracking-widest">
