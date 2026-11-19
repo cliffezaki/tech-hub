@@ -73,7 +73,7 @@ export default async function Home() {
                                             className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                                         />
                                     )}
-                                    <h1 className="mobile-lead-title lg:hidden">{lead.mobileHeadline || heroTitle}</h1>
+                                    <h1 className="mobile-lead-title lg:hidden">{lead.mobileHeadline || (heroTitle.includes(": ") ? heroTitle.split(": ")[0] : heroTitle)}</h1>
                                 </div>
 
                                 <div className="mt-6">

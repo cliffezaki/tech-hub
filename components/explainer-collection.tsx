@@ -52,21 +52,19 @@ export function ExplainerCollection({ articles, discovery = [], published = [] }
                 <p className="mt-3 leading-relaxed">{hero.excerpt}</p>
                 <p className="mt-3 text-xs text-muted-foreground">{hero.author} · {formatDate(hero.publishedAt)} · {hero.readTime}</p>
                 <Link className="mt-4 inline-block border-b text-sm font-semibold" href={hero.href}>Read More ↗</Link>
-                <div className="mt-4 grid gap-2">
-                    {related.map(article => <div key={article.id} className="border-t pt-3">
-                        <h3 className="font-serif font-bold leading-snug"><Link className="hover:underline" href={article.href}>{article.title}</Link></h3>
-                        <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{article.excerpt}</p>
-                    </div>)}
-                </div>
+                {!!related.length && <section className="mt-5 border-t pt-3">
+                    <h3 className="kicker">More explainers</h3>
+                    <div className="explainer-links">{related.map(article => <Link key={article.id} href={article.href} className="font-serif hover:underline">{article.mobileHeadline || article.title} <span aria-hidden="true">↗</span></Link>)}</div>
+                </section>}
             </div>
-            <Link href={hero.href} aria-label={hero.title} className="relative order-first block aspect-[4/3] overflow-hidden rounded-xl bg-muted md:order-last md:aspect-[6/5]">
+            <Link href={hero.href} aria-label={hero.title} className="relative order-first block aspect-[4/3] overflow-hidden rounded-xl bg-muted md:order-last md:aspect-[16/10]">
                 {hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || ""} fill priority sizes="(max-width:767px) 100vw,50vw" className="object-cover" />}
-                {(hero.quickFacts?.[0] || title === "What HTTPS actually protects") && <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-5 pb-4 pt-12 text-sm text-white">{hero.quickFacts?.[0] || "Encryption protects information travelling between your browser and the website."}</span>}
+                {(hero.quickFacts?.[0] || title === "What HTTPS actually protects") && <span className="absolute bottom-3 left-3 mr-3 w-fit max-w-[90%] rounded-lg border border-white/20 bg-black/65 px-3 py-2 text-sm leading-snug text-white backdrop-blur-md">{hero.quickFacts?.[0] || "Encryption protects information travelling between your browser and the website."}</span>}
             </Link>
         </article>
         <section aria-label="Explore topics">
             <SectionHeading title="Explore" />
-            {!!discovery.length && <div className="mb-6 grid items-start gap-6 md:grid-cols-2"><Link href={discovery[0].href} className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-[#252a30] text-white">{discovery[0].imageUrl && <SafeImage src={discovery[0].imageUrl} alt={discovery[0].imageAlt || ""} fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" />}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" /><h2 data-article-title style={headlineVariables(discovery[0])} className="absolute bottom-0 p-6 text-2xl font-bold leading-snug">{discovery[0].title}</h2></Link><div className="divide-y">{discovery.slice(1,4).map(article => <TextStory key={article.id} article={article} />)}</div></div>}
+            {!!discovery.length && <div className="mb-6 grid items-start gap-6 md:grid-cols-2"><figure><Link href={discovery[0].href} className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-[#252a30] text-white">{discovery[0].imageUrl && <SafeImage src={discovery[0].imageUrl} alt={discovery[0].imageAlt || ""} fill sizes="(max-width: 767px) 100vw, 50vw" className="object-cover" />}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" /><h2 data-article-title style={headlineVariables(discovery[0])} className="absolute bottom-0 p-6 text-2xl font-bold leading-snug">{discovery[0].title}</h2></Link><figcaption className="mt-3 text-sm leading-relaxed text-muted-foreground">{discovery[0].quickFacts?.[0] || discovery[0].excerpt}</figcaption></figure><div className="divide-y">{discovery.slice(1,7).map(article => <article key={article.id} className="py-3 first:pt-0"><h3 className="font-sans text-base font-semibold leading-snug"><Link href={article.href} className="hover:underline">{article.title}</Link></h3><p className="mt-1 text-sm leading-snug text-muted-foreground">{article.quickFacts?.[0] || article.excerpt}</p></article>)}</div></div>}
 
             <nav aria-label="Explainer topics" className="mb-6 flex flex-wrap gap-2">{topics.map(topic => <Link key={topic} href={`/search?category=${encodeURIComponent(topic)}&section=how-stuff-works`} className="rounded-full border px-4 py-2 text-sm hover:bg-muted">{topic}</Link>)}</nav>
             {!!explore.length && <div className="grid items-start gap-6 md:grid-cols-2">{explore.map(article => <div key={article.id} className="min-w-0 border-t pt-4"><h2 className="mb-4 text-2xl font-bold">{article.category}</h2><TextStory article={article} /></div>)}</div>}

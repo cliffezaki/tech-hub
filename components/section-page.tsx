@@ -21,7 +21,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
         showTicker ? getTickerArticles(section) : Promise.resolve([]),
     ])
     const published = section === "how-stuff-works" ? await getAllArticleSummaries() : []
-    const discovery = published.filter(a => a.section === "news" || a.section === "reviews").slice(0, 4)
+    const discovery = published.filter(a => a.section === "news" || a.section === "reviews").slice(0, 7)
     const compactHeader = ["news", "how-stuff-works", "tech-kenya"].includes(section)
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)

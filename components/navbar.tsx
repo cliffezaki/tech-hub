@@ -140,7 +140,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                             : "whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground"
                                     }
                                 >
-                                    {i.href === "/tech-kenya" ? "Kenya" : i.name}
+                                    {i.href === "/tech-kenya" ? "Tech Kenya" : i.name}
                                 </Link>
                             ))}
                     </nav>
@@ -197,7 +197,7 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                         key={i.id}
                                         onClick={() => setClosing(true)}
                                     >
-                                        {i.href === "/tech-kenya" ? "Kenya" : i.name}
+                                        {i.href === "/tech-kenya" ? "Tech Kenya" : i.name}
                                     </Link>
                                 ))}
                             {items.some(i => !i.hidden && secondary.has(i.href)) && <details className="border-b" onPointerEnter={event => { if (event.pointerType === "mouse") event.currentTarget.open = true }}>

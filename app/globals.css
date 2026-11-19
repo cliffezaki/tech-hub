@@ -439,8 +439,8 @@
  .home-lead .lead-facts {order:1;margin-top:0;padding-top:0}
  .lead-facts summary {display:flex;align-items:center;gap:.4rem;min-height:44px}
  .lead-facts summary span {font-size:1rem}
- .home-lead .group.block>div:first-child {display:grid;align-items:end;height:auto;min-height:clamp(150px,42vw,180px)}
- .mobile-lead-title {position:relative;color:white;background:linear-gradient(transparent,#000b 45%,#000e);padding:2rem .85rem .7rem;font:800 clamp(22px,5.6vw,28px)/1.08 var(--font-playfair),Georgia,serif;overflow-wrap:anywhere}
+ .home-lead .group.block>div:first-child {display:grid;align-items:end;aspect-ratio:1.05;height:auto;min-height:min(84vw,42svh);max-height:46svh}
+ .mobile-lead-title {position:relative;color:white;background:linear-gradient(transparent,#000b 45%,#000e);padding:2rem .85rem .7rem;font:800 clamp(20px,5.2vw,25px)/1.08 var(--font-playfair),Georgia,serif;overflow-wrap:anywhere}
  .lead-facts summary::-webkit-details-marker {display:none}
  .lead-facts summary span {display:inline-block;transition:transform .15s}
  .lead-facts details[open] summary span {transform:rotate(90deg)}
@@ -452,4 +452,12 @@
 @media(min-width:768px){
  [data-title-section="more"]>article {padding-block:1rem}
  [data-title-section="more"]>article>a {grid-template-columns:10rem minmax(0,1fr)}
+}
+
+.explainer-links {display:grid;margin-top:.5rem}
+.explainer-links a {padding:.65rem 0;border-top:1px solid hsl(var(--border));line-height:1.3}
+@media(min-width:600px){
+ .explainer-links {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .explainer-links a:nth-child(odd){padding-right:1rem}
+ .explainer-links a:nth-child(even){padding-left:1rem;border-left:1px solid hsl(var(--border))}
 }
