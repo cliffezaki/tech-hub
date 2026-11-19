@@ -59,7 +59,7 @@ export function ExplainerCollection({ articles, discovery = [], published = [] }
             </div>
             <Link href={hero.href} aria-label={hero.title} className="relative order-first block aspect-[4/3] overflow-hidden rounded-xl bg-muted md:order-last md:aspect-[16/10]">
                 {hero.imageUrl && <SafeImage src={hero.imageUrl} alt={hero.imageAlt || ""} fill priority sizes="(max-width:767px) 100vw,50vw" className="object-cover" />}
-                {(hero.quickFacts?.[0] || title === "What HTTPS actually protects") && <span className="absolute bottom-3 left-3 mr-3 w-fit max-w-[90%] rounded-lg border border-white/20 bg-black/65 px-3 py-2 text-sm leading-snug text-white backdrop-blur-md">{hero.quickFacts?.[0] || "Encryption protects information travelling between your browser and the website."}</span>}
+                {(hero.quickFacts?.[0] || title === "What HTTPS actually protects") && <span className="absolute inset-x-0 bottom-0 flex min-h-[22%] items-center bg-gradient-to-b from-black/60 to-black/85 px-[4%] py-3 font-serif text-base leading-snug text-white backdrop-blur-sm md:text-lg">{hero.quickFacts?.[0] || "Encryption protects information travelling between your browser and the website."}</span>}
             </Link>
         </article>
         <section aria-label="Explore topics">
