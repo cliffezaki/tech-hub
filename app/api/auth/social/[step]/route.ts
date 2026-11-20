@@ -8,6 +8,16 @@ import type { User } from "@/lib/permissions"
 const cookie = "techhub_oauth"
 const flags = { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/api/auth/social" }
 
+async function enabledProviders(base: URL, key?: string): Promise<string[]> {
+    if (!key) return []
+    const response = await fetch(new URL("settings",base),{
+        headers:{apikey:key}, redirect:"error", cache:"no-store", signal:AbortSignal.timeout(8000)
+    })
+    if (!response.ok) return []
+    const settings = await response.json()
+    return ["google","apple"].filter(provider => settings.external?.[provider] === true)
+}
+
 export async function GET(req: NextRequest, { params }: {params: Promise<{step:string}>}) {
     const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://mytechhub.online"
     const account = new URL("/account", origin)
@@ -21,12 +31,16 @@ export async function GET(req: NextRequest, { params }: {params: Promise<{step:s
     try {
         const base = new URL("/auth/v1/", process.env.SUPABASE_URL)
         const key = process.env.SUPABASE_SECRET_KEY
-        if (!key) return finish("unavailable")
+        
         const {step} = await params
+        if (step === "providers") {
+            const providers = await enabledProviders(base,key)
+            return NextResponse.json({providers},{headers:{"Cache-Control":"no-store"}})
+        }
+        if (!key) return finish("unavailable")
         const headers = {apikey:key,"Content-Type":"application/json"}
         if (step === "google" || step === "apple") {
-            const settings = await fetch(new URL("settings",base),{headers,redirect:"error",cache:"no-store"})
-            if (!settings.ok || !(await settings.json()).external?.[step]) return finish("unavailable")
+            if (!(await enabledProviders(base,key)).includes(step)) return finish("unavailable")
             const verifier = randomBytes(48).toString("base64url")
             const url = new URL("authorize",base)
             url.search = new URLSearchParams({provider:step,redirect_to:new URL("/api/auth/social/callback",origin).href,code_challenge:createHash("sha256").update(verifier).digest("base64url"),code_challenge_method:"s256"}).toString()

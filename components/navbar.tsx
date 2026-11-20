@@ -50,10 +50,19 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                     setItems(d.filter((i) => i.menu === "main"))
             })
             .catch(() => {})
-        fetch("/api/auth/me")
+        let version = 0
+        function sync() {
+        const request = ++version
+        fetch("/api/auth/me",{cache:"no-store"})
             .then((r) => r.json())
-            .then((d) => { setSignedIn(Boolean(d.user)); setStaff(Boolean(d.user) && d.permissions?.length > 0) })
+            .then((d) => { if(request!==version)return; setSignedIn(Boolean(d.user)); setStaff(Boolean(d.user) && d.permissions?.length > 0) })
             .catch(() => {})
+        }
+        sync()
+        window.addEventListener("account-changed",sync)
+        window.addEventListener("pageshow",sync)
+        window.addEventListener("focus",sync)
+        return ()=>{version++;window.removeEventListener("account-changed",sync);window.removeEventListener("pageshow",sync);window.removeEventListener("focus",sync)}
     }, [path])
     useEffect(() => {
         if (!closing) return
@@ -204,14 +213,14 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                 <summary className="cursor-pointer py-3 text-lg font-semibold">More</summary>
                                 <div className="grid pb-3 pl-4">{items.filter(i => !i.hidden && secondary.has(i.href)).map(i => <Link key={i.id} href={i.href} className="py-2 hover:underline" onClick={() => setClosing(true)}>{i.name}</Link>)}</div>
                             </details>}
-                            <details className="mt-5">
+                            {signedIn ? <details className="mt-5">
                                 <summary className="cursor-pointer rounded bg-brand-solid px-4 py-3 font-semibold text-brand-on-solid">My Account</summary>
                                 <div className="grid divide-y pl-4">
-                                    <Link href="/account" className="py-3" onClick={() => setClosing(true)}>{signedIn ? "Account settings" : "Sign in / Register"}</Link>
+                                    <Link href="/account" className="py-3" onClick={() => setClosing(true)}>Account settings</Link>
                                     {signedIn && <Link href="/reader" className="py-3" onClick={() => setClosing(true)}>Reading List</Link>}
                                     {staff && <Link href="/admin" className="py-3" onClick={() => setClosing(true)}>Publishing Dashboard</Link>}
                                 </div>
-                            </details>
+                            </details> : <div className="mt-5 flex items-center gap-2 font-semibold text-brand-red"><a className="py-3" href="/account">Log in</a><span aria-hidden="true">/</span><a className="py-3" href="/account?mode=register">Sign Up</a></div>}
                         </nav>
                     </div>
                 </div>

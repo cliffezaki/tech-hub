@@ -30,6 +30,7 @@ export default function AccountPage() {
         } catch (error) { setMessage((error as Error).name === "TimeoutError" ? "Email delivery is taking longer than expected. Check your inbox before retrying." : (error as Error).message) }
         finally { setBusy(false) }
     }
+    const [providers,setProviders] = useState<string[]>([])
     const [staff, setStaff] = useState(false)
     const [mode, setMode] = useState("login")
     const [message, setMessage] = useState("")
@@ -46,6 +47,8 @@ export default function AccountPage() {
         const params = new URLSearchParams(location.hash.slice(1))
         const social = new URLSearchParams(location.search).get("social")
         if (social) setMessage(social === "link" ? "Sign in with your existing password, then connect this provider in your account." : social === "unavailable" ? "This sign-in provider is currently unavailable. You can continue with email." : "Social sign-in could not be completed. Please try again.")
+        if (new URLSearchParams(location.search).get("mode") === "register") setMode("register")
+        fetch("/api/auth/social/providers",{cache:"no-store"}).then(r=>r.json()).then(d=>setProviders(Array.isArray(d.providers)?d.providers:[])).catch(()=>{})
         const newsletter = params.get("newsletter")
         const verify = params.get("verify") || newsletter
         const token = verify || params.get("reset")
@@ -105,7 +108,7 @@ export default function AccountPage() {
                 setInvalidCredentials(!user && mode === "login" && response.status === 401)
                 throw new Error(result.error)
             }
-            if (result.redirect) location.assign(result.redirect)
+            if (result.redirect) { window.dispatchEvent(new Event("account-changed")); location.assign(result.redirect) }
             else {
                 setMessage(result.message)
                 if (result.user) setUser(result.user)
@@ -126,7 +129,10 @@ export default function AccountPage() {
             setBusy(false)
         }
     }
-    if (user) return <AccountSettings user={user} staff={staff} onSaved={setUser} />
+    const socialLinks = providers.length > 0 && <div className="my-4 grid gap-2 sm:grid-cols-2">
+        {providers.map(provider => <a className="rounded-lg border bg-card px-4 py-3 text-center font-semibold hover:bg-muted" key={provider} href={"/api/auth/social/"+provider}>{user ? "Connect" : "Continue with"} {provider === "google" ? "Google" : "Apple"}</a>)}
+    </div>
+    if (user) return <><AccountSettings user={user} staff={staff} onSaved={setUser} onLogout={()=>{setUser(null);setStaff(false);changeMode("login");window.dispatchEvent(new Event("account-changed"))}} />{socialLinks}{message && <p role="status">{message}</p>}</>
     return (
         <div className={styles.account}>
             <p className="kicker text-brand-red">Your Tech Hub</p>
@@ -152,9 +158,7 @@ export default function AccountPage() {
                     )}
                 </div>
             )}
-            {ready && (user || mode === "register" || mode === "login") && <div className="my-4 grid gap-2 sm:grid-cols-2">
-                {["Google","Apple"].map(provider => <a className="rounded-lg border bg-card px-4 py-3 text-center font-semibold hover:bg-muted" key={provider} href={"/api/auth/social/"+provider.toLowerCase()}>{user ? "Connect" : "Continue with"} {provider}</a>)}
-            </div>}
+            {ready && (mode === "register" || mode === "login") && socialLinks}
             {!ready ? (
                 <p>Loading account…</p>
             ) : mode === "complete" ? (
