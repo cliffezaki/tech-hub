@@ -44,6 +44,8 @@ export default function AccountPage() {
     }
     useEffect(() => {
         const params = new URLSearchParams(location.hash.slice(1))
+        const social = new URLSearchParams(location.search).get("social")
+        if (social) setMessage(social === "link" ? "Sign in with your existing password, then connect this provider in your account." : social === "unavailable" ? "This sign-in provider is currently unavailable. You can continue with email." : "Social sign-in could not be completed. Please try again.")
         const newsletter = params.get("newsletter")
         const verify = params.get("verify") || newsletter
         const token = verify || params.get("reset")
@@ -150,6 +152,9 @@ export default function AccountPage() {
                     )}
                 </div>
             )}
+            {ready && (user || mode === "register" || mode === "login") && <div className="my-4 grid gap-2 sm:grid-cols-2">
+                {["Google","Apple"].map(provider => <a className="rounded-lg border bg-card px-4 py-3 text-center font-semibold hover:bg-muted" key={provider} href={"/api/auth/social/"+provider.toLowerCase()}>{user ? "Connect" : "Continue with"} {provider}</a>)}
+            </div>}
             {!ready ? (
                 <p>Loading account…</p>
             ) : mode === "complete" ? (

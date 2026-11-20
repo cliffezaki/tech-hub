@@ -204,15 +204,14 @@ export function Navbar({ siteName = "Tech Hub", identity }: { siteName?: string;
                                 <summary className="cursor-pointer py-3 text-lg font-semibold">More</summary>
                                 <div className="grid pb-3 pl-4">{items.filter(i => !i.hidden && secondary.has(i.href)).map(i => <Link key={i.id} href={i.href} className="py-2 hover:underline" onClick={() => setClosing(true)}>{i.name}</Link>)}</div>
                             </details>}
-                            {signedIn && <Link href="/reader" className="mt-6 cms-primary" onClick={() => setClosing(true)}>My reading list</Link>}
-                            {staff && <Link href="/admin" className="mt-6 cms-primary" onClick={() => setClosing(true)}>Publishing Dashboard</Link>}
-                            <Link
-                                className={staff ? "mt-3 rounded border px-4 py-3 font-semibold" : "mt-6 cms-primary"}
-                                href="/account"
-                                onClick={() => setClosing(true)}
-                            >
-                                {signedIn ? "My account" : "Log in / Sign up"}
-                            </Link>
+                            <details className="mt-5">
+                                <summary className="cursor-pointer rounded bg-brand-solid px-4 py-3 font-semibold text-brand-on-solid">My Account</summary>
+                                <div className="grid divide-y pl-4">
+                                    <Link href="/account" className="py-3" onClick={() => setClosing(true)}>{signedIn ? "Account settings" : "Sign in / Register"}</Link>
+                                    {signedIn && <Link href="/reader" className="py-3" onClick={() => setClosing(true)}>Reading List</Link>}
+                                    {staff && <Link href="/admin" className="py-3" onClick={() => setClosing(true)}>Publishing Dashboard</Link>}
+                                </div>
+                            </details>
                         </nav>
                     </div>
                 </div>

@@ -1,4 +1,6 @@
 "use client"
+import { KenyaPulse } from "./kenya-pulse"
+import type { KenyaStory } from "@/lib/kenya-feed"
 import { newsLayout } from "@/lib/news-layout"
 import { useState } from "react"
 import Link from "next/link"
@@ -8,7 +10,7 @@ import { HeadlineStrip, EditorialGrid } from "@/components/editorial-stories"
 import { SectionHeading } from "@/components/section-heading"
 import type { ArticleSection, ArticleSummary } from "@/lib/types"
 
-export function SectionCollection({ articles, section }: { articles: ArticleSummary[]; section: ArticleSection }) {
+export function SectionCollection({ articles, section, kenyaStories=[] }: { kenyaStories?:KenyaStory[]; articles: ArticleSummary[]; section: ArticleSection }) {
     const [category, setCategory] = useState("all")
     const [limit, setLimit] = useState(12)
     const categories = [...new Set(articles.map(a => a.category))]
@@ -28,7 +30,7 @@ export function SectionCollection({ articles, section }: { articles: ArticleSumm
         {headlines.length > 0 && <section className="my-8"><SectionHeading title="More headlines" /><HeadlineStrip articles={headlines} /></section>}
         {desk.length > 0 && <section className="my-8"><SectionHeading title="From the news desk" /><HeadlineStrip articles={desk} /></section>}
         {educational && <nav aria-label="Explore learning topics" className="my-8 flex flex-wrap gap-3">{categories.map(topic => <button key={topic} type="button" aria-pressed={category === topic} onClick={() => { setCategory(topic); setLimit(12) }} className="rounded-lg border px-5 py-3 text-sm hover:bg-muted aria-pressed:bg-muted">{topic}<span className="ml-3 text-muted-foreground">{articles.filter(a => a.category === topic).length}</span></button>)}</nav>}
-        {section === "tech-kenya" && <div className="my-8 grid gap-6 rounded-xl border-l-4 border-brand-red bg-muted/40 p-6 sm:grid-cols-2"><div><p className="kicker text-brand-red">Kenya in focus</p>{pulse.length > 0 && <><h2 className="mt-2 text-2xl font-bold">Kenya Tech Pulse</h2>{pulse.map(article => <article key={article.id} className="mt-3 border-t pt-2"><h3 className="font-semibold"><Link href={article.href} className="hover:underline">{article.title}</Link></h3><p className="mt-1 text-sm text-muted-foreground">{article.quickFacts?.[0] || article.excerpt}</p></article>)}</>}</div><nav aria-label="Kenyan technology coverage" className="flex flex-wrap content-center gap-2">{categories.map(topic => <button key={topic} type="button" aria-pressed={category === topic} onClick={() => { setCategory(topic); setLimit(12) }} className="rounded-full border bg-background px-4 py-2 text-sm aria-pressed:underline">{topic}</button>)}</nav></div>}
+        {section === "tech-kenya" && <div className="my-8 grid gap-6 rounded-xl border-l-4 border-brand-red bg-muted/40 p-6"><div><p className="kicker text-brand-red">Kenya in focus</p>{kenyaStories.length ? <KenyaPulse stories={kenyaStories}/> : pulse.length > 0 && <><h2 className="mt-2 text-2xl font-bold">Kenya Tech Pulse</h2>{pulse.map(article => <article key={article.id} className="mt-3 border-t pt-2"><h3 className="font-semibold"><Link href={article.href} className="hover:underline">{article.title}</Link></h3><p className="mt-1 text-sm text-muted-foreground">{article.quickFacts?.[0] || article.excerpt}</p></article>)}</>}</div><nav aria-label="Kenyan technology coverage" className="flex flex-wrap content-center gap-2">{categories.map(topic => <button key={topic} type="button" aria-pressed={category === topic} onClick={() => { setCategory(topic); setLimit(12) }} className="rounded-full border bg-background px-4 py-2 text-sm aria-pressed:underline">{topic}</button>)}</nav></div>}
         <section className="py-8" aria-label="Browse articles">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><label className="text-sm">Category <select value={category} className="ml-2 max-w-full rounded border bg-background p-2" onChange={e => { setCategory(e.target.value); setLimit(12) }}><option value="all">All categories</option>{categories.map(c => <option key={c}>{c}</option>)}</select></label><p className="text-sm text-muted-foreground" role="status">{filtered.length} articles</p></div>
             {news ? <><SectionHeading title="Latest stories" />{visible.length ? <EditorialGrid articles={visible} /> : <p className="py-6 text-muted-foreground">No published stories in this category yet.</p>}</>

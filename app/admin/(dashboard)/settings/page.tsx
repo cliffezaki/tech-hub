@@ -110,6 +110,7 @@ export default function AdminSettingsPage() {
                     <h1 className="font-[family-name:var(--font-playfair)] text-3xl font-bold">
                         Settings
                     </h1>
+                <Link href="/admin/kenya-sources" className="underline">Kenya briefing sources</Link>
                     <p className="text-muted-foreground">
                         Site name, newsletter box, footer, and social links.
                     </p>

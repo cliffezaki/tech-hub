@@ -1,3 +1,4 @@
+import { kenyaFeed } from "@/lib/kenya-feed"
 import Link from "next/link"
 import { ArticleCollection } from "@/components/article-collection"
 import { ExplainerCollection } from "@/components/explainer-collection"
@@ -22,6 +23,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
     ])
     const published = section === "how-stuff-works" ? await getAllArticleSummaries() : []
     const discovery = published.filter(a => a.section === "news" || a.section === "reviews").slice(0, 7)
+    const kenyaStories = section === "tech-kenya" ? (await kenyaFeed().catch(() => [])).map(({id,headline,summary,paragraphs,publishedAt})=>({id,headline,summary,paragraphs,publishedAt})) : []
     const compactHeader = ["news", "how-stuff-works", "tech-kenya"].includes(section)
     const meta = SECTION_META[section]
     const page = await getPublishedPage(section)
@@ -59,7 +61,7 @@ export async function SectionPage({ section }: { section: ArticleSection }) {
                     </Link>
                 </div>
             ) : (
-                section === "how-stuff-works" ? <ExplainerCollection articles={articles} discovery={discovery} published={published} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection articles={articles} section={section} />
+                section === "how-stuff-works" ? <ExplainerCollection articles={articles} discovery={discovery} published={published} /> : section === "how-to" ? <ArticleCollection articles={articles} leadLayout /> : section === "reviews" ? <ReviewCollection articles={articles} /> : <SectionCollection kenyaStories={kenyaStories} articles={articles} section={section} />
             )}
         </div>
         </>

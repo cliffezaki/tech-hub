@@ -108,9 +108,9 @@ export function TrendingNews() {
                 <header className={styles.panelHeader}><span>MY TECH HUB / TECH BRIEFING</span><button autoFocus className={styles.close} onClick={() => setSelected(null)} aria-label="Close news preview">×</button></header>
                 <h2 id="briefing-title">{selected.headline}</h2>
                 <p className={styles.disclosure}>AI-generated summary of linked reporting</p>
-                <div aria-label="News briefing">{briefingParagraphs(selected).map((paragraph, index) => <p key={index} className={styles.detail}>{paragraph}</p>)}</div>
+                <div aria-label="News briefing">{briefingParagraphs(selected).map((paragraph, index) => <p key={index} className={styles.detail}>{paragraph}</p>)}
                 <h3 className={styles.subheading}>Why it matters</h3>
-                <p className={styles.detail}>{selected.whyItMatters}</p>
+                <p className={styles.detail}>{selected.whyItMatters}</p></div>
                 <h3 className={styles.subheading}>Read the original reporting</h3>
                 <SourceLogos sources={selected.sources}/>
 
