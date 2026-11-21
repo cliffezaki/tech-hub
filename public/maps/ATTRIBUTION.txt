@@ -1,0 +1,5 @@
+Country boundaries: Natural Earth via DataHub geo-countries.
+Source: https://datahub.io/core/geo-countries
+License: Open Data Commons Public Domain Dedication and License 1.0
+https://opendatacommons.org/licenses/pddl/1-0/
+Simplified and projected into SVG paths for Tech Hub. Boundaries are illustrative, not a statement of political status.

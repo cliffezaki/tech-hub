@@ -10,9 +10,9 @@ interface SectionHeadingProps {
 
 export function SectionHeading({ title, subtitle, href, linkLabel = "View all" }: SectionHeadingProps) {
     return (
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b pb-4">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-t border-foreground/40 pt-4">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h2>
+                <h2 className="text-sm font-bold uppercase tracking-[0.12em]">{title}</h2>
                 {subtitle && <p className="mt-1.5 text-sm text-muted-foreground md:text-base">{subtitle}</p>}
             </div>
 

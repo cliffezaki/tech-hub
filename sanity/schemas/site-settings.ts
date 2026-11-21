@@ -7,6 +7,7 @@ export default defineType({
     fields: [
         defineField({ name: 'siteName', title: 'Site name', type: 'string' }),
         defineField({ name: 'tagline', title: 'Tagline', type: 'string' }),
+        ...['logoLight', 'logoDark', 'logoSame', 'logoWidth', 'iconSource', 'icon16', 'icon32', 'icon180', 'icon192', 'icon512', 'iconIco', 'identityVersion', 'socialImage', 'socialTitle', 'socialDescription'].map(name => defineField({ name, title: name, type: 'string', readOnly: true, description: 'Managed through Settings → Site Identity in the Tech Hub dashboard.' })),
         defineField({
             name: 'heroEyebrow',
             title: 'Homepage hero label',

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react"
 
+import { ImageAdjuster } from "@/components/admin/image-adjuster"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,6 +25,7 @@ export function ImageField({ value, onChange, label = "Featured image" }: ImageF
     const [library, setLibrary] = useState<MediaItem[]>([])
     const [showLibrary, setShowLibrary] = useState(false)
     const [uploading, setUploading] = useState(false)
+    const [editing, setEditing] = useState(false)
     const [error, setError] = useState("")
 
     useEffect(() => {
@@ -80,7 +82,9 @@ export function ImageField({ value, onChange, label = "Featured image" }: ImageF
                 )}
             </div>
 
+            {editing && value && <ImageAdjuster key={value} src={value} onApply={url => { onChange(url); setEditing(false) }} onCancel={() => setEditing(false)} />}
             <div className="flex flex-wrap gap-2">
+                {value && <Button type="button" variant="outline" size="sm" onClick={() => setEditing(v => !v)}>Crop and resize image</Button>}
                 <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileInput.current?.click()}>
                     {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                     {value ? "Replace image" : "Upload image"}

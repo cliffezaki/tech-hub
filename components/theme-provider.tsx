@@ -7,5 +7,14 @@ export function ThemeProvider({
     children,
     ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
+    React.useEffect(() => {
+        try { if (localStorage.getItem("theme") === "dark") localStorage.setItem("theme", "midnight"); } catch {}
+        // Enable color motion only after the pre-paint theme script has run.
+        const frame = requestAnimationFrame(() => document.documentElement.classList.add("theme-ready"));
+        return () => {
+            cancelAnimationFrame(frame);
+            document.documentElement.classList.remove("theme-ready");
+        };
+    }, []);
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }

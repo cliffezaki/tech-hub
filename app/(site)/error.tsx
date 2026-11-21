@@ -14,8 +14,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
             <p className="kicker text-brand-red">Something went wrong</p>
             <h1 className="mt-4 text-3xl font-black tracking-tight md:text-4xl">This page failed to load</h1>
             <p className="mt-4 max-w-md text-muted-foreground">
-                The problem has been logged. Try again, and if it keeps happening check that the CMS connection is
-                configured correctly.
+                Please try again in a moment. Your saved articles and account settings have not been changed.
             </p>
             <Button className="mt-8" onClick={reset}>
                 Try again

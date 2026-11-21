@@ -1,5 +1,8 @@
 "use client"
 
+import { TrendingVerification } from "@/components/admin/trending-verification"
+import { TitleTypographySettings } from "@/components/admin/title-typography-settings"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Loader2, Save, Star } from "lucide-react"
 
@@ -90,9 +93,7 @@ export default function AdminHomepagePage() {
         )
     }
 
-    const leadArticle = settings.heroArticleId
-        ? published.find((article) => article.id === settings.heroArticleId)
-        : featured[0] || published[0]
+    const leadArticle = published.find(article=>article.pinnedAreas?.includes("homepage")) || featured[0] || published[0]
 
     return (
         <div className="space-y-6">
@@ -118,6 +119,8 @@ export default function AdminHomepagePage() {
                 </p>
             )}
 
+            <TrendingVerification/>
+            <TitleTypographySettings value={settings.titleTypography} onChange={titleTypography=>setSettings({...settings,titleTypography})}/>
             <Card className="space-y-5 p-5">
                 <div>
                     <h2 className="font-semibold">Lead story</h2>
@@ -126,22 +129,7 @@ export default function AdminHomepagePage() {
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="heroArticleId">Pinned article</Label>
-                    <select
-                        id="heroArticleId"
-                        value={settings.heroArticleId}
-                        onChange={(event) => setSettings({ ...settings, heroArticleId: event.target.value })}
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                        <option value="">Automatic — newest featured article</option>
-                        {published.map((article) => (
-                            <option key={article.id} value={article.id}>
-                                {article.title}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <p className="text-sm">Use <Link className="underline" href="/admin/articles">Placement controls in article settings</Link> to manage Today’s Highlight, Also Worth Reading and Featured Articles.</p>
 
                 {leadArticle && (
                     <div className="flex gap-4 rounded-lg border bg-muted/30 p-3">

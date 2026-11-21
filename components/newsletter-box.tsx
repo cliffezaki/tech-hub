@@ -10,22 +10,23 @@ interface NewsletterBoxProps {
     contactEmail: string
 }
 
-/**
- * No mailing-list provider is wired up yet, so rather than pretending to subscribe
- * people the form opens a pre-filled email to the newsroom. Swapping in Mailchimp or
- * Buttondown later means replacing only the submit handler.
- */
 export function NewsletterBox({ title, text, contactEmail }: NewsletterBoxProps) {
     const [email, setEmail] = useState("")
     const [sent, setSent] = useState(false)
+    const [message,setMessage]=useState("")
+    const [busy,setBusy]=useState(false)
 
-    const handleSubmit = (event: React.FormEvent) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
-
-        const subject = encodeURIComponent("Newsletter signup")
-        const body = encodeURIComponent(`Please add ${email} to the newsletter.`)
-        window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`
-        setSent(true)
+        const form = new FormData(event.currentTarget)
+        setBusy(true)
+        try {
+            const r=await fetch("/api/public/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,consent:true,websiteTrap:form.get("websiteTrap")})})
+            const d=await r.json()
+            if(!r.ok)throw Error(d.error)
+            setSent(true);setMessage(d.message)
+        } catch(e){setMessage(e instanceof Error?e.message:`Could not save your signup. Please contact ${contactEmail}.`)}
+        finally{setBusy(false)}
     }
 
     return (
@@ -35,10 +36,11 @@ export function NewsletterBox({ title, text, contactEmail }: NewsletterBoxProps)
 
             {sent ? (
                 <p className="mt-4 text-sm opacity-90">
-                    Thanks — finish sending the email that just opened and you are on the list.
+                    {message}
                 </p>
             ) : (
-                <form className="mt-4 flex gap-2" onSubmit={handleSubmit}>
+                <form className="mt-4 flex flex-wrap gap-2" onSubmit={handleSubmit}>
+                    <input name="websiteTrap" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
                     <label htmlFor="newsletter-email" className="sr-only">
                         Email address
                     </label>
@@ -51,9 +53,11 @@ export function NewsletterBox({ title, text, contactEmail }: NewsletterBoxProps)
                         placeholder="you@example.com"
                         className="w-full rounded-md border border-background/25 bg-background/10 px-3 py-2 text-sm placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-background/40"
                     />
-                    <Button type="submit" variant="secondary" size="sm" className="shrink-0">
+                    <p className="w-full text-xs">By joining, you agree to receive Tech Hub email updates.</p>
+                    <Button disabled={busy} type="submit" variant="secondary" size="sm" className="shrink-0">
                         Join
                     </Button>
+                    <p role="status" className="w-full text-sm">{message}</p>
                 </form>
             )}
         </div>
